@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+    <script>
+        <![CDATA[
+            //转办页面
+        	var storage = $phone.localStorage();
+        	var sys_sys_userId = storage.getItem('sys_sys_userId');
+        	
+          	//页面加载完成后执行
+        	$page.onload = function() {
+        		getTranInfo();
+        	}
+        	
+        	// 获取活动节点相关数据
+        	function getTranInfo(){
+        		var evoUrl = storage.getItem('evoUrl');
+        		$('workId').value = $param['workId'];
+        		$http.progress('正在加载，请稍后...').post(evoUrl + '/ezOffice/workflow/tranInfo.do',{'workId':$param['workId']},
+	        		function(data){
+	        			if(!data){
+	        				alert('获取转办信息失败！');
+	        				return false;
+	        			}
+	        			var jsonData = eval('('+data+')');
+	        			if(jsonData.logonerror &&jsonData.logonerror=='1'){
+			         		alert("该账号已在设备"+jsonData.deviceId+"上登录");
+		          			$page.open('../index.xml',{target:'_self'});
+		                    return;
+		                }
+	        			if(!jsonData || jsonData.result == 'fail'){
+	        				alert('获取转办信息失败！');
+	        				return false;
+	        			}
+	        			var tranInfo = jsonData.data_0.data;
+	        			var $contentList = $('content_list');
+	        			// 创建节点选择及办理人选择
+	        			createTranInfoContent($contentList,tranInfo);
+	        			// 创建固定ITEM
+	        			//createOtherItem($contentList);
+	        		},function(error) {
+				    if (error == 'timeout') {
+						hint('连接服务器超时！');
+				    } else if (error == '404') {
+						hint('链接超时重新登录！');
+				    } else if (error == '500') {
+						hint('内部服务器错误！');
+				    } else {
+						hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+				  }
+	        	);
+        	}
+        	
+        	// 创建下一环节、下一办理人内容 
+        	function createTranInfoContent(contentList,tranInfo){
+        		if(!tranInfo){
+        			alert('转办信息为空！');
+        			return false;
+        		}
+        		var scopeType = tranInfo.scopeType;
+        		var items = '';
+				if(scopeType == 'default_users'){
+        			items += '<item style="col-width: 90,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>选择办理人：</label></row></col><col style="padding:10;margin:10;">';
+					items += '<input type="hidden" id="chooseUserId" name="chooseUserId" value="'+tranInfo.scopeId+'"/>'+
+           			'<input style="border:0 white;font-size:16;text-align:right;" type="text" readonly="readonly" id="chooseUserName" name="chooseUserName" value="'+tranInfo.scopeName+'"/>';
+				}else if(scopeType == 'scopes_user'){
+        			items += '<item onclick="selectUser(\'chooseUserId\',\'chooseUserName\',\''+tranInfo.scopeId+'\',\'1\')" style="col-width: 90,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>选择办理人：</label></row></col><col style="padding:10;margin:10;">';
+					items += '<input type="hidden" id="chooseUserId" name="chooseUserId" value="" />'+
+           			'<input style="border:0 white;font-size:16;text-align:right;" placeholder="请选择>" type="text" readonly="readonly" id="chooseUserName" name="chooseUserName" value="" onclick="selectUser(\'chooseUserId\',\'chooseUserName\',\''+tranInfo.scopeId+'\',\'1\')"/>';
+				}else{
+        			items += '<item onclick="selectUser(\'chooseUserId\',\'chooseUserName\',\''+tranInfo.scopeId +'\',\'1\')" style="col-width: 90,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>选择办理人：</label></row></col><col style="padding:10;margin:10;">';
+					items += '<input type="hidden" id="chooseUserId" name="chooseUserId" value="" />'+
+           			'<input style="border:0 white;font-size:16;text-align:right;" placeholder="请选择>" type="text" readonly="readonly" id="chooseUserName" name="chooseUserName" value="" onclick="selectUser(\'chooseUserId\',\'chooseUserName\',\''+tranInfo.scopeId +'\',\'1\')"/>';
+				}
+				var workcurstep = decodeURIComponent($param["workcurstep"]);
+				items += '</col></item><item style="col-width: 90,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>当前办理环节：</label></row></col><col style="padding:10;margin:10;"><row><label>'+workcurstep+'</label></row></col></item>';
+        		contentList.addMore('<imag><list>' + items + '</list></imag>');
+        	}
+        	
+			// 选择用户
+	        var userIdConIdVal;
+	        var userNameConIdVal;
+	        function selectUser(userIdConId,userNameConId,range,type){
+	        	userIdConIdVal = userIdConId;
+	        	userNameConIdVal = userNameConId;
+		        storage.setItem('sys_selectuser_range',range);
+		        storage.setItem('sys_selectuser_userids',$(userIdConIdVal).value);
+		        storage.setItem('sys_selectuser_usernames',$(userNameConIdVal).value);
+		        storage.setItem('sys_selectuser_returnfuc','setUserInfo');
+		        if('0' == type){
+				    $page.open('../public/selectSingleUser.xml', {animation:'down-to-up'});
+		        }else if('1' == type){
+				    $page.open('../public/selectUser.xml', {animation:'down-to-up'});
+		        }else if('2' == type){
+				    $page.open('../public/selectSingleOrg.xml', {animation:'down-to-up'});
+		        }else if('3' == type){
+				    $page.open('../public/selectOrg.xml', {animation:'down-to-up'});
+		        }
+			}
+	        
+	        // 设置选人值
+	        function setUserInfo(id,name){
+	        	$(userIdConIdVal).value = id;
+	        	$(userNameConIdVal).value = name;
+	        }
+	        
+        	// 创建固定ITEM内容
+        	function createOtherItem(contentList){
+        		var itemContent =  
+        		'<item style="col-width: 90,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>办理期限：</label></row></col><col style="padding:10;margin:10;"><row><label style="align:right"></label></row></col></item>'+
+                '<item style="col-width: 90,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>缓急程度：</label></row></col><col style="padding:10;margin:10;"><row><label style="align:right"></label></row></col></item>'+
+                '<item style="col-width: 90,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>办理提示：</label></row></col><col style="padding:10;margin:10;"><row><label style="align:right"></label></row></col> </item>'+
+                '<item style="col-width: 90,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>办理提醒：</label>'+
+	            '</row></col><col style="padding:10;margin:10;"><row><checkbox type="switch" style="align:right" name="needMailRemind" value="1" id="msRemind_mail" checked="false">内部邮件</checkbox>'+
+                '<checkbox type="switch" style="display:none;align:right" name="needMailRemind" value="0" id="msRemind_mail" checked="false">短信</checkbox></row></col></item>';
+        		contentList.addMore('<imag><list>' + itemContent + '</list></imag>');
+        	}
+        	
+        	// 转办发送
+        	function tranInfo(){
+        		if($('chooseUserName') && $('chooseUserName').value==''){
+        		    alert('请选择办理人！');
+        			return false;
+        		}else{
+        			if($('chooseUserId').value.indexOf('$'+sys_sys_userId+'$')>-1){
+        		    alert('转办/加签办理人不能包含当前活动办理人！');
+        			return false;
+        		  }
+        		}
+        		evoUrl = storage.getItem('evoUrl');
+        		$('sendForm').action = evoUrl + '/ezOffice/workflow/workflowTran.do';
+				$('sendForm').submit(function(data) {
+					if(!data){
+						alert('发送失败！');
+						return false;
+					}
+					var jsonData = eval('(' + data + ')');
+					if(jsonData.logonerror &&jsonData.logonerror=='1'){
+		         		alert("该账号已在设备"+jsonData.deviceId+"上登录");
+	          			$page.open('../index.xml',{target:'_self'});
+	                    return;
+	                }
+					if(jsonData.result == 'fail'){
+						alert('发送失败！');
+						return false;
+					}
+					alert('发送成功！');
+					$page.close(-2);
+				    $page.close(-1);
+					$page.open(
+						'../dealfile/dealfile_index.xml',{target:'_self'});
+	            }, function(error) {
+	                alert('发送失败！');
+	            });
+        	}
+        	
+        ]]>
+    </script>
+    <page>
+        <title style="background:#3daffe;tint-color:white">
+            <left>
+            	<button role="back"></button>
+            </left>
+            <center><label id="centerTitle" onclick="">流程转办</label></center>
+        </title>
+        <content id="content" style="background:white;">
+        	<form id="sendForm" multipart="true" prompt="请稍后...">
+   		        <input type="hidden" value="" name="workId" id="workId"/>
+	            <list id="content_list">
+	            </list>
+            </form>
+        </content>
+    	<footer id="footer" style="background:#F9F9F9">
+			<list type="toolbar" id="footer_list">
+				<item>
+					<col>
+						<row style="height:60;">
+							<button onclick="tranInfo();" style="align:center;background:#3EAFFF,#007aff;color:#F0F9FF,white;border:0;corner-radius:3;width:300;height:40;font-size:14">确定转办</button>
+						</row>
+					</col>
+				</item>
+			</list>
+        </footer>
+    </page>
+</imag>

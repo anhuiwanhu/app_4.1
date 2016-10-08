@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+    <script>
+        <![CDATA[
+            var storage = $phone.localStorage();
+			var forumId = storage.getItem('forum_id');
+			var forumTile = storage.getItem('forum_tile');
+			var classId = storage.getItem('forum_classId');
+			var evoUrl = storage.getItem('evoUrl');
+			var curpage = "1";
+			var fool = "0";
+			$page.onload=function(){
+            	$('title').text=forumTile;
+            	forList();
+            }
+			
+			function forList(){
+				$http.post(evoUrl+'/ezOffice/forum/followList.do', 
+					{curpage:curpage,forumId:forumId}, function(data){
+						var obj = JSON.parse(data);
+						if(obj.logonerror &&obj.logonerror=='1'){
+				            alert("该账号已在设备"+obj.deviceId+"上登录");
+			          		$page.open('../index.xml',{target:'_self'});
+			                return;
+			            }
+						var result = obj.result;
+						if(result =="1"){
+							var notFlow = obj.notFlow;
+							var topicForumType = obj.topicForumType;
+							if(notFlow != '1' && topicForumType != '2'){
+								$('reForum').css('display', 'block');
+							}else{
+								$('reForum').css('display', 'none');
+							}
+							var recordCount = obj.recordCount;
+							if(parseInt(recordCount) <=0){
+								hint("请求数据错误");
+								$('indexContent').hideTop();
+							}else{
+								var pageCount = obj.pageCount;
+								var picRootPath = obj.picRootPath;
+			                	var list = obj.list;
+			                	if(list.length>0){
+			                		var insHtml='';
+			                		for(var i=0;i<list.length;i++){
+			                			var empLivingPhoto=evoUrl+"/ezOffice/imges/forum_def.png";
+			                			if(list[i].empLivingPhoto != "" && list[i].empLivingPhoto != "null" && list[i].empLivingPhoto != null
+			                			  && list[i].anonymous!="1"){
+				        					empLivingPhoto = picRootPath+list[i].empLivingPhoto;
+				        				}
+				        				var org = list[i].forumAuthorOrg+"";
+				        				if(org != "" && org != "null" && org != null){
+				        					orgl = org.split(".");
+				        					org = orgl[orgl.length-1];
+				        				}
+					                    var name = '';
+					                    if(list[i].anonymous=="0"){
+					                    	name=list[i].empName;
+					                    }else if(list[i].anonymous=="2"){
+					                    	name=list[i].nickName;
+					                    }else{
+					                    	name = '匿名';
+					                    	org='';
+					                    }
+					                    var forumIssueTime = list[i].forumIssueTime;
+					                    if(forumIssueTime!=null&&forumIssueTime.length>20){
+					                        forumIssueTime = forumIssueTime.substring(0,16);
+					                    }
+					                    var fName='';
+					                    if(fool=="0"){
+					                    	fName = '楼主';
+					                    }else{
+					                    	fName =fool+'楼';
+					                    }
+					                    
+					                    var cont ='引自：'+list[i].empName+'于'+forumIssueTime+'发表的评论';
+					                    var html ='<hr /><div class="wh-article-floor wh-floor-lord"> <div class="wh-container">';
+											html+='<div class="wh-article-desc">';
+											html +='<strong class="forum-avatar"><img src="'+empLivingPhoto+'"></strong>';
+											html+='<div class="desc-info"><p>';
+											html+='<strong class="desc-author">'+fName+'  </strong><span class="desc-post">'+name+'&#8226;'+org+'</span></p>';
+											html+='<p><span class="desc-date">'+forumIssueTime+'</span></p></div>';
+											if(notFlow != '1' && topicForumType != '2'){
+												html+='<a class="desc-quote" href="#" onclick="forumCite(\\\''+list[i].id+'\\\',\\\''+cont+'\\\');">引用</a>';
+											}
+											html+='</div>';
+											html+='<div class="wh-article-fulltext">'+list[i].newCont+'<div>';
+									    var file = list[i].files;
+									    if(file.length>0){
+									   	   html+='<div class="wh-article-atta">';
+									   	   for(var j=0;j<file.length;j++){
+										   	   html+='<p><i class="icon"></i><a href="#" onclick="down(\\\''+file[j].attachurlser+'\\\',\\\''+file[j].saveName+'\\\',\\\''+file[j].name+'\\\');">';
+											   html+='<strong class="atta-name">'+file[j].name+'</strong></a></p>';
+									   	   }
+									   	   html+='</div>';
+									    }
+										html+='</div></div>';
+										var sc = '$("#forumList").append(\''+html+'\');';
+						                $('forum_web').exec(sc);
+				                		fool = parseInt(fool)+1+"";
+			                		}
+			                	}
+			                	if(parseInt(curpage) < parseInt(pageCount)){
+		                			var sc2='$("#bottom").show();';
+		                			$('forum_web').exec(sc2);
+			                	}else{
+			                		var sc2='$("#bottom").hide();';
+			                		$('forum_web').exec(sc2);
+			                	}
+			                	$('indexContent').hideTop();
+							}
+						}else{
+							hint("请求数据错误");
+							$('indexContent').hideTop();
+						}
+					},function(error) {
+						toErro(error);
+					});
+			}
+			
+			function downFile(attachurlser,savename,viewName){
+				$http.download(evoUrl+'/ezOffice/download/file.do?url='+attachurlser+'&filename='+savename+'&uploadPath=forum'+'&viewName='+viewName);
+			}
+			
+			function downfrsh(){
+				curpage = parseInt(curpage)+1+"";
+				var sc='$("#bottom").hide();';
+			    $('forum_web').exec(sc);
+				forList();
+			}
+			
+			function upfrsh(){
+		   		var sc='$("#bottom").hide();';
+		   		$('forum_web').exec(sc);
+		   		curpage = '1';
+		   		fool = "0";
+		   		var sc2 = '$("#forumList").html("");';
+				$('forum_web').exec(sc2);
+				forList();
+		   }
+			
+			function reply(){
+				storage.setItem('forum_id',forumId);
+				storage.setItem('forum_tile',forumTile);
+				storage.setItem('forum_classId',classId);
+				$page.open('forum_reply.xml',{animation:'down-to-up'});
+			}
+			
+			function cite(id,cont){
+				storage.setItem('forum_id',forumId);
+				storage.setItem('forum_tile',forumTile);
+				storage.setItem('forum_classId',classId);
+				storage.setItem('forum_repId',id);
+				storage.setItem('forum_cont',cont);
+				$page.open('forum_cite.xml',{animation:'down-to-up'});
+			}
+			
+			function test(id,cont){
+				alert(id+'*******'+cont);
+			}
+			
+			function toErro(error){
+				if (error == 'timeout') {
+					hint('连接服务器超时！');
+				} else if (error == '404') {
+					hint('链接超时重新登录！');
+				} else if (error == '500') {
+					hint('内部服务器错误！');
+				} else {
+					hint('访问网络错误！错误代码:' + error);
+				}
+				$page.open('../index.xml',{animation:'down-to-up'});
+		}
+			
+        ]]>
+    </script>
+    <page>
+        <title style="background:#38adff;tint-color:white">
+            <left>
+                <button role="back"></button>
+            </left>
+            <center>
+                <label>查看帖子</label>
+            </center>
+            <right>
+                <button id="reForum" onclick="reply();" style="font-size:18;color:#ffffff">回帖</button>
+            </right>
+        </title>
+        <header>
+           <list>
+             <item style="background:#E7E7E7;padding:5;border:1 #f0eff5;"></item>
+             <item>
+                  <row><label id="title" style="font-size:16;color:#38adff;font-weight:bold;align:center;"></label></row>
+              </item>
+            </list>
+		</header>
+		<content id="indexContent" draggable="true" ondragdown="upfrsh();">
+               <input type="hidden" name="name"/>
+              <web include="forum.css,jquery.js" id="forum_web">
+               	<![CDATA[
+               		<html>
+               			<script>
+               				function forumCite(id,cont){
+               					$imag.exec('cite(\''+id+'\',\''+cont+'\')');
+               				}
+               				
+               				function down(attachurlser,savename,viewName){
+               					$imag.exec('downFile(\''+attachurlser+'\',\''+savename+'\',\''+viewName+'\')');
+               				}
+               			</script>
+					<body>
+					<article class="wh-article wh-article-forum" >
+						<div id="forumList"> 
+						
+						</div>
+						<hr />
+  						<div class="wh-load-tap" id="bottom" style="display:none" onclick="$imag.exec('downfrsh()')">点击加载更多...</div>
+					</article>
+					</body>
+					</html>
+               	]]>
+               </web>
+        </content>
+    </page>
+</imag>

@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+    <script>
+    <![CDATA[
+        var loadFlag = '0';  //函数执行置为1，提交之前进行判断，若为1，则禁止 提交，防重复提交
+        //页面家在完成后执行
+        $page.onload = function() {
+            var storage = $phone.localStorage();
+            var id = storage.getItem('doc_id');
+            var userIsReaded = storage.getItem('doc_userIsReaded');
+            if(userIsReaded=="1"){   //已读公文，打开详情进行标记
+               initList();
+            }else{                  //未读公文 
+               docBrower(id);  
+            }
+        }
+        
+        function docBrower(id){
+            if(loadFlag == '1'){
+	        	return false;
+	        }
+	        loadFlag = '1';
+	        var storage = $phone.localStorage();
+		    var evoUrl = storage.getItem('evoUrl');	
+            $http.post(evoUrl+'/ezOffice/doc/openReceiveDetail.do',{id:id},  function(data) {
+	                if(data){
+	                  // alert(data);
+	                   var obj = JSON.parse(data);
+	                   if(obj.logonerror &&obj.logonerror=='1'){
+				            alert("该账号已在设备"+obj.deviceId+"上登录");
+			          		$page.open('../index.xml',{target:'_self'});
+			                return;
+			           }
+		               var result = obj.message.result;
+	                   if(result=="1"){    //状态更改成功,跳转到详情页
+	                       loadFlag = '0';
+	                       initList();
+	                   }else{
+	                        alert('该收文已被撤回或删除！');
+	                        loadFlag = '0';
+	                        return;
+	                   }
+	                }else{
+	                   alert('该收文已被撤回或删除！');
+	                   loadFlag = '0';
+	                   return;
+	                }
+                },function(error) {
+				    if (error == 'timeout') {
+				        hint('连接服务器超时！');
+				    } else if (error == '404') {
+				        hint('页面不存在！');
+				    } else if (error == '500') {
+				        hint('内部服务器错误！');
+				    } else {
+				        hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+			    }
+                
+                );
+              loadFlag = '0';  
+        }
+        
+        function initList(){
+            //获取手机缓存中的数据
+            var storage = $phone.localStorage();
+            var filename = storage.getItem('doc_filename');
+            var realname = storage.getItem('doc_realname');
+            var wordType = storage.getItem('doc_wordType');
+            var id = storage.getItem('doc_id');
+            var accessoryName = storage.getItem('doc_accessoryName');
+            var handOutTime = storage.getItem('doc_handOutTime');
+            var writeOrg = storage.getItem('doc_writeOrg');
+            var byteNumber = storage.getItem('doc_byteNumber');
+		    var evoUrl = storage.getItem('evoUrl');
+            $http.post(evoUrl+'/ezOffice/doc/detailinfo.do',{filename:filename,realname:realname,wordType:wordType,id:id,accessoryName:accessoryName,handOutTime:handOutTime},  function(data) {
+                 var obj =eval('('+data+')');
+                 if(obj.logonerror &&obj.logonerror=='1'){
+		             alert("该账号已在设备"+obj.deviceId+"上登录");
+	          		 $page.open('../index.xml',{target:'_self'});
+	                 return;
+	             }
+                 //为页面赋值
+                 $('title').text=realname;
+                 $('writeOrg').text=writeOrg;
+                 $('byteNumber').text=byteNumber;
+                 if(handOutTime!=null&&handOutTime.length>10){
+                     handOutTime = handOutTime.substring(0,10);
+                 }
+                 $('handOutTime').text=handOutTime;
+                 var docUrl="$http.download('"+evoUrl+"/ezOffice/doc/pdf.do?url="+obj.attachurl+"&amp;filename="+filename+wordType+"&amp;id="+id+'&amp;viewName='+realname+"');";
+                 $('docLook').add($C('<label style="align:right;color:#38adff;text-decoration:underline;font-size:16;" onclick="'+docUrl+'">点击查看正文</label>'));
+                 $('title').text=realname;
+                 if(accessoryName!=null&&accessoryName!=""){    //当有附件时，显示附件真实名称,并提供下载方法。
+                    // alert("有附件");
+                     getFiles(id);
+                 }
+            });
+        }
+        
+        
+        function getFiles(recordId){
+             var storage = $phone.localStorage();
+		     var evoUrl = storage.getItem('evoUrl');
+             $http.post(evoUrl+'/ezOffice/doc/documentfiles.do',{recordId:recordId},  function(data) {
+                if(data){
+                    var obj = JSON.parse(data);
+                    if(obj.logonerror &&obj.logonerror=='1'){
+			            alert("该账号已在设备"+obj.deviceId+"上登录");
+		          		$page.open('../index.xml',{target:'_self'});
+		                return;
+		            }
+	                var result = obj.message.result;
+	                if(result=="1"){
+	                    var objArr = obj.data.result.AccessoryFiles; //返回列表数组
+	                    var accessoryNameseries="";  //按照“|”拼接的字符串;
+	                    var accessorySaveNameseries="";
+	                    //alert(objArr.length);
+	                    var path = "govdocumentmanager";  //附件上传路径
+			        	if(objArr instanceof Array){    //返回多条数据
+			        	    for (var i = 0; i < objArr.length; i++) {
+			        	        if(i<objArr.length-1){
+			        	            accessoryNameseries += objArr[i].accessoryName+"|";
+			        	            accessorySaveNameseries += objArr[i].accessorySaveName+"|";
+			        	        }else if(i==objArr.length-1){
+			        	            accessoryNameseries += objArr[i].accessoryName;
+			        	            accessorySaveNameseries += objArr[i].accessorySaveName;
+			        	        }
+			        	    }
+			        	    viewFiles(accessoryNameseries,accessorySaveNameseries,path);
+			        	}else if(objArr instanceof Object){   //返回一条数据
+			        	    viewFiles(objArr.file.accessoryName,objArr.file.accessorySaveName,path);
+			        	}
+	                }
+                }
+             },function(error) {
+				    if (error == 'timeout') {
+				        hint('连接服务器超时！');
+				    } else if (error == '404') {
+				        hint('页面不存在！');
+				    } else if (error == '500') {
+				        hint('内部服务器错误！');
+				    } else {
+				        hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+			    }
+             );
+          $('docFiles').css('display','');
+        }
+        
+        function viewFiles(accessoryNameseries,accessorySaveNameseries,path){
+            var storage = $phone.localStorage();
+		    var evoUrl = storage.getItem('evoUrl');
+            $http.post(evoUrl+'/ezOffice/doc/dealFiles.do',{accessoryNameseries:accessoryNameseries,accessorySaveNameseries:accessorySaveNameseries,path:path},  function(data) {
+            //   alert(data);
+               if(data){
+                   var obj = JSON.parse(data);
+                   if(obj.logonerror &&obj.logonerror=='1'){
+			            alert("该账号已在设备"+obj.deviceId+"上登录");
+		          		$page.open('../index.xml',{target:'_self'});
+		                return;
+		           }
+	               var attList = obj.attList;
+	               if(!attList==""){  //不为空，数据进行迭代,并为附件赋值
+	                  for(var k=0;k<attList.length;k++){
+	                 // alert(attList[k].savename);
+	                      var files = $C('<row><icon src="mail_fujian.png" style="align:left;margin-right:5;"/><label style="color:#38adff;align:left;font-size:16;"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath=govdocumentmanager'+'&amp;viewName=' + attList[k].realname + '\')">'+attList[k].realname+'</label></row>')
+	                      $('docFiles').add(files); 
+	                  }
+	               }else{     //无附件，或者后台处理异常
+	               
+	               }
+               }
+            },function(error) {
+				    if (error == 'timeout') {
+				        hint('连接服务器超时！');
+				    } else if (error == '404') {
+				        hint('页面不存在！');
+				    } else if (error == '500') {
+				        hint('内部服务器错误！');
+				    } else {
+				        hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+			   }
+            );
+        }
+        
+    ]]>
+    </script> 
+	<page>
+		<title style="background:#3daffe;tint-color:white;">
+		    <left>
+				<button   role="back" />
+			</left>
+            <center>
+                <label id="title_center_label" >收文详情</label>
+            </center>
+	    </title>
+		<content id="docContent"  style="padding-top:12;" >
+			<list id="docList" >
+		
+                <item style="col-width:30%,*;">
+                    <col>
+                        <row><label style="align:left;color:#555555;font-size:16;">公文标题：</label></row>
+                    </col>
+                    <col>
+                        <row><label  id="title" style="align:right;color:#b8b8b8;font-size:16;"></label></row>
+                    </col>
+                </item>
+                <item style="col-width:30%,*">
+                    <col>
+                       <row><label style="align:left;color:#555555;font-size:16;">拟稿单位：</label></row>
+                    </col>                    
+                    <col>
+                       <row><label style="align:right;color:#b8b8b8;font-size:16;" id="writeOrg"></label></row>
+                    </col>
+                </item>
+                <item style="col-width:30%,*">
+                    <col>
+                      <row><label style="align:left;color:#555555;font-size:16;">文号：</label></row>
+                    </col>                    
+                    <col>
+                       <row><label style="align:right;color:#b8b8b8;font-size:16;" id="byteNumber"></label></row>
+                    </col>
+                </item>
+                <item style="col-width:30%,*">
+                    <col>
+                        <row><label style="align:left;color:#555555;font-size:16;">分发日期：</label></row>
+                    </col>                    
+                    <col>
+                        <row><label style="align:right;color:#b8b8b8;font-size:16;" id="handOutTime"></label></row>
+                    </col>
+                </item>
+                <item style="col-width:30%,*">
+                    <col>
+                        <row><label style="align:left;color:#555555;font-size:16;">公文正文：</label></row>
+                    </col>                    
+                    <col>
+                        <row id="docLook"></row>
+                    </col>
+                </item>
+                <item style="col-width:30%,*">
+                    <col>
+                        <row><label style="align:left;color:#555555;font-size:16;">公文附件：</label></row>
+                    </col>                    
+                    <col id="docFiles" style="display:hidden;">
+                     </col>
+                </item>
+			</list>
+		</content>
+	</page>
+	<script>
+	 <![CDATA[
+     function openPopupMenu() {
+         $('popupmenu').open();
+     }
+        ]]>
+    </script>
+</imag>

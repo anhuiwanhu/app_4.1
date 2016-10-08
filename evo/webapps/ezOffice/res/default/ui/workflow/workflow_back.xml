@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+    <script>
+        <![CDATA[
+        	var storage = $phone.localStorage();
+        	var evoUrl = storage.getItem('evoUrl');
+        	$page.onload = function(){
+        		// 加载头部信息
+        		createHeaderContent();
+        		// 加载选择退回环节信息
+        		loadPage();
+        		// 创建退回表单隐藏域
+				createHideArea();
+        	}
+        	
+        	// 创建头部内容
+        	function createHeaderContent(){
+        		var webServiceUrl = storage.getItem('webServiceUrl');
+        		var workTitle = decodeURIComponent($param['worktitle']);
+        		var workSubmitTime = decodeURIComponent($param['worksubmittime']).substring(0,16);
+        		var empLivingPhoto = evoUrl + '/ezOffice/download/resizeimg.do?url=' + webServiceUrl + "upload/peopleinfo/" + $param['empLivingPhoto'];
+        		if($param['empLivingPhoto'] && $param['empLivingPhoto'] != 'null'){
+	        		$('empLivingPhoto').src = empLivingPhoto;
+        		}
+        		$('workflowTitle').text = workTitle;
+        		$('workSubmitTime').text = workSubmitTime;
+        	}
+        	
+        	// 获取并加载页面数据
+        	function loadPage(){
+        		// 退回表单提交数据
+				var workId = $param['workId'];
+				var tableId = $param['tableId'];
+				var recordId = $param['recordId'];
+				var stepCount = $param['stepCount'];
+				var forkId = $param['forkId'];
+				var forkStepCount = $param['forkStepCount'];
+				var isForkTask = $param['isForkTask'];
+				var curCommField = $param['curCommField'];
+				$http.progress('正在加载，请稍后...').post(evoUrl + '/ezOffice/workflow/back.do',
+					{'workId':workId,'tableId':tableId,'recordId':recordId,'stepCount':stepCount,'forkId':forkId,'forkStepCount':forkStepCount,
+					'isForkTask':isForkTask},
+					function(data){
+						if(!data){
+							return false;
+						}
+						var jsonData = eval('(' + data + ')');
+						if(jsonData.logonerror &&jsonData.logonerror=='1'){
+			         		alert("该账号已在设备"+jsonData.deviceId+"上登录");
+		          			$page.open('../index.xml',{target:'_self'});
+		                    return;
+		                }
+						if(!jsonData){
+							return false;
+						}
+						if(jsonData.result != 'success'){
+							return false;
+						}
+						var resultData = jsonData.data_0.data;
+						if(!resultData){
+							return false;
+						}else{
+							var hasSelect = 'selected="true"';
+							var items = '';
+        					items += '<item style="col-width: 100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>退回环节:</label></row></col><col style="padding:10;margin:10;"><row><select name="activity" id="backSelect" style="align:right" onchange="showBackPerson();">'+
+        							 '<option value="0">退回发起人</option>';
+        					var length;
+							if(resultData instanceof Array){
+								length = resultData.length;
+								for(var i=0;i<length;i++){
+									items += createOption(resultData[i],hasSelect);
+								}
+								if(length != 1){
+									hasSelect = '';
+								}
+								items += '</select></row></col></item>';
+								// 数组长度不为0：有退回环节选择，需要创建退回人选项；数组长度为0：无退回环节选择，不创建退回人选项
+								if(length != 0){
+									items += '<item style="col-width: 100,*;padding:0;margin:0;" id="backPersonItem"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>退回人:</label></row></col><col style="padding:10;margin:10;"><row><label id="backPerson" style="align:right"></label></row></col></item>';
+								}
+							}else if(resultData instanceof Object){
+								items += createOption(resultData.backWorkFlow,hasSelect) + '</select></row></col></item>'+
+									     '<item style="col-width: 100,*;padding:0;margin:0;" id="backPersonItem"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>退回人:</label></row></col><col style="padding:10;margin:10;"><row><label id="backPerson" style="align:right">'
+									     +resultData.backWorkFlow.dealwithEmpName+'</label></row></col></item>';
+							}
+			        		$('content_list').addMore('<imag><list>' + items + '</list></imag>');
+			        		// 第一次初始化退回人
+			        		showBackPerson();
+			        		createOtherItem();  //加载退回意见
+						}
+				},function(error) {
+				    if (error == 'timeout') {
+						hint('连接服务器超时！');
+				    } else if (error == '404') {
+						hint('链接超时重新登录！');
+				    } else if (error == '500') {
+						hint('内部服务器错误！');
+				    } else {
+						hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+				  });
+        	}
+        	
+        	// 创建选择退回环节等内容
+        	function createOption(backWorkFlow,hasSelect){
+        		var optionVal = backWorkFlow.activityId+';'+backWorkFlow.activityName+';'+backWorkFlow.curstepcount+';'+backWorkFlow.dealwithEmpId.trim()+';'
+        					+backWorkFlow.dealwithEmpName+';'+backWorkFlow.forkStepCount;
+        		var option = '<option value="'+optionVal+'" ' + hasSelect + '>'+backWorkFlow.activityName+':'+backWorkFlow.dealwithEmpName+'</option>';
+        		return option;
+        	}
+        	
+        	// 创建固定ITEM内容
+        	function createOtherItem(){
+        		var itemContent =  
+        		'<item style="col-width: 100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:12;color:#FF4617">*</label><label style="align:left;font-size:16;">退回原因:</label></row></col><col style="padding:10;margin:10;"><row><textarea rows="5"  id="tips" maxrows="5"></textarea></row></col> </item>';
+               $('content_list').addMore('<imag><list>' + itemContent + '</list></imag>');
+        	}
+        	
+        	
+        	// 显示退回人
+        	function showBackPerson(){
+        		var $backPersonItem = $('backPersonItem');
+        		if(!$backPersonItem){
+        			return false;
+        		}
+       			var selectedValues = $('backSelect').value;
+				if(selectedValues == '0'){
+					$backPersonItem.css('display','none');
+				}else{
+					$backPersonItem.css('display','');
+					var selectedValues_obj =selectedValues.split(";");
+					$('backPerson').text = selectedValues_obj[4];
+				}
+        	}
+
+			// 创建退回表单隐藏域
+			function createHideArea(){
+				$('workId').value = $param['workId'];
+				$('worktitle').value = $param['worktitle'];
+				$('workcurstep').value = decodeURIComponent($param['workcurstep']);
+				$('worksubmittime').value = decodeURIComponent($param['worksubmittime']);
+				$('tableId').value = $param['tableId'];
+				$('recordId').value = $param['recordId'];
+				$('stepCount').value = $param['stepCount'];
+				$('forkId').value = $param['forkId'];
+				$('forkStepCount').value = $param['forkStepCount'];
+				$('isForkTask').value = $param['isForkTask'];
+				$('curCommField').value = $param['curCommField'];
+				$('backWorkProcessId').value = $param['backWorkProcessId'];
+				$('workType').value = $param['workType'];
+				$('workMainLinkFile').value = $param['workMainLinkFile'];
+				$('workSubmitPerson').value = decodeURIComponent($param['workSubmitPerson']);
+				$('workActivity').value = $param['workactivity'];
+				$('standForUserid').value = $param['standForUserid'];
+				$('isStandForWork').value = $param['isStandForWork']; 
+			}
+
+			// 退回
+			function backFlow(){
+				var tipsValue = $('tips').value;  //退回意见不能为空
+				if(tipsValue=='' || tipsValue==null){
+					alert('退回意见不能为空！');
+					return false;
+				}
+				$('comment').value=tipsValue;
+        		$('backForm').action = evoUrl + '/ezOffice/workflow/backprocess.do';
+				$('backForm').submit(function(data) {
+					if(!data){
+						alert('退回失败！');
+						return false;
+					}
+					var jsonData = eval('(' + data + ')');
+					if(jsonData.logonerror &&jsonData.logonerror=='1'){
+		         		alert("该账号已在设备"+jsonData.deviceId+"上登录");
+	          			$page.open('../index.xml',{target:'_self'});
+	                    return;
+	                }
+					if(jsonData.result == 'fail'){
+						alert('退回失败！');
+						return false;
+					}
+					var resultMsg = jsonData.data_0.message.result;
+					if(resultMsg == '0'){
+						alert('退回失败！');
+						return false;
+					}
+					alert('退回成功！');
+					$page.close(-2);
+				    $page.close(-1);
+					$page.open('../dealfile/dealfile_index.xml',{target:'_self'});
+	            }, function(error) {
+	                alert('退回失败！');
+	            });
+			}
+        ]]>
+    </script>
+    <page>
+        <title style="background:#3daffe;tint-color:white">
+            <left>
+            	<button role="back"></button>
+            </left>
+            <center><label id="centerTitle" onclick="">流程退回</label></center>
+        </title>
+        <header>
+        	<list>
+	        	<item style="col-width: 25%,*">
+		        	<col>
+		        		<row>
+	                    	<img src="" style="height:50;width:50;" id="empLivingPhoto" default="login_per.png"/>
+	                    </row>
+		        	</col>
+		        	<col>
+		        		<row>
+	                   		<label id="workflowTitle"></label>
+                    	</row>
+		        		<row>
+	                   		<label style="color:gray;font-size:13;" id="workSubmitTime"></label>
+                    	</row>
+		        	</col>
+	        	</item>
+        	</list>
+        </header>
+        <content id="content" style="background:white;">
+        	<form id="backForm" multipart="true" prompt="请稍后...">
+				<!--backMailRange 邮件提醒范围0:退回环节经办人1:所有办理人-->
+				<input type="hidden" name="backMailRange" value="0"/>
+				<!--needSmsRemind 是否短信提醒 0：不提醒  1：提醒-->
+				<input type="hidden" name="needSmsRemind" value="0"/>        	
+   		        <input type="hidden" id="workId" name="workId" value="" />
+   		        <input type="hidden" id="isForkTask" name="isForkTask" value="" />
+				<input type="hidden" id="curCommField" name="commentField" value="" />
+				<input type="hidden" id="comment" name="comment" value="" />
+				<input type="hidden" id="worktitle" name="worktitle" value="" />
+				<input type="hidden" id="workcurstep" name="workcurstep" value="" />
+				<input type="hidden" id="worksubmittime" name="worksubmittime" value="" />
+				<input type="hidden" id="tableId" name="tableId" value="" />
+				<input type="hidden" id="recordId" name="recordId" value="" />
+				<input type="hidden" id="stepCount" name="stepCount" value="" />
+				<input type="hidden" id="forkId" name="forkId" value="" />
+				<input type="hidden" id="forkStepCount" name="forkStepCount" value="" />
+				<input type="hidden" id="curCommField" name="commentField" value="" />
+				<input type="hidden" id="backWorkProcessId" name="backWorkProcessId" value="" />
+				<input type="hidden" id="workType" name="workType" value="" />
+				<input type="hidden" id="workMainLinkFile" name="workMainLinkFile" value="" />
+				<input type="hidden" id="workSubmitPerson" name="workSubmitPerson" value="" />
+				<input type="hidden" id="workActivity" name="workActivity" value="" />
+				<input type="hidden" id="standForUserid" name="standForUserid" value="" />
+				<input type="hidden" id="isStandForWork" name="isStandForWork" value="" />
+	            <list id="content_list">
+	            </list>
+            </form>
+        </content>
+    	<footer id="footer" style="background:#F9F9F9">
+			<list type="toolbar" id="footer_list">
+				<item>
+					<col>
+						<row style="height:60;">
+							<button onclick="backFlow();" style="align:center;background:#3EAFFF,#007aff;color:#F0F9FF,white;border:0;corner-radius:3;width:300;height:40;font-size:14">确定退回</button>
+						</row>
+					</col>
+				</item>
+			</list>
+        </footer>
+    </page>
+</imag>

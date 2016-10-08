@@ -1,0 +1,597 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+    <script>
+        <![CDATA[
+            var flag = 0;
+			var storage = $phone.localStorage();
+			var weekAddMore = 0;
+			var monthAddMore = 0;
+            var otherAddMore = 0;
+			var curpage = '1';
+			var evoUrl = storage.getItem('evoUrl');
+			var userId = storage.getItem('sys_sys_userId');
+			$page.onload=function(){
+            	refresh('1');
+                refreshMonth('1');
+                refreshOther('1');
+            }
+            function openPopupMenu() {
+                $('popmenu').open();
+                $('arrow').src = 'mail_up.png';
+            }
+			
+			function toView(reportid){
+				storage.setItem('report_reportid',reportid);
+				if(flag == 0){
+					$page.open('myweek_view.xml');
+				}else if(flag == 1){
+					$page.open('mymonth_view.xml');
+				}else{
+					$page.open('myother_view.xml');
+				}
+			}
+			
+			//周报
+			function refresh(pageNum){
+			    if(weekAddMore==1){
+					return;
+				}
+				weekAddMore=1;
+				if(pageNum=="1"){
+					$('reportList').clear();
+					curpage = '1';
+				}
+				$http.progress('正在加载，请稍后...').post(evoUrl+'/ezOffice/report/myWeekdate.do', 
+					{curpage:pageNum,queryText:$('queryWeek').value}, function(data){
+						var obj = JSON.parse(data);
+						if(obj.logonerror &&obj.logonerror=='1'){
+			     		    alert("该账号已在设备"+obj.deviceId+"上登录");
+			     		    $page.open('../index.xml',{target:'_self'});
+			                return;
+			            }
+						var result = obj.message.result;
+						var listJson = {items:[]};
+						if(result =="1"){
+							var recordCount = obj.data.recordCount;
+							if(parseInt(recordCount) <=0){
+								var itemJson = {
+				                    template : 1,
+				                    onclick : '',
+				                    widgets : {
+				                        title : {text :'暂无相关信息'}
+				                    }
+				                }
+				                listJson.items.push(itemJson);
+								$('reportList').update(listJson);
+								$('weekContent').hideBottom();
+								$('weekContent').hideTop();
+								weekAddMore=0;
+							}else{
+								var pageCount = obj.data.pageCount;
+			                	var list = obj.data.list;
+			                	if(list instanceof Array){
+			                		for(var i=0;i<list.length;i++){
+				                		var reportTime = list[i].reportTime;
+					                    if(reportTime!=null&&reportTime.length>20){
+					                        reportTime = reportTime.substring(0,16);
+					                    }
+			                			var itemJson = {
+						                    template : 0,
+						                    onclick : 'toView('+list[i].id+')',
+						                    widgets : {
+						                        dataStar : {text:list[i].reportCourse},
+						                        dataTime : {text:reportTime}
+						                    }
+						                }
+						                listJson.items.push(itemJson);
+			                		}
+			                	}else if(list instanceof Object){
+			                		var reportTime = list.reportTime;
+				                    if(reportTime!=null&&reportTime.length>20){
+				                        reportTime = reportTime.substring(0,16);
+				                    }
+			                		var itemJson = {
+					                    template : 0,
+					                    onclick : 'toView('+list.id+')',
+					                    widgets : {
+					                        dataStar : {text:list.reportCourse},
+					                        dataTime : {text:reportTime}
+					                    }
+					                } 
+					                listJson.items.push(itemJson);
+			                	}
+			                	$('reportList').addMore(listJson);
+			                	if(parseInt(pageNum) < parseInt(pageCount)){
+		                			$('weekbottom_more').css('display','block');
+			                	}else{
+			                		$('weekContent').hideBottom();
+			                	}
+			                	$('weekContent').hideTop();
+								weekAddMore=0;
+							}
+						}else{
+							var itemJson = {
+			                    template : 1,
+			                    onclick : '',
+			                    widgets : {
+			                        title : {text :'暂无相关信息'}
+			                    }
+			                }
+			                listJson.items.push(itemJson);
+							$('reportList').update(listJson);
+							$('weekContent').hideBottom();
+							$('weekContent').hideTop();
+							weekAddMore=0;
+						}
+					},function(error) {
+					    if (error == 'timeout') {
+						hint('连接服务器超时！');
+					    } else if (error == '404') {
+						hint('链接超时重新登录！');
+					    } else if (error == '500') {
+						hint('内部服务器错误！');
+					    } else {
+						hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+				  });
+			}
+			
+			function upWeek(){
+		   		$('weekbottom_more').css('display','none');
+	            $('weekContent').showBottom();
+		   		curpage = '1';
+				refresh('1');
+		   }
+			
+			function downfrsh(){
+				curpage = parseInt(curpage)+1+"";
+				if(flag == 0){
+					$('weekContent').hideBottom();
+					$('queryWeek').css('display', 'block');
+					$('queryMonth').css('display', 'none');
+					$('queryOther').css('display', 'none');
+				}else if(flag == 1){
+					$('monthContent').hideBottom();
+					$('queryMonth').css('display', 'block');
+					$('queryWeek').css('display', 'none');
+					$('queryOther').css('display', 'none');
+				}else{
+					$('otherContent').hideBottom();
+					$('queryOther').css('display', 'block');
+					$('queryMonth').css('display', 'none');
+					$('queryWeek').css('display', 'none');
+				}
+				//0周报 1月报 2其它
+				if(flag == 0){
+					refresh(curpage);
+				}else if(flag == 1){
+					refreshMonth(curpage);
+				}else{
+					refreshOther(curpage);
+				}
+			}
+			
+			function searchRe(){
+				curpage = '1';
+				//0周报 1月报 2其它
+				flag = parseInt(flag);
+				if(flag == 0 ||　flag == 0.0){
+					refresh(curpage);
+				}else if(flag == 1 ||　flag == 1.0){
+					refreshMonth(curpage);
+				}else{
+					refreshOther(curpage);
+				}
+			}
+			//改变页签标志
+			function changeFlag(inFlag){
+				if(inFlag == 0 ||　inFlag == 0.0){
+					$('queryWeek').css('display', 'block');
+					$('queryMonth').css('display', 'none');
+					$('queryOther').css('display', 'none');
+				}else if(inFlag == 1 ||　inFlag == 1.0){
+					$('queryMonth').css('display', 'block');
+					$('queryOther').css('display', 'none');
+					$('queryWeek').css('display', 'none');
+				}else{
+					$('queryOther').css('display', 'block');
+					$('queryMonth').css('display', 'none');
+					$('queryWeek').css('display', 'none');
+				}
+				flag = inFlag;
+			}
+			
+			
+			//月报
+			function refreshMonth(pageNum){
+			    if(monthAddMore==1){
+					return;
+				}
+				monthAddMore=1;
+				if(pageNum=="1"){
+					$('monthReportList').clear();
+					curpage = '1';
+				}
+				$http.post(evoUrl+'/ezOffice/report/myMonthdate.do', 
+					{curpage:pageNum,queryText:$('queryMonth').value}, function(data){
+						var obj = JSON.parse(data);
+						if(obj.logonerror &&obj.logonerror=='1'){
+			     		    alert("该账号已在设备"+obj.deviceId+"上登录");
+			     		    $page.open('../index.xml',{target:'_self'});
+			                return;
+			            }
+						var result = obj.message.result;
+						var listJson = {items:[]};
+						if(result =="1"){
+							var recordCount = obj.data.recordCount;
+							if(parseInt(recordCount) <=0){
+							    $('monthContent').hideBottom(); 
+								var itemJson = {
+				                    template : 1,
+				                    onclick : '',
+				                    widgets : {
+				                        monthTitle : {text :'暂无相关信息'}
+				                    }
+				                }
+				                listJson.items.push(itemJson);
+								$('monthReportList').update(listJson);
+								$('monthContent').hideTop();
+								monthAddMore = 0;
+							}else{
+								var pageCount = obj.data.pageCount;
+			                	var list = obj.data.list;
+			                	if(list instanceof Array){
+			                		for(var i=0;i<list.length;i++){
+			                			var reportTime = list[i].reportTime;
+					                    if(reportTime!=null&&reportTime.length>20){
+					                        reportTime = reportTime.substring(0,16);
+					                    }
+			                			var itemJson = {
+						                    template : 0,
+						                    onclick : 'toView('+list[i].id+')',
+						                    widgets : {
+						                        monthDataStar : {text:list[i].reportCourse},
+						                        monthDataTime : {text:reportTime}
+						                    }
+						                }
+						                listJson.items.push(itemJson);
+			                		}
+			                	}else if(list instanceof Object){
+			                		var reportTime = list.reportTime;
+				                    if(reportTime!=null&&reportTime.length>20){
+				                        reportTime = reportTime.substring(0,16);
+				                    }
+			                		var itemJson = {
+					                    template : 0,
+					                    onclick : 'toView('+list.id+')',
+					                    widgets : {
+					                        monthDataStar : {text:list.reportCourse},
+					                        monthDataTime : {text:reportTime}
+					                    }
+					                }
+					                listJson.items.push(itemJson);
+			                	}
+			                	$('monthReportList').addMore(listJson);
+			                	if(parseInt(pageNum) < parseInt(pageCount)){
+		                			$('monthbottom_more').css('display','block');
+	                				$('monthbottom_load').css('display','none');
+		                			$('monthContent').showBottom(); 
+			                	}else{
+			                		$('monthContent').hideBottom(); 
+			                	}
+			                	$('monthContent').hideTop();
+								monthAddMore = 0;
+							}
+						}else{
+						    $('monthContent').hideBottom(); 
+							var itemJson = {
+			                    template : 1,
+			                    onclick : '',
+			                    widgets : {
+			                        monthTitle : {text :'暂无相关信息'}
+			                    }
+			                }
+			                listJson.items.push(itemJson);
+							$('monthReportList').update(listJson);
+							$('monthContent').hideTop();
+							monthAddMore = 0;
+						}
+					},function(error) {
+					    if (error == 'timeout') {
+						hint('连接服务器超时！');
+					    } else if (error == '404') {
+						hint('链接超时重新登录！');
+					    } else if (error == '500') {
+						hint('内部服务器错误！');
+					    } else {
+						hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+				  });
+			}
+			
+			function upMonth(){
+		   		$('monthbottom_more').css('display','none');
+	            $('monthbottom_load').css('display','none');
+	            $('monthContent').showBottom();
+		   		curpage = '1';
+				refreshMonth('1');
+		   }
+			
+			//其它
+			function refreshOther(pageNum,queryText){
+			    if(otherAddMore==1){
+					return;
+				}
+				otherAddMore=1;
+				if(pageNum=="1"){
+					$('otherReportList').clear();
+					curpage = '1';
+				}
+				var evoUrl = storage.getItem('evoUrl');
+				$http.post(evoUrl+'/ezOffice/report/myOtherdate.do', 
+					{curpage:pageNum,queryText:$('queryOther').value}, function(data){
+						var obj = JSON.parse(data);
+						if(obj.logonerror &&obj.logonerror=='1'){
+			     		    alert("该账号已在设备"+obj.deviceId+"上登录");
+			     		    $page.open('../index.xml',{target:'_self'});
+			                return;
+			            }
+						var result = obj.message.result;
+						var listJson = {items:[]};
+						if(result =="1"){
+							var recordCount = obj.data.recordCount;
+							if(parseInt(recordCount) <=0){
+								var itemJson = {
+				                    template : 1,
+				                    onclick : '',
+				                    widgets : {
+				                        otherTitle : {text :'暂无相关信息'}
+				                    }
+				                }
+				                listJson.items.push(itemJson);
+								$('otherReportList').update(listJson);
+								$('otherContent').hideBottom();
+								$('otherContent').hideTop();
+								otherAddMore=0;
+							}else{
+								var pageCount = obj.data.pageCount;
+			                	var list = obj.data.list;
+			                	if(list instanceof Array){
+			                		for(var i=0;i<list.length;i++){
+			                			var reportTime = list[i].reportTime;
+					                    if(reportTime!=null&&reportTime.length>20){
+					                        reportTime = reportTime.substring(0,16);
+					                    }
+			                			var itemJson = {
+						                    template : 0,
+						                    onclick : 'toView('+list[i].id+')',
+						                    widgets : {
+						                        otherDataStar : {text:list[i].reportTitle+" "+list[i].reportCourse},
+						                        otherDataTime : {text:reportTime}
+						                    }
+						                }
+						                listJson.items.push(itemJson);
+			                		}
+			                	}else if(list instanceof Object){
+			                		var reportTime = list.reportTime;
+				                    if(reportTime!=null&&reportTime.length>20){
+				                        reportTime = reportTime.substring(0,16);
+				                    }
+			                		var itemJson = {
+					                    template : 0,
+					                    onclick : 'toView('+list.id+')',
+					                    widgets : {
+					                        otherDataStar : {text:list.reportTitle+" "+list.reportCourse},
+					                        otherDataTime : {text:reportTime}
+					                    }
+					                }
+					                listJson.items.push(itemJson);
+			                	}
+			                	$('otherReportList').addMore(listJson);
+			                	if(parseInt(pageNum) < parseInt(pageCount)){
+		                			$('otherContent').showBottom();
+		                			$('otherbottom_more').css('display','block');
+	                				$('otherbottom_load').css('display','none');
+			                	}else{
+			                		$('otherContent').hideBottom();
+			                	}
+			                	$('otherContent').hideTop();
+								otherAddMore=0;
+							}
+						}else{
+						    $('otherContent').hideBottom();
+							var itemJson = {
+			                    template : 1,
+			                    onclick : '',
+			                    widgets : {
+			                        otherTitle : {text :'暂无相关信息'}
+			                    }
+			                }
+			                listJson.items.push(itemJson);
+							$('otherReportList').update(listJson);
+							$('otherContent').hideTop();
+							otherAddMore=0;
+						}
+					},function(error) {
+					    if (error == 'timeout') {
+						hint('连接服务器超时！');
+					    } else if (error == '404') {
+						hint('链接超时重新登录！');
+					    } else if (error == '500') {
+						hint('内部服务器错误！');
+					    } else {
+						hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+				  });
+			}
+			
+			function upOther(){
+		   		$('otherbottom_more').css('display','none');
+	            $('otherbottom_load').css('display','none');
+	            $('otherContent').showBottom();
+		   		curpage = '1';
+				refreshOther('1');
+		   }
+			
+			function add(){
+			    //0周报 1月报 2其它
+				if(flag == 0){
+				    storage.setItem('type','my');
+					$page.open('reweek_new.xml', {animation:'down-to-up'});
+				}else if(flag == 1){
+				    storage.setItem('type','my');
+					$page.open('remonth_new.xml', {animation:'down-to-up'});
+				}else{
+				    storage.setItem('type','my');
+					$page.open('reother_new.xml', {animation:'down-to-up'});
+				}
+			}
+        ]]>
+    </script>
+    <page>
+        <title style="background:#38adff;tint-color:white"> 
+            <left>
+           		<button role="back"></button>
+            </left>
+        	<center>
+                <label onclick="openPopupMenu();">我的汇报</label>
+                <icon id="arrow" src="mail_down.png" style="width:15;margin-left:5;" onclick="openPopupMenu();"></icon>
+            </center>
+            <right>
+                <button onclick="add();" icon="desk_personcenter_add.png"></button>
+            </right>         
+        </title>
+        <popupmenu id="popmenu" position="topcenter" onclose="$('arrow').src = 'mail_down.png';" style="width:150">
+            <list type="transparent" style="divider-border:1px #626161">
+                <item onclick="$('popmenu').close();$page.open('myreport_list.xml',{target:'_self'});" style="background:#3daffe,#474747">
+                    <row>
+                        <label style="align:center;font-size:18;color:white;">我的汇报</label>
+                        <icon src="top_updown.png" style="align:right;width:15;"></icon>
+                    </row>
+                </item>
+                <item onclick="$('popmenu').close();$page.open('emreport_list.xml',{target:'_self'});" style="background:#3daffe,#474747">
+                    <row>
+                        <label style="align:center;font-size:18;color:white;">下属汇报</label>
+                    </row>
+                </item>
+            </list>
+		</popupmenu>         
+        <header>
+        	<tabbar controlContents="true" style="background:#f9f9f9;label-color:#b8b8b8,#38adff;indicator-color:#38adff;">
+                <item label="周报"  onchange="changeFlag(0);"></item>
+                <item label="月报"  onchange="changeFlag(1);"></item>
+                <item label="其它"  onchange="changeFlag(2);"></item>
+            </tabbar>
+          <row>
+              <input type="search" onclick="searchRe();" id="queryWeek" placeholder="请输入汇报内容查询" style="display:block"/></row>
+              <row><input type="search" onclick="searchRe();" id="queryMonth" placeholder="请输入汇报内容查询" style="display:none"/></row>
+              <row><input type="search" onclick="searchRe();" id="queryOther" placeholder="请输入汇报标题查询" style="display:none"/>
+          </row>
+		</header>
+		<contents id="indexContent" draggable="true"  scrollable="true">
+		    <content id="weekContent" ondragdown="upWeek();">
+            <list id="reportList" reuse="true">
+                <item style="col-width:15%,85%">
+                    <col>
+                         <row><button style="background:#ee6241;width:40;height:40;align:left;font-size:16;color:#ffffff" onclick="" reusekey="btn">周</button></row>
+                    </col>
+                    <col>
+                        <row>
+                        	<label style="font-size:16;color:#555555;">我的周报  </label>
+                        	<label reusekey="dataStar" style="font-size:16;color:#555555;"></label>
+                        </row>
+                        <row>
+                            <label reusekey="dataTime" style="font-size:12;color:#b8b8b8;"></label>
+                        </row>
+                    </col>
+                </item>
+                <item>
+                   <col><row><label reusekey="title" style="align:center;"></label></row></col>
+                </item>
+            </list>
+            <bottom id="bottom" style="display:block">
+               <list>	               
+                   <item onclick="downfrsh();" style="background:null,#DEE3E7">
+	                    <row id="weekbottom_more" style="display:none">
+	                        <label style="align:center;">点击加载更多...</label>
+	                        <progress id="globalProgress" style="display:hidden;align:center;"/>
+	                    </row>
+                   </item>
+               </list>
+           </bottom>
+           </content>
+           <content id="monthContent" ondragdown="upMonth();">
+           		<list id="monthReportList" reuse="true">
+                <item style="col-width:15%,85%">
+                    <col>
+                        <row><button style="background:#ee6241;width:40;height:40;align:left;font-size:16;color:#ffffff" onclick="" reusekey="btn">月</button></row>
+                    </col>
+                    <col>
+                        <row>
+                        	<label style="font-size:16;color:#555555;">我的月报  </label>
+                        	<label reusekey="monthDataStar" style="font-size:16;color:#555555;"></label>
+                        </row>
+                        <row>
+                            <label reusekey="monthDataTime" style="font-size:12;color:#b8b8b8;"></label>
+                        </row>
+                    </col>
+                </item>
+                <item>
+                   <col><row><label reusekey="monthTitle" style="align:center;"></label></row></col>
+                </item>
+            </list>
+            <bottom id="monthBottom" style="display:none">
+               <list>
+                   <item onclick="downfrsh();" style="background:null,#DEE3E7">
+                       <row id="monthbottom_load">
+		                    <label style="align:center;">正在加载...</label>
+		                    <progress style="align:center"/>
+	                    </row>
+	                    <row id="monthbottom_more" style="display:none">
+	                        <label style="align:center;">点击加载更多...</label>
+	                        <progress id="globalProgress" style="display:hidden;align:center;"/>
+	                    </row>
+                   </item>
+               </list>
+           </bottom>
+           </content>
+           <content id="otherContent" ondragdown="upOther();">
+            <list id="otherReportList" reuse="true">
+                <item style="col-width:50,*">
+                    <col>
+                        <row><button style="background:#ee6241;width:40;height:40;align:left;font-size:16;color:#ffffff" onclick="" reusekey="btn">其</button></row>
+                    </col>
+                    <col>
+                        <row>
+                        	<label reusekey="otherDataStar" style="font-size:16;color:#555555;"></label>
+                        </row>
+                        <row>
+                            <label reusekey="otherDataTime" style="font-size:12;color:#b8b8b8;"></label>
+                        </row>
+                    </col>
+                </item>
+                <item>
+                   <col><row><label reusekey="otherTitle" style="align:center;"></label></row></col>
+                </item>
+            </list>
+            <bottom id="otherBottom" style="display:none">
+               <list>
+                   <item onclick="downfrsh();" style="background:null,#DEE3E7">
+                       <row id="otherbottom_load">
+		                    <label style="align:center;">正在加载...</label>
+		                    <progress style="align:center"/>
+	                    </row>
+	                    <row id="otherbottom_more" style="display:none">
+	                        <label style="align:center;">点击加载更多...</label>
+	                        <progress id="globalProgress" style="display:hidden;align:center;"/>
+	                    </row>
+                   </item>
+               </list>
+           </bottom>
+           </content>
+        </contents>
+    </page>
+</imag>

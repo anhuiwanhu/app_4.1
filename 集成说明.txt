@@ -1,0 +1,25 @@
+补丁适用范围：
+
+ezOFFICE11.5产品(已集成补丁11.5.0.01~11.5.0.02）+ evo4.1
+
+操作步骤：
+
+1、停evo服务
+
+2、备份程序、数据库
+
+3、覆盖程序补丁包到evo服务安装目录（d:\evo)
+
+4、修改文件..\webapps\ezOffice\res\default\ui\index.xml,把以下ip、端口修改为生产环境实际使用值 
+    
+   var evoUrl = "http://192.168.7.137:9090";
+
+5、把文件夹..\webapps\ezOffice\res\default\ui下所有文件、文件夹拖入ui.zip(不要解压）
+
+6、连OA数据库执行sql文件夹下数据库升级脚本（分为oracle、sqlserver两种类型库）
+
+7、需打新客户端：安卓版本为4.2.6，IOS版本为4.2.5
+
+8、清除服务端缓存，启动evo服务
+
+9、验证系统功能

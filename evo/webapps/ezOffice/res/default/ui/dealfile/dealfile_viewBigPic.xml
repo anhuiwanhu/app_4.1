@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+	<script>
+        <![CDATA[
+			var storage = $phone.localStorage();
+			$page.onload = function(){
+				var item = $C('<slideimage-item><item src="' + storage.getItem('flowgraphurl') + '"/></slideimage-item>');
+                $('slideimage').add(item);   
+			}
+        ]]>
+	</script>
+    <page>
+        <title style="background:#3daffe;tint-color:white" >
+			<left>
+				<button role="back"></button>
+			</left>
+			<center>
+				<label>全屏查看</label>
+			</center>
+		</title>
+        <content style="">
+			<slideimage id="slideimage">
+			</slideimage>
+        </content>
+    </page>
+</imag>

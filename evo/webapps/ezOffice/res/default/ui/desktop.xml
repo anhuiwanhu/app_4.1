@@ -1,0 +1,1449 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag mode="develop">
+    <script>
+    <![CDATA[
+       
+        var loadFlag = '0';        //函数执行置为1，提交之前进行判断，若为1，则禁止 提交，防重复提交
+        var currentAddress = "";   //当前定位信息
+        var isSign ="no";           //当前是否签到，默认未签到。yes，no
+        var evoUrl = "";
+        var userId = "";
+        var custMentIdStr = '';   //自定义模块id拼接串，以','号分割。
+        var custMenuStr="";
+        var linkBookStr="";
+        var sys_location = "";
+        var waitRead = ''; //待办，传递到待办列表
+        
+		$page.onload = function() {
+		    var storage = $phone.localStorage();
+            evoUrl = storage.getItem('evoUrl');
+            userId = storage.getItem('sys_sys_userId');
+            var sys_photoName = storage.getItem('sys_photoName');
+            sys_location = storage.getItem('sys_location');
+
+            $('myphotoimg').src = sys_photoName+'?rand=' + Math.random();
+            $('myphotoimg1').src = sys_photoName+'?rand=' + Math.random();
+            var sys_userAccount = storage.getItem('sys_userAccount');
+			
+			var sys_userName = storage.getItem('sys_userName');
+			var sys_orgShortName = storage.getItem('sys_orgShortName');
+			$('desk_personcenter_label').text=sys_userName+" "+sys_orgShortName;
+			$('personName').text = sys_userName;
+
+			//首页进入
+			if($param['showTab']=="initView"){
+			   //$("persontab").current=true;
+			}else if($param['showTab']=="pubtab"){
+			   $("pubtab").current=true;
+			}else if($param['showTab']=="persontab"){
+			
+			}else if($param['showTab']=="linkbook"){
+			   $("linkbook").current=true;
+			}
+			addItemToPubtab();
+			
+			if($param['reflush']=="1"){  //需要更新我的应用
+		       //addItemToPersonTab('');
+		       refushMyApp();
+		    }else{
+		       myAppCacheDataToPage();
+		    }
+		    
+		    addItemToQuickAdd();
+		    if(sys_location=='1'){
+		       checkSignIn();
+		       $('item_register').css('display', 'block');
+		    }
+		    getLinkbook();
+		    getRemindNum();
+		}
+	   
+       function getRemindNum(){
+            var storage = $phone.localStorage();
+            $http.post(evoUrl+'/ezOffice/desktop/getRemindNumList.do','', function(data) {
+                 var obj = JSON.parse(data);
+                 if(obj.logonerror && obj.logonerror=='1'){
+		          	alert("该账号已在设备"+obj.deviceId+"上登录");
+		            $page.open('index.xml',{target:'_self'});
+		            return;
+		         }         
+                 if(obj.message.result=="1"){
+                    var waitFile = obj.data.waitFile;
+                    waitRead = obj.data.waitRead;
+                    var newMail = obj.data.newMail;
+                    var newInnerSendFile = obj.data.newInnerSendFile;
+                    var newReport = obj.data.newReport;
+			        if($("workflow")){
+			          if(eval(waitFile)>0){
+			             $("workflow").badge = parseInt(waitFile)+parseInt(waitRead)+'';
+			          }
+			         }
+			        if($("innermail")){
+			          if(eval(newMail)>0){
+			             $("innermail").badge = newMail;
+			          }
+			         }
+			         if($("documentmanager")){
+			           if(eval(newInnerSendFile)>0){
+			              $("documentmanager").badge = newInnerSendFile;
+			           }
+			         }
+			         
+			        if($("workmanager_workreport")){
+			           if(eval(newReport)>0){
+			             $("workmanager_workreport").badge = newReport;
+			           }
+			         }
+
+
+			     }
+			},function(error) {
+			    if (error == 'timeout') {
+			        hint('连接服务器超时！');
+			    } else if (error == '404') {
+			        hint('链接超时重新登录！');
+			    } else if (error == '500') {
+			        hint('内部服务器错误！');
+			    } else {
+			        hint('访问网络错误！错误代码:' + error);
+			    }
+			    $page.open('index.xml',{animation:'down-to-up'});
+		    });
+         
+       }
+       
+	   function setLinkbookDB(){
+            var storage = $phone.localStorage();
+            $http.post(evoUrl+'/ezOffice/desktop/getOrgByUserIdWithRange.do','', function(data) {
+            	 var obj = JSON.parse(data);
+                 if(obj.logonerror && obj.logonerror=='1'){
+		          	alert("该账号已在设备"+obj.deviceId+"上登录");
+		            $page.open('index.xml',{target:'_self'});
+		            return;
+		         } 
+                 linkBookStr = data;
+			},function(error) {
+			    if (error == 'timeout') {
+			        hint('连接服务器超时！');
+			    } else if (error == '404') {
+			        hint('链接超时重新登录！');
+			    } else if (error == '500') {
+			        hint('内部服务器错误！');
+			    } else {
+			        hint('访问网络错误！错误代码:' + error);
+			    }
+			    $page.open('index.xml',{animation:'down-to-up'});
+		    });
+		    saveDataToLinkbook();
+		}
+		
+		function saveDataToLinkbook(){
+		    var storage = $phone.localStorage();
+	        var dbName = storage.getItem('ezMobile_dbName');
+	        var db = $phone.openDatabase(dbName);
+		    db.transaction(populate_LinkbookDB);
+		}
+		function populate_LinkbookDB(tx) {
+		
+		   if(linkBookStr!=null&&linkBookStr!=""){
+		   
+		        var obj = JSON.parse(linkBookStr);
+		        tx.executeSql('delete from myTopOrg');
+		        
+		        var persondata = obj.data.list;
+		        if(persondata instanceof Array){
+			        for(var i=0;i<persondata.length;i++){
+			          var orgId = persondata[i].orgId;
+				      var orgName = persondata[i].orgName;
+			          tx.executeSql('INSERT INTO myTopOrg (orgId,orgName) VALUES ("'+orgId+'","'+orgName+'")');
+			        }
+		        }else if(fields instanceof Object){
+			        var orgId = persondata.orgId;
+				    var orgName = persondata.orgName;
+			        tx.executeSql('INSERT INTO myTopOrg (orgId,orgName) VALUES ("'+orgId+'","'+orgName+'")');
+		        }
+	        }
+	        if(linkBookStr!=null&&linkBookStr!=""){
+	           getLinkbook();
+	        }
+	    }
+
+	   function getLinkbook(){
+	          var storage = $phone.localStorage();
+	          var dbName = storage.getItem('ezMobile_dbName');
+              var sys_orgShortName = storage.getItem('sys_orgShortName');
+              $('mylinkbook_list').clear();
+              var db = $phone.openDatabase(dbName);
+		      db.transaction(query_LinkbookDB, function(err){alert(err);}, function(){});
+              var sys_orgId = storage.getItem('sys_orgId');
+              var sys_orgShortName = storage.getItem('sys_orgShortName');
+		      var item = $C('<list-item><item style="background:#ffffff;padding:16 10" icon="desk_persondept_mydept.png" onclick="goMyDeptList(\''+sys_orgId+'\',\''+sys_orgShortName+'\')">'+
+					       '<col><row><label style="color:#555555;font-size:16;">我的部门：'+sys_orgShortName+'</label>'+
+					       '<icon style="align:right" src="desk_setting_n.png"/></row></col></item></list-item>');
+			  $('mylinkbook_list').add(item);
+						
+
+	   }
+	   function query_LinkbookDB(tx) {
+			tx.executeSql('select orgId,orgName from myTopOrg',[],
+					function(results){
+					  if(results.rows!=null && results.rows.length>0){
+					    for(var i=0; i<results.rows.length; i++){
+					      var orgId = results.rows.item(i).orgId;
+					      var orgName = results.rows.item(i).orgName;
+					      var item = $C('<list-item><item style="background:#ffffff;padding:16 10" icon="desk_persondept_leve1.png" onclick="goAllLinkPerson(\''+orgId+'\',\''+orgName+'\')">'+
+					          '<col><row><label style="color:#555555;font-size:16;">'+orgName+'</label>'+
+				              '<icon style="align:right" src="desk_setting_n.png"/></row></col></item></list-item>');
+		                  $('mylinkbook_list').add(item);
+					    }
+					  }
+					} , function(err){alert(err);}); 
+	      }
+	   function goMyDeptList(orgId,orgName){
+	        var storage = $phone.localStorage();
+	        storage.setItem('inner_searchOrgId',orgId);
+			storage.setItem('inner_lastOrgName',orgName);
+			$page.open('person/myOrg.xml',{animation:'down-to-up'});
+	   }
+			
+	   function goAllLinkPerson(orgId,orgName){
+	        var storage = $phone.localStorage();
+	        storage.setItem('inner_searchOrgId',orgId);
+			storage.setItem('inner_lastOrgName',orgName);
+			$page.open('person/innerOrg.xml',{animation:'down-to-up'});
+	   }
+       function toNewMenu(code,id,name){
+         if(code=='innermail'){
+           $page.open('mail/mail_receive.xml', {animation:'down-to-up'});
+         }else if(code=='workmanager_workreport'){
+           $page.open('report/myreport_list.xml', {animation:'down-to-up'});
+         }else if(code=='documentmanager'){
+         
+           $page.open('doc/indexList.xml', {animation:'down-to-up'});
+         }else if(code=='information'){
+         
+           $page.open('information/indexList.xml', {animation:'down-to-up'});
+         }else if(code=='workflow'){
+           $page.open('dealfile/dealfile_index.xml', {animation:'down-to-up'});
+         }else if(code=='weibo'){
+         
+         }else if(code=='forum'){
+         
+           $page.open('forum/forum_list.xml', {animation:'down-to-up'});
+         }else if(code=='workmanager_calendar'){
+         
+         }else if(code=='workmanager_workreport'){
+           
+           $page.open('report/myweek_list.xm', {animation:'down-to-up'});
+         }else if(code=='workmanager_worklog'){
+         
+         }else if(code=='phone_meeting'){
+         
+           $page.open('information/addInfoChannel.xml', {animation:'down-to-up'});
+         }else if(code=='addInfoChannel'){
+
+           $page.open('information/addInfoChannel.xml', {animation:'down-to-up'});
+         }else{
+           var storage = $phone.localStorage();
+           storage.setItem('custMenu_menuId',id);
+           custMentIdStr += (id+',');
+           storage.setItem('custMenu_menuName',name);
+           $page.open('custmenu/custmenulist.xml', {animation:'down-to-up'});
+         }
+       }
+       function openInformationcust(channelId,channelName,isCanAdd,channelNeedCheckup){
+           var storage = $phone.localStorage();
+           storage.setItem('information_channelId',channelId);
+           storage.setItem('information_channelName',channelName);
+           storage.setItem('information_isCanAdd',isCanAdd);
+           storage.setItem('information_channelNeedCheckup',channelNeedCheckup);
+           $page.open('information/childColumn.xml');
+       }
+       function addItemToQuickAdd(){
+       
+            var storage = $phone.localStorage();
+            var quickAddCodes = "";
+			var dbName = storage.getItem('ezMobile_dbName');
+			var db = $phone.openDatabase(dbName);
+		    db.transaction(query_quickDB, function(err){alert(err);}, function(){});
+		    function query_quickDB(tx) {
+		        tx.executeSql('select mobileMenuCode from custmenu',[],
+						function(results){
+						  if(results.rows!=null && results.rows.length>0){
+						    for(var i=0; i<results.rows.length; i++){
+						      quickAddCodes += results.rows.item(i).mobileMenuCode+",";
+						    }
+						  }
+						} , function(err){alert(err);});  
+
+		    }
+            $('quickAdd_gridcust').clear();
+			if(quickAddCodes.indexOf('information,')>-1){
+		        var item = $C("<grid-item><item onclick=\"toNewAdd('information');\" "+
+		                    " icon=\"quickadd_info.png\"><label style=\"color:#3DAFFE;\">发信息</label></item></grid-item>");
+			    $('quickAdd_gridcust').add(item);
+			}
+			if(quickAddCodes.indexOf('innermail,')>-1){
+		        var item = $C("<grid-item><item onclick=\"toNewAdd('innermail');\" "+
+		            " icon=\"quickadd_mail.png\"><label style=\"color:#3DAFFE;\">写邮件</label></item></grid-item>");
+			    $('quickAdd_gridcust').add(item);
+			}
+			if(quickAddCodes.indexOf('workflow,')>-1){
+		        var item = $C("<grid-item><item onclick=\"toNewAdd('workflow');\" "+
+		            " icon=\"quickadd_flow.png\"><label style=\"color:#3DAFFE;\">发流程</label></item></grid-item>");
+			    $('quickAdd_gridcust').add(item);
+			}
+			if(quickAddCodes.indexOf('workmanager_workreport,')>-1){
+		        var item = $C("<grid-item><item onclick=\"toNewAdd('workmanager_workreport');\" "+
+		                     " icon=\"quickadd_report.png\"><label style=\"color:#3DAFFE;\">写汇报</label></item></grid-item>");
+			    $('quickAdd_gridcust').add(item);
+			}
+			if(quickAddCodes.indexOf('workmanager_worklog,')>-1){
+		        var item = $C("<grid-item><item onclick=\"toNewAdd('workmanager_worklog');\" "+
+		                     " icon=\"quickadd_log.png\"><label style=\"color:#3DAFFE;\">记日志</label></item></grid-item>");
+			    $('quickAdd_gridcust').add(item);
+			}
+			if(quickAddCodes.indexOf('workmanager_calendar,')>-1){
+		        var item = $C("<grid-item><item onclick=\"toNewAdd('workmanager_calendar');\" "+
+		                   " icon=\"quickadd_schedule.png\"><label style=\"color:#3DAFFE;\">写日程</label></item></grid-item>");
+			    $('quickAdd_gridcust').add(item);
+			}
+
+        }
+       function setCustMenuDB(){
+            var storage = $phone.localStorage();
+            $http.post(evoUrl+'/ezOffice/desktop/getMobileCustMenuList.do','', function(data) {
+                 var obj = JSON.parse(data);
+                 if(obj.logonerror && obj.logonerror=='1'){
+		          	alert("该账号已在设备"+obj.deviceId+"上登录");
+		            $page.open('index.xml',{target:'_self'});
+		            return;
+		         } 
+                 custMenuStr = data;
+			},function(error) {
+			    if (error == 'timeout') {
+			        hint('连接服务器超时！');
+			    } else if (error == '404') {
+			        hint('链接超时重新登录！');
+			    } else if (error == '500') {
+			        hint('内部服务器错误！');
+			    } else {
+			        hint('访问网络错误！错误代码:' + error);
+			    }
+			    $page.open('index.xml',{animation:'down-to-up'});
+		    });
+		    saveDataToCust();
+		}
+		function saveDataToCust(){
+	        var storage = $phone.localStorage();
+	        var dbName = storage.getItem('ezMobile_dbName');
+	        var db = $phone.openDatabase(dbName);
+		    db.transaction(populateDB);
+		}
+		function populateDB(tx) {
+		    if(custMenuStr!=null&&custMenuStr!=""){
+		        var obj = JSON.parse(custMenuStr);
+		        tx.executeSql('delete from custmenu');
+		        if(obj.data instanceof Array){
+			        for(var i=0; i<obj.data.length; i++){
+			          tx.executeSql('INSERT INTO custmenu (mobileMenuCode,mobileMenuDisplayName,imgName,isSystem,cusMenuId) '+
+			          ' VALUES ("'+obj.data[i].mobileMenuCode+'","'+obj.data[i].mobileMenuDisplayName+'","'+obj.data[i].imgName+'","'+obj.data[i].isSystem+'","'+obj.data[i].cusMenuId+'")');
+			        }
+		        }else if(obj.data.mobilemenu instanceof Object){
+		            tx.executeSql('INSERT INTO custmenu (mobileMenuCode,mobileMenuDisplayName,imgName,isSystem,cusMenuId) '+
+			          ' VALUES ("'+obj.data.mobilemenu.mobileMenuCode+'","'+obj.data.mobilemenu.mobileMenuDisplayName+'","'+obj.data.mobilemenu.imgName+'","'+obj.data.mobilemenu.isSystem+'","'+obj.data.mobilemenu.cusMenuId+'")');
+			        
+		        }
+	        }
+	        if(custMenuStr!=null&&custMenuStr!=""){
+	           addItemToPubtab();
+	        }
+	    }
+		
+       function addItemToPubtab(){
+            var storage = $phone.localStorage();
+            var dbName = storage.getItem('ezMobile_dbName');
+            $('gridcust').clear();
+            var db = $phone.openDatabase(dbName);
+		    db.transaction(query_pubDB, function(err){alert(err);}, function(){});
+		    var item = $C("<grid-item><item id=\"addInfoChannel\" onclick=\"toNewMenu('addInfoChannel','','');\" icon=\"desk_addinfo.png\" style=\"padding:20 10;background:desk_topbackground.png,desk_topbackground_g.png\" ><label maxlines=\"1\" style=\"color:#4e4f50;font-size:14;\">订阅信息</label></item></grid-item>");
+			$('gridcust').add(item);
+
+        }
+        function query_pubDB(tx) {
+	        tx.executeSql('select mobileMenuCode,mobileMenuDisplayName,imgName,cusMenuId from custmenu',[],
+					function(results){
+					  if(results.rows!=null && results.rows.length>0){
+					    for(var i=0; i<results.rows.length; i++){
+					      var menucode = results.rows.item(i).mobileMenuCode;
+					      var cusMenuId = results.rows.item(i).cusMenuId;
+					      var displayName = results.rows.item(i).mobileMenuDisplayName;
+					      var menuname = displayName;
+					      var imgName = results.rows.item(i).imgName;
+					      if(imgName==""||imgName==" "||imgName=="null"||menuname.length==0){
+					        imgName="desk_default.png";
+					      }
+					      if(menuname.length>4){
+					        menuname=menuname.substring(0,4)+"...";
+					      }
+					      var item = $C("<grid-item><item id=\""+menucode+"\" onclick=\"toNewMenu('"+menucode+"','"+cusMenuId+"','"+displayName+"');\" icon=\""+imgName+"\" style=\"padding:20 10;background:desk_topbackground.png,desk_topbackground_g.png\" ><label style=\"color:#4e4f50;font-size:14;\">"+menuname+"</label></item></grid-item>");
+		                  $('gridcust').add(item);
+					    }
+					  }
+					} , function(err){alert(err);});  
+			tx.executeSql('select channelId,channelName,isCanAdd,channelNeedCheckup from myInfoChannel',[],
+					function(results){
+					  if(results.rows!=null && results.rows.length>0){
+					    for(var i=0; i<results.rows.length; i++){
+					      var channelId = results.rows.item(i).channelId;
+					      var channelName = results.rows.item(i).channelName;
+					      var isCanAdd = results.rows.item(i).isCanAdd;
+					      var channelNeedCheckup = results.rows.item(i).channelNeedCheckup;
+					      var channelName_in = channelName;
+					      if(channelName.length>4){
+					        channelName=channelName.substring(0,4)+"...";
+					      }
+					      
+					      var item = $C("<grid-item><item id=\"info"+channelId+"\" onclick=\"openInformationcust('"+channelId+"','"+channelName_in+"','"+isCanAdd+"','"+channelNeedCheckup+"');\" icon=\"desk_notice1.png\" style=\"padding:20 10;background:desk_topbackground.png,desk_topbackground_g.png\" ><label maxlines=\"1\" style=\"color:#4e4f50;font-size:14;\">"+channelName+"</label></item></grid-item>");
+		                  $('gridcust').add(item);
+					    }
+					  }
+					} , function(err){alert(err);}); 
+	    }
+        function goInfoView(informationId,informationType,channelId){
+           var storage = $phone.localStorage();
+           storage.setItem('information_informationId',informationId);
+           storage.setItem('information_informationType',informationType);
+           storage.setItem('information_channelId',channelId);
+
+           $page.open('information/info.xml', {animation:'down-to-up'});;
+        }
+        function goMyInfoList(channelId,hasChildChannl,channelName){
+           var storage = $phone.localStorage();
+           storage.setItem('information_channelId',channelId);
+           storage.setItem('information_hasChildChannl',hasChildChannl);
+           storage.setItem('information_channelName',channelName);
+           $page.open('information/childColumn.xml', {animation:'down-to-up'});  
+        }
+        function goMailListView(mailid,mailuserid){
+           var storage = $phone.localStorage();
+           storage.setItem('mail_reMailid',mailid);
+		   storage.setItem('mail_reMailuserid',mailuserid);
+		
+           $page.open('mail/remail_view.xml', {animation:'down-to-up'});  
+        }
+        function goForumView(id,forumTitle,classid){
+           var storage = $phone.localStorage();
+           storage.setItem('forum_id',id);
+	       storage.setItem('forum_tile',forumTitle);
+	       storage.setItem('forum_classId',classid);
+		
+           $page.open('forum/forum_view.xml', {animation:'down-to-up'});  
+        }
+        function goReportView(id){
+           var storage = $phone.localStorage();
+           storage.setItem('report_reportid',id);
+           $page.open('report/emweek_view.xml', {animation:'down-to-up'});  
+        }
+        function goWorkflowView(workMainLinkFile,workStatus,workId,empLivingPhoto){
+ 
+               var storage = $phone.localStorage();
+               if(workMainLinkFile.indexOf('/defaultroot/GovDocSendProcess!') > -1){
+		    		storage.setItem('workflow_workStatus',workStatus);
+            	    storage.setItem('workflow_workId',workId);
+	        	    $page.open('dealfile/dealfile_sendDoc_process.xml?fromXml=personRight&empLivingPhoto='+empLivingPhoto,{animation:'down-to-up'});
+		    	}else if(workMainLinkFile.indexOf('/defaultroot/GovSendFileLoadAction.do') > -1){
+		    		storage.setItem('workflow_workStatus',workStatus);
+            	    storage.setItem('workflow_workId',workId);
+	        	    $page.open('dealfile/dealfile_sendDoc_process.xml?fromXml=personRight&empLivingPhoto='+empLivingPhoto,{animation:'down-to-up'});
+		    	}else if(workMainLinkFile.indexOf('/defaultroot/wfopenflow!') > -1){
+		    	
+		    		storage.setItem('workflow_workStatus',workStatus);
+            	    storage.setItem('workflow_workId',workId);
+	        	    $page.open('dealfile/dealfile_process.xml?fromXml=personRight&empLivingPhoto='+empLivingPhoto,{animation:'down-to-up'});
+		    	}else if(workMainLinkFile.indexOf('/defaultroot/WorkFlowProcAction.do') > -1){
+		    		
+		    		storage.setItem('workflow_workStatus',workStatus);
+            	    storage.setItem('workflow_workId',workId);
+	        	    $page.open('dealfile/dealfile_process.xml?fromXml=personRight&empLivingPhoto='+empLivingPhoto,{animation:'down-to-up'});
+		    	}else if(workMainLinkFile.indexOf('/defaultroot/Information!') > -1){
+		    		
+		    		storage.setItem('workflow_workStatus',workStatus);
+            	    storage.setItem('workflow_workId',workId);
+            	    $page.open('dealfile/dealfile_info_process.xml?fromXml=personRight&empLivingPhoto='+empLivingPhoto,{animation:'down-to-up'});
+		    	}else if(workMainLinkFile.indexOf('/defaultroot/InformationAction.do') > -1){
+		    		
+		    		storage.setItem('workflow_workStatus',workStatus);
+            	    storage.setItem('workflow_workId',workId);
+            	    $page.open('dealfile/dealfile_info_process.xml?fromXml=personRight&empLivingPhoto='+empLivingPhoto,{animation:'down-to-up'});
+		    	}else if(workMainLinkFile.indexOf('/defaultroot/GovDocReceiveProcess!') > -1){
+		    		
+		    		storage.setItem('workflow_workStatus',workStatus);
+            	    storage.setItem('workflow_workId',workId);
+	        	    $page.open('dealfile/dealfile_receiveDoc_process.xml?fromXml=personRight&empLivingPhoto='+empLivingPhoto,{animation:'down-to-up'});
+		    	}else if(workMainLinkFile.indexOf('/defaultroot/GovReceiveFileLoadAction.do') > -1){
+		    		storage.setItem('workflow_workStatus',workStatus);
+            	    storage.setItem('workflow_workId',workId);
+	        	    $page.open('dealfile/dealfile_receiveDoc_process.xml?fromXml=personRight&empLivingPhoto='+empLivingPhoto,{animation:'down-to-up'});
+		    	}else if(workMainLinkFile.indexOf('/defaultroot/GovDocSendCheckProcess') > -1){  //送审签
+		    		storage.setItem('workflow_workStatus',workStatus);
+            	    storage.setItem('workflow_workId',workId);
+	        	    $page.open('dealfile/dealfile_docSendCheck_process.xml?fromXml=personRight&empLivingPhoto='+empLivingPhoto,{animation:'down-to-up'});
+		    	}else{
+		    		storage.setItem('workflow_workStatus',workStatus);
+            	    storage.setItem('workflow_workId',workId);
+	        	    $page.open('dealfile/dealfile_process.xml?fromXml=personRight&empLivingPhoto='+empLivingPhoto,{animation:'down-to-up'});
+		    	} 
+        }
+        
+        function goGovView(filename,realname,wordType,id,accessoryName,handOutTime,writeOrg,byteNumber,userIsReaded){
+            var storage = $phone.localStorage();
+           	storage.setItem('doc_filename',filename);
+           	storage.setItem('doc_realname',realname);
+           	storage.setItem('doc_wordType',wordType);
+           	storage.setItem('doc_id',id);
+           	storage.setItem('doc_accessoryName',accessoryName);
+           	storage.setItem('doc_handOutTime',handOutTime);
+           	storage.setItem('doc_writeOrg',writeOrg);
+           	storage.setItem('doc_byteNumber',byteNumber);
+           	
+            $page.open('doc/detail.xml', {animation:'down-to-up'});
+        }
+        
+        //将缓存数据更新到页面
+	    function myAppCacheDataToPage(){
+	          $('personcenter_list').clear();
+        	  var storage = $phone.localStorage();
+        	  var dbName = storage.getItem('ezMobile_dbName');
+        	  var db = $phone.openDatabase(dbName);
+		      db.transaction(queryRemindListDB, function(err){alert(err);}, function(){});
+		      function queryRemindListDB(tx) {
+				tx.executeSql('select AppId,AppValue,clickvar1,imgg,appname,clickvar2,topname,titlename,workTime from myApp where userId = "'+userId+'"',[],
+					function(results){
+					  if(results.rows!=null && results.rows.length>0){
+					    for(var i=0; i<results.rows.length; i++){
+					        var AppId = results.rows.item(i).AppId;
+					        var AppValue = results.rows.item(i).AppValue;
+					        var clickvar1 = results.rows.item(i).clickvar1;
+					        var imgg = results.rows.item(i).imgg;
+					        var appname = results.rows.item(i).appname;
+					        var clickvar2 = results.rows.item(i).clickvar2;
+					        var topname = results.rows.item(i).topname;
+					        var titlename = results.rows.item(i).titlename;
+					        var workTime = results.rows.item(i).workTime;
+					        var item = $C('<list-item><item style="background:#ffffff;margin:1;col-width:20%,*;">'+
+						         '<col '+clickvar1+'><row><icon src="'+imgg+'" style="align:center"/></row><row><label style="align:center;color:#b9b9b9;">'+appname+'</label></row></col>'+
+						         '<col '+clickvar2+'><row><label style="align:left;color:#b8b8b8;font-size:16">'+topname+'</label></row><row>'+
+						         '<label style="align:left;color:#555555;">'+titlename+'</label></row><row>'+
+						         '<label style="align:left;color:#b8b8b8;font-size:12">'+workTime+'</label></row></col>'+
+						         '</item></list-item>');
+			                $('personcenter_list').add(item);
+					    }
+					    
+					  }
+					  
+					} , function(err){alert(err);}); 
+		      }
+
+        }
+        function refushMyApp(ty){
+          addItemToPersonTab2(ty);
+        }
+        //取我的常用应用栏目
+        function addItemToPersonTab2(ty){
+              $('personcenter_list').clear();
+              var storage = $phone.localStorage();
+              var dbName = storage.getItem('ezMobile_dbName');
+              if(ty=='add'){
+                 var dlg = $page.waiting("正在应用设置，请稍等");
+              }
+              var remindModelids = "";
+              var remindModelvalues = "";
+              var db = $phone.openDatabase(dbName);
+		      db.transaction(queryDB1, function(err){alert(err);}, function(){});
+		      function queryDB1(tx) {
+				tx.executeSql('select AppId,AppValue from myApp where userId="'+userId+'" ',[],
+						function(results){
+						  if(results.rows!=null && results.rows.length>0){
+						  
+						    for(var i=0; i<results.rows.length; i++){
+						      var AppId = results.rows.item(i).AppId;
+						      var AppValue = results.rows.item(i).AppValue;
+						      remindModelids += AppId+",";
+						      remindModelvalues += AppValue+",";
+						    }
+						  }
+						} , function(err){alert(err);}); 
+		      }
+
+		      var remindModelidss = remindModelids.split(',');
+		      var remindModelvaluess = remindModelvalues.split(',');
+		      
+		    $http.post(evoUrl+'/ezOffice/desktop/getRemindList.do',
+		      'remindModelids='+remindModelids+'&remindModelvalues='+remindModelvalues, function(data) {
+              var remindObj = JSON.parse(data);
+              if(remindObj.logonerror && remindObj.logonerror=='1'){
+		          	alert("该账号已在设备"+remindObj.deviceId+"上登录");
+		            $page.open('index.xml',{target:'_self'});
+		            return;
+		       } 
+              if(remindModelidss!=null && remindModelidss.length>0){
+				  for(var i=0; i<remindModelidss.length; i++){
+				      var AppId = remindModelidss[i];
+				      var AppValue = remindModelvaluess[i];
+				      var imgg = "";
+				      var appname = "";
+				      var topname = "";
+				      var titlename = "";
+				      var workTime = "";
+				      var clickvar1 = "";
+				      var clickvar2 = "";
+				    if(AppId!=''){
+				      if(AppId.indexOf('flowApp')>-1){
+				         imgg = "desk_com_flow.png";
+				         appname = "流程";
+				         if(remindObj.flowApp.message.result=="1" &&
+				             remindObj.flowApp.data.dealedWorkFlow){
+				           titlename = remindObj.flowApp.data.dealedWorkFlow.workTitle;
+				           workTime = remindObj.flowApp.data.dealedWorkFlow.workSubmitTime;
+				           if(workTime.length>19)
+				              workTime = workTime.substring(0,19);
+				           topname = "最近文件";
+				           var workMainLinkFile = remindObj.flowApp.data.dealedWorkFlow.workMainLinkFile;
+				           var workStatus = "0";
+				           var workId = remindObj.flowApp.data.dealedWorkFlow.workId;
+				           var empLivingPhoto = remindObj.flowApp.data.dealedWorkFlow.empLivingPhoto;
+				           clickvar1 = " onclick=\"$page.open('dealfile/dealfile_index.xml?fromXml=personLeft', {animation:'down-to-up'});\" ";
+				           clickvar2 = " onclick=\"goWorkflowView('"+workMainLinkFile+"','"+workStatus+"','"+workId+"','"+empLivingPhoto+"');\" ";
+				         }else{
+				           topname = "最近暂无文件";
+				         }
+				      }else if(AppId.indexOf('govApp')>-1){
+				         imgg = "desk_com_gov.png";
+				         appname = "公文";
+				         if(remindObj.govApp.message.result=="1" && 
+				           remindObj.govApp.data.result){
+				           titlename = remindObj.govApp.data.result.title;
+				           workTime = remindObj.govApp.data.result.createdTime;
+				           var filename = remindObj.govApp.data.result.goldGridId;
+				           var realname = remindObj.govApp.data.result.title;
+				           var wordType = remindObj.govApp.data.result.wordType;
+				           var govId = remindObj.govApp.data.result.id;
+				           var accessoryName = remindObj.govApp.data.result.accessoryName;
+				           var handOutTime = remindObj.govApp.data.result.handOutTime;
+				           var writeOrg = remindObj.govApp.data.result.writeOrg;
+				           var byteNumber = remindObj.govApp.data.result.byteNumber;
+				           var userIsReaded = remindObj.govApp.data.result.userIsReaded;
+				           if(workTime.length>19)
+				              workTime = workTime.substring(0,19);
+				           topname = "最近文件";
+				           clickvar1 = " onclick=\"$page.open('doc/indexList.xml', {animation:'down-to-up'});\" ";
+				           clickvar2 = " onclick=\"goGovView('"+filename+"','"+realname+"','"+wordType+"','"+govId+"','"+accessoryName+"','"+handOutTime+"','"+writeOrg+"','"+byteNumber+"','"+userIsReaded+"');\" ";
+				         }else{
+				           topname = "最近暂无文件";
+				           
+				         }
+				      }else if(AppId.indexOf('mailApp')>-1){
+				         imgg = "desk_com_mail.png";
+				         appname = "邮件";
+				         if(remindObj.mailApp.message.result=="1" &&
+				            remindObj.mailApp.data.list){
+				           titlename = remindObj.mailApp.data.list.mailsubject;
+				           workTime = remindObj.mailApp.data.list.mailposttime;
+				           if(workTime.length>19)
+				              workTime = workTime.substring(0,19);
+				           topname = "最近邮件";
+				           clickvar1 = " onclick=\"$page.open('mail/mail_receive.xml', {animation:'down-to-up'});\" ";
+
+				           clickvar2 = " onclick=\"goMailListView('"+remindObj.mailApp.data.list.mailid+"','"+remindObj.mailApp.data.list.mailuserid+"')\" ";
+				         }else{
+				           topname = "最近暂无文件";
+				           
+				         }
+				      }else if(AppId.indexOf('infoApp')>-1){
+				         imgg = "desk_com_info.png";
+				         appname = "信息";
+				         if(remindObj.infoApp.message.result=="1" &&
+				            remindObj.infoApp.data.infoList){
+				           titlename = remindObj.infoApp.data.infoList.informationTitle;
+				           workTime = remindObj.infoApp.data.infoList.informationIssueTime;
+				           var _informationId = remindObj.infoApp.data.infoList.informationId;
+				           var _informationType = remindObj.infoApp.data.infoList.informationType;
+				           var _channelId = remindObj.infoApp.data.infoList.channelId;
+				           
+				           if(workTime.length>19)
+				              workTime = workTime.substring(0,19);
+				           topname = "最近信息";
+				           clickvar1 = " onclick=\"$page.open('information/indexList.xml', {animation:'down-to-up'});\" ";
+    
+				           clickvar2 = " onclick=\"goInfoView('"+_informationId+"','"+_informationType+"','"+_channelId+"');\" ";
+				         }else{
+				           topname = "最近暂无文件";
+				           
+				         }
+				      }else if(AppId.indexOf('forumApp')>-1){
+				         imgg = "desk_com_forum.png";
+				         appname = "论坛";
+				         if(remindObj.forumApp.message.result=="1" &&
+				            remindObj.forumApp.data.list){
+				           titlename = remindObj.forumApp.data.list.forumTitle;
+				           workTime = remindObj.forumApp.data.list.forumIssueTime;
+				           if(workTime.length>19)
+				              workTime = workTime.substring(0,19);
+				           topname = "最近帖子";
+				           clickvar1 = " onclick=\"$page.open('forum/forum_list.xml', {animation:'down-to-up'});\" ";
+				           
+				           clickvar2 = " onclick=\"goForumView('"+remindObj.forumApp.data.list.id+"','"+remindObj.forumApp.data.list.forumTitle+"','"+remindObj.forumApp.data.list.classid+"');\" ";
+				         }else{
+				           topname = "最近暂无文件";
+				           
+				         }
+				      }else if(AppId.indexOf('reportApp')>-1){
+				         imgg = "desk_com_report.png";
+				         appname = "汇报";
+				         if(remindObj.reportApp.message.result=="1" &&
+				            remindObj.reportApp.data.list){
+				           titlename = remindObj.reportApp.data.list.reportEmpName+"工作周报";
+				           workTime = remindObj.reportApp.data.list.reportTime;
+				           if(workTime.length>19)
+				              workTime = workTime.substring(0,19);
+				           topname = "下属汇报";
+				           clickvar1 = " onclick=\"$page.open('report/emreport_list.xml', {animation:'down-to-up'});\" ";
+				           
+				           clickvar2 = " onclick=\"goReportView('"+remindObj.reportApp.data.list.id+"');\" ";
+				         }else{
+				           topname = "最近暂无汇报";
+				           
+				         }
+				      }else if(AppId.indexOf('logApp')>-1){
+				         imgg = "desk_com_custinfo.png";
+				         appname = "日志";
+				      }else if(AppId.indexOf('microblogApp')>-1){
+				         imgg = "desk_com_microblog.png";
+				         appname = "微博";
+				      }else if(AppId.indexOf('scheduleApp')>-1){
+				         imgg = "desk_com_schedule.png";
+				         appname = "日程";
+				      }else if(AppId.indexOf('personApp')>-1){
+				         imgg = "desk_com_person.png";
+				         appname = "联系人";
+				         titlename = "查看全部联系人";
+				         
+				         clickvar1 = " onclick=\"alert(1);\" ";
+				         clickvar2 = " onclick=\"alert(1);\" ";
+				      }else if(AppId.indexOf('infochannelApp')>-1){
+				      
+				         imgg = "desk_com_info.png";
+				         var AppValues = AppValue.split("|");
+				         appname=AppValues[1];
+
+				         if(eval('remindObj.infochannelApp'+AppValues[0]+'.message.result')=="1" &&
+				            eval('remindObj.infochannelApp'+AppValues[0]+'.data.infoList')){
+				              titlename = eval('remindObj.infochannelApp'+AppValues[0]+'.data.infoList.informationTitle');
+				              workTime = eval('remindObj.infochannelApp'+AppValues[0]+'.data.infoList.informationIssueTime');
+				              var _informationId = eval('remindObj.infochannelApp'+AppValues[0]+'.data.infoList.informationId');
+                                 var _informationType  = eval('remindObj.infochannelApp'+AppValues[0]+'.data.infoList.informationType');
+                                 var _channelId  = eval('remindObj.infochannelApp'+AppValues[0]+'.data.infoList.channelId');
+                                 var _channelName  = eval('remindObj.infochannelApp'+AppValues[0]+'.data.infoList.channelName');
+				              if(workTime.length>19)
+				                 workTime = workTime.substring(0,19);
+				              topname = "最近信息";
+				              
+				              clickvar1 = " onclick=\"goMyInfoList('"+_channelId+"','','"+_channelName+"');\" ";
+    
+				              clickvar2 = " onclick=\"goInfoView('"+_informationId+"','"+_informationType+"','"+_channelId+"');\" ";
+				         }else{
+				           topname = "最近暂无文件";
+				           
+				         }
+				      }
+                      updateRemindCache(AppId,AppValue,clickvar1,imgg,appname,clickvar2,topname,titlename,workTime);
+	                  
+				    }
+				   }
+				 }
+				 //显示数据
+				 myAppCacheDataToPage();
+				 if(ty=='add'){
+				   dlg.close();
+				 }
+		      
+			},function(error) {
+			    if (error == 'timeout') {
+			        hint('连接服务器超时！');
+			    } else if (error == '404') {
+			        hint('链接超时重新登录！');
+			    } else if (error == '500') {
+			        hint('内部服务器错误！');
+			    } else {
+			        hint('访问网络错误！错误代码:' + error);
+			    }
+			    $page.open('index.xml',{animation:'down-to-up'});
+			    if(ty=='add'){
+			      dlg.close();
+			    }
+		    }); 
+		      
+        }
+        function updateRemindCache(AppId,AppValue,clickvar1,imgg,appname,clickvar2,topname,titlename,workTime){
+               var storage = $phone.localStorage();
+	           var dbName = storage.getItem('ezMobile_dbName');
+               var db = $phone.openDatabase(dbName);
+		       db.transaction(DbToCacheData_1);
+		       function DbToCacheData_1(tx) {
+			        var myApp_sql = 'update myApp set clickvar1=?,imgg=?,appname=?,clickvar2=?,topname=?,titlename=?,workTime=? '+
+			               ' where AppId=? and AppValue=? and userId=? ';
+		        	tx.executeSql(myApp_sql,[clickvar1,imgg,appname,clickvar2,topname,titlename,workTime,AppId,AppValue,userId]);
+    
+			   }
+        }
+        
+        function addItemToPersonTab(ty){
+              $('personcenter_list').clear();
+              if(ty=='add'){
+                var dlg = $page.waiting("正在应用设置，请稍等");
+              }
+              var storage = $phone.localStorage();
+              var dbName = storage.getItem('ezMobile_dbName');
+              var remindModelids = "";
+              var remindModelvalues = "";
+              var db = $phone.openDatabase(dbName);
+		      db.transaction(queryDB1, function(err){alert(err);}, function(){});
+		      function queryDB1(tx) {
+				tx.executeSql('select AppId,AppValue from myApp',[],
+						function(results){
+						  if(results.rows!=null && results.rows.length>0){
+						    for(var i=0; i<results.rows.length; i++){
+						      var AppId = results.rows.item(i).AppId;
+						      var AppValue = results.rows.item(i).AppValue;
+						      remindModelids += AppId+",";
+						      remindModelvalues += AppValue+",";
+						    }
+						  }
+						} , function(err){alert(err);}); 
+		      }
+		      
+		    $http.post(evoUrl+'/ezOffice/desktop/getRemindList.do',
+		    'remindModelids='+remindModelids+'&remindModelvalues='+remindModelvalues, function(data) {
+              var remindObj = JSON.parse(data);
+              if(remindObj.logonerror && remindObj.logonerror=='1'){
+		          alert("该账号已在设备"+remindObj.deviceId+"上登录");
+		          $page.open('index.xml',{target:'_self'});
+		          return;
+		      } 
+              var db = $phone.openDatabase(dbName);
+		      db.transaction(queryDB0, function(err){alert(err);}, function(){});
+		      function queryDB0(tx) {
+				tx.executeSql('select AppId,AppValue from myApp',[],
+						function(results){
+						  if(results.rows!=null && results.rows.length>0){
+						    $('personcenter_list').clear();
+						    for(var i=0; i<results.rows.length; i++){
+						      var AppId = results.rows.item(i).AppId;
+						      var AppValue = results.rows.item(i).AppValue;
+						      var imgg = "";
+						      var appname = "";
+						      var topname = "";
+						      var titlename = "";
+						      var workTime = "";
+						      var clickvar1 = "";
+						      var clickvar2 = "";
+						      if(AppId.indexOf('flowApp')>-1){
+						         imgg = "desk_com_flow.png";
+						         appname = "流程";
+						         if(remindObj.flowApp.message.result=="1" &&
+						             remindObj.flowApp.data.dealedWorkFlow){
+						           titlename = remindObj.flowApp.data.dealedWorkFlow.workTitle;
+						           workTime = remindObj.flowApp.data.dealedWorkFlow.workSubmitTime;
+						           if(workTime.length>19)
+						              workTime = workTime.substring(0,19);
+						           topname = "最近文件";
+						           var workMainLinkFile = remindObj.flowApp.data.dealedWorkFlow.workMainLinkFile;
+						           var workStatus = "0";
+						           var workId = remindObj.flowApp.data.dealedWorkFlow.workId;
+						           var empLivingPhoto = remindObj.flowApp.data.dealedWorkFlow.empLivingPhoto;
+						           clickvar1 = " onclick=\"$page.open('dealfile/dealfile_index.xml?fromXml=personLeft', {animation:'down-to-up'});\" ";
+						           clickvar2 = " onclick=\"goWorkflowView('"+workMainLinkFile+"','"+workStatus+"','"+workId+"','"+empLivingPhoto+"');\" ";
+						         }else{
+						           topname = "最近暂无文件";
+						           
+						         }
+						      }else if(AppId.indexOf('govApp')>-1){
+						         imgg = "desk_com_gov.png";
+						         appname = "公文";
+						         if(remindObj.govApp.message.result=="1" && 
+						            remindObj.govApp.data.result){
+						           
+						           titlename = remindObj.govApp.data.result.title;
+						           workTime = remindObj.govApp.data.result.createdTime;
+						           var filename = remindObj.govApp.data.result.goldGridId;
+						           var realname = remindObj.govApp.data.result.title;
+						           var wordType = remindObj.govApp.data.result.wordType;
+						           var govId = remindObj.govApp.data.result.id;
+						           var accessoryName = remindObj.govApp.data.result.accessoryName;
+						           var handOutTime = remindObj.govApp.data.result.handOutTime;
+						           var writeOrg = remindObj.govApp.data.result.writeOrg;
+						           var byteNumber = remindObj.govApp.data.result.byteNumber;
+						           var userIsReaded = remindObj.govApp.data.result.userIsReaded;
+						           if(workTime.length>19)
+						              workTime = workTime.substring(0,19);
+						           topname = "最近文件";
+						           clickvar1 = " onclick=\"$page.open('doc/indexList.xml', {animation:'down-to-up'});\" ";
+						           clickvar2 = " onclick=\"goGovView('"+filename+"','"+realname+"','"+wordType+"','"+govId+"','"+accessoryName+"','"+handOutTime+"','"+writeOrg+"','"+byteNumber+"','"+userIsReaded+"');\" ";
+						         }else{
+						           topname = "最近暂无文件";
+						           
+						         }
+						      }else if(AppId.indexOf('mailApp')>-1){
+						         imgg = "desk_com_mail.png";
+						         appname = "邮件";
+						         if(remindObj.mailApp.message.result=="1" &&
+						            remindObj.mailApp.data.list){
+						           titlename = remindObj.mailApp.data.list.mailsubject;
+						           workTime = remindObj.mailApp.data.list.mailposttime;
+						           if(workTime.length>19)
+						              workTime = workTime.substring(0,19);
+						           topname = "最近邮件";
+						           clickvar1 = " onclick=\"$page.open('mail/mail_receive.xml', {animation:'down-to-up'});\" ";
+		
+						           clickvar2 = " onclick=\"goMailListView('"+remindObj.mailApp.data.list.mailid+"','"+remindObj.mailApp.data.list.mailuserid+"')\" ";
+						         }else{
+						           topname = "最近暂无文件";
+						           
+						         }
+						      }else if(AppId.indexOf('infoApp')>-1){
+						         imgg = "desk_com_info.png";
+						         appname = "信息";
+						         if(remindObj.infoApp.message.result=="1" &&
+						            remindObj.infoApp.data.infoList){
+						           titlename = remindObj.infoApp.data.infoList.informationTitle;
+						           workTime = remindObj.infoApp.data.infoList.informationIssueTime;
+						           var _informationId = remindObj.infoApp.data.infoList.informationId;
+						           var _informationType = remindObj.infoApp.data.infoList.informationType;
+						           var _channelId = remindObj.infoApp.data.infoList.channelId;
+						           
+						           if(workTime.length>19)
+						              workTime = workTime.substring(0,19);
+						           topname = "最近信息";
+						           clickvar1 = " onclick=\"$page.open('information/indexList.xml', {animation:'down-to-up'});\" ";
+      
+						           clickvar2 = " onclick=\"goInfoView('"+_informationId+"','"+_informationType+"','"+_channelId+"');\" ";
+						         }else{
+						           topname = "最近暂无文件";
+						           
+						         }
+						      }else if(AppId.indexOf('forumApp')>-1){
+						         imgg = "desk_com_forum.png";
+						         appname = "论坛";
+						         if(remindObj.forumApp.message.result=="1" &&
+						            remindObj.forumApp.data.list){
+						           titlename = remindObj.forumApp.data.list.forumTitle;
+						           workTime = remindObj.forumApp.data.list.forumIssueTime;
+						           if(workTime.length>19)
+						              workTime = workTime.substring(0,19);
+						           topname = "最近帖子";
+						           clickvar1 = " onclick=\"$page.open('forum/forum_list.xml', {animation:'down-to-up'});\" ";
+						           
+						           clickvar2 = " onclick=\"goForumView('"+remindObj.forumApp.data.list.id+"','"+remindObj.forumApp.data.list.forumTitle+"','"+remindObj.forumApp.data.list.classid+"');\" ";
+						         }else{
+						           topname = "最近暂无文件";
+						           
+						         }
+						      }else if(AppId.indexOf('reportApp')>-1){
+						         imgg = "desk_com_report.png";
+						         appname = "汇报";
+						         if(remindObj.reportApp.message.result=="1" &&
+						            remindObj.reportApp.data.list){
+						           titlename = remindObj.reportApp.data.list.reportEmpName+"工作周报";
+						           workTime = remindObj.reportApp.data.list.reportTime;
+						           if(workTime.length>19)
+						              workTime = workTime.substring(0,19);
+						           topname = "下属汇报";
+						           clickvar1 = " onclick=\"$page.open('report/emreport_list.xml', {animation:'down-to-up'});\" ";
+						           
+						           clickvar2 = " onclick=\"goReportView('"+remindObj.reportApp.data.list.id+"');\" ";
+						         }else{
+						           topname = "最近暂无汇报";
+						           
+						         }
+						      }else if(AppId.indexOf('logApp')>-1){
+						         imgg = "desk_com_custinfo.png";
+						         appname = "日志";
+						      }else if(AppId.indexOf('microblogApp')>-1){
+						         imgg = "desk_com_microblog.png";
+						         appname = "微博";
+						      }else if(AppId.indexOf('scheduleApp')>-1){
+						         imgg = "desk_com_schedule.png";
+						         appname = "日程";
+						      }else if(AppId.indexOf('personApp')>-1){
+						         imgg = "desk_com_person.png";
+						         appname = "联系人";
+						         titlename = "查看全部联系人";
+						         
+						         clickvar1 = " onclick=\"alert(1);\" ";
+						         clickvar2 = " onclick=\"alert(1);\" ";
+						      }else if(AppId.indexOf('infochannelApp')>-1){
+						      
+						         imgg = "desk_com_info.png";
+						         var AppValues = AppValue.split("|");
+						         appname=AppValues[1];
+
+						         if(eval('remindObj.infochannelApp'+AppValues[0]+'.message.result')=="1" &&
+						            eval('remindObj.infochannelApp'+AppValues[0]+'.data.infoList')){
+						              titlename = eval('remindObj.infochannelApp'+AppValues[0]+'.data.infoList.informationTitle');
+						              workTime = eval('remindObj.infochannelApp'+AppValues[0]+'.data.infoList.informationIssueTime');
+						              var _informationId = eval('remindObj.infochannelApp'+AppValues[0]+'.data.infoList.informationId');
+	                                  var _informationType  = eval('remindObj.infochannelApp'+AppValues[0]+'.data.infoList.informationType');
+	                                  var _channelId  = eval('remindObj.infochannelApp'+AppValues[0]+'.data.infoList.channelId');
+	                                  var _channelName  = eval('remindObj.infochannelApp'+AppValues[0]+'.data.infoList.channelName');
+						              if(workTime.length>19)
+						                 workTime = workTime.substring(0,19);
+						              topname = "最近信息";
+						              
+						              clickvar1 = " onclick=\"goMyInfoList('"+_channelId+"','','"+_channelName+"');\" ";
+      
+						              clickvar2 = " onclick=\"goInfoView('"+_informationId+"','"+_informationType+"','"+_channelId+"');\" ";
+						         }else{
+						           topname = "最近暂无文件";
+						           
+						         }
+						      }
+						      var item = $C('<list-item><item style="background:#ffffff;margin:1;col-width:20%,*;">'+
+						         '<col '+clickvar1+'><row><icon src="'+imgg+'" style="align:center"/></row><row><label style="align:center;color:#b9b9b9;">'+appname+'</label></row></col>'+
+						         '<col '+clickvar2+'><row><label style="align:left;color:#b8b8b8;font-size:16">'+topname+'</label></row><row>'+
+						         '<label style="align:left;color:#555555;">'+titlename+'</label></row><row>'+
+						         '<label style="align:left;color:#b8b8b8;font-size:12">'+workTime+'</label></row></col>'+
+						         '</item></list-item>');
+			                  $('personcenter_list').add(item);
+						    }
+						  }
+						} , 
+						function(err){
+							alert(err);
+							if(ty=='add'){
+			                   dlg.close();
+			                }
+						}); 
+		        }
+		        if(ty=='add'){
+                   dlg.close();
+                }
+		        
+		      
+			},function(error) {
+			    if (error == 'timeout') {
+			        hint('连接服务器超时！');
+			    } else if (error == '404') {
+			        hint('链接超时重新登录！');
+			    } else if (error == '500') {
+			        hint('内部服务器错误！');
+			    } else {
+			        hint('访问网络错误！错误代码:' + error);
+			    }
+			    $page.open('index.xml',{animation:'down-to-up'});
+		    });
+        }
+        
+        function openPopupMenu() {
+           $page.open('myOftenApp.xml', {animation:'down-to-up'});
+        }
+        function query_clearDB(tx) {
+	        tx.executeSql('DROP TABLE IF EXISTS myInfoChannel');
+	        tx.executeSql('DROP TABLE IF EXISTS custmenu');
+	        tx.executeSql('DROP TABLE IF EXISTS myApp');
+	        tx.executeSql('DROP TABLE IF EXISTS myTopOrg');
+	        tx.executeSql('DROP TABLE IF EXISTS allOrg');
+	        tx.executeSql('DROP TABLE IF EXISTS allUser');
+	        tx.executeSql('DROP TABLE IF EXISTS workflow_list');
+	    }
+	    
+        function clearlogin() {
+          if(confirm('缓存包含您的登录信息、某些设置项，图标等数据，清除后需要重新登录，是否执行？')){
+            hint("正在清理缓存...");
+            var storage = $phone.localStorage();
+            var curVersionNumber = storage.getItem('curVersionNumber');
+            var dbName = storage.getItem('ezMobile_dbName');
+            var db = $phone.openDatabase(dbName);
+		    db.transaction(query_clearDB, function(err){alert(err);}, function(){});
+	        storage.clear();
+	        storage.setItem('curVersionNumber',curVersionNumber);
+	        storage.setItem('login_remember','false');
+            hint("清理完毕");
+            $page.open('index.xml', {target:'_self'});
+           }
+       }
+       
+        function clearAttach() {
+           if(confirm('是否清除已下载的附件？')){
+              $page.clearAttachments();
+              hint("清理完毕");
+           }
+        }
+        function gologinMenu(){
+        	 var menu = $C('<actionmenu title="退出是否同时清除已下载的附件？" cancelTitle="取消">' +
+								 '<item style="text-decoration:underline;color:blue" label="是" onclick="gologin(\'yes\')"/>' +
+								 '<item style="text-decoration:underline;color:blue" label="否" onclick="gologin(\'no\')" />' +
+							'</actionmenu>');
+             menu.show();
+        }
+       
+        function gologin(isClearFile) {
+           if(isClearFile=='yes'){
+                $page.clearAttachments();
+           }
+           var storage = $phone.localStorage();
+           storage.setItem('sys_userAccount','');
+		   storage.setItem('sys_password','');
+		   storage.setItem('sys_sys_userId','');
+		   storage.setItem('sys_orgId','');
+		   storage.setItem('sys_domainId','');
+		   storage.setItem('sys_userName','');
+		   storage.setItem('sys_orgName','');
+		   storage.setItem('sys_orgShortName','');
+		   storage.setItem('sys_orgIdString','');
+		   storage.setItem('sys_orgSimpleName','');
+		   storage.setItem('sys_userSimpleName','');
+		   storage.setItem('sys_fileType','');
+		   storage.setItem('sys_fileserver','');
+		   storage.setItem('sys_httpserver','');
+		   storage.setItem('sys_server','');
+		   storage.setItem('sys_key','');
+		   storage.setItem('sys_phone','');
+		   storage.setItem('sys_empDuty','');
+		   if(isClearFile=='yes'){
+              //  quit();
+                $page.open('index.xml', {target:'_self'});
+           }else{
+           		$page.open('index.xml', {target:'_self'});
+           }
+        }
+		
+		function checkSignIn(){     //判断当前人员是否已经签到
+		     if(loadFlag == '1'){
+		        return false;
+		     }
+		     loadFlag = '1';
+		     $http.post(evoUrl+'/ezOffice/attendance/checkSignIn.do', function(data) {
+		          if(data){
+		              var obj = JSON.parse(data);
+		              if(obj.logonerror && obj.logonerror=='1'){
+		         			alert("该账号已在设备"+obj.deviceId+"上登录");
+		          			$page.open('index.xml',{target:'_self'});
+		                    return;
+		              } 
+	                  var result = obj.message.result;
+	                  if(result == "1"){  //返回成功
+	                      if(obj.data.isSign == '1'){  //1表示签退了，0表示签到了
+	                      		isSign = "no";
+		                 		$('register').style="margin-left:10;align:center;background:desk_percenter_bg_btn3.png,desk_percenter_bg_btn3_g.png";
+	                      }else{
+	                      		isSign = "yes";
+		                 		$('register').style="margin-left:10;align:center;background:desk_percenter_bg_btn4.png,desk_percenter_bg_btn4_g.png";
+	                      }
+	                  }else{               //未签到
+	                  	 isSign = "no";
+		                 $('register').style="margin-left:10;align:center;background:desk_percenter_bg_btn3.png,desk_percenter_bg_btn3_g.png";
+	                  }
+		          }
+		       },function(error) {
+			    if (error == 'timeout') {
+			        hint('连接服务器超时！');
+			    } else if (error == '404') {
+			        hint('链接超时重新登录！');
+			    } else if (error == '500') {
+			        hint('内部服务器错误！');
+			    } else {
+			        hint('访问网络错误！错误代码:' + error);
+			    }
+			    $page.open('index.xml',{animation:'down-to-up'});
+		    });
+		     loadFlag = '0';
+		}
+		
+		var bmap = $("bmap");
+		function register(){
+            bmap.startLocation({   //掉出百度地图获取位置
+                 onReceiveLocation: function(location) {
+                   var latitude = location.latitude+'';
+                   var longitude = location.longitude+'';
+                   bmap.stopLocation();  //停止定位
+                 // alert(latitude);alert(longitude);
+                   if((latitude.indexOf('-')==-1)&&(longitude.indexOf('-')==-1)){
+  						 searchReverseGeoCode(latitude,longitude);
+				   }else{
+  						 alert("定位失败，请重新定位！");
+  						 return;
+				   }
+                 }
+            }); 
+		}
+		
+		function searchReverseGeoCode(latitude,longitude){  //根据经纬度获取具体位置
+                bmap.reverseGeoCode({
+                    location: latitude + ',' + longitude,
+                    onGetReverseGeoCodeResult: function(result) {
+                        if(isSign == "yes"){   //签退中...
+			      	   		$('register').style="margin-left:10;align:center;background:desk_percenter_bg_btn5.png,desk_percenter_bg_btn5_g.png";
+ 			 	   		}else{
+			           		$('register').style="margin-left:10;align:center;background:desk_percenter_bg_btn2.png,desk_percenter_bg_btn2_g.png";
+			            }
+			            var address = result.poiInfos[0].address;
+			           	currentAddress = address;
+                        sign(address);
+                    }
+                });
+                
+       }
+		
+         function sign(address){
+             if(loadFlag == '1'){
+                 alert('请勿重复点击！');
+		         return false;
+		     }
+		     loadFlag = '1';
+		     var signStatus = '';
+		     if(isSign == "yes"){  
+			      signStatus = '1' ;  //此操作是签退
+ 			 }else{
+			      signStatus = '0';
+			 }
+		     $http.post(evoUrl+'/ezOffice/attendance/sign.do',{address:address,signStatus:signStatus}, function(data) {
+		          if(data){
+		              var obj = JSON.parse(data);
+		              if(obj.logonerror && obj.logonerror=='1'){
+		         			alert("该账号已在设备"+obj.deviceId+"上登录");
+		          			$page.open('index.xml',{target:'_self'});
+		                    return;
+		              } 
+		              var result = obj.message.result;
+		              if(result == "1"){
+		                 hint("当前定位信息为："+currentAddress);
+                         if(isSign == "yes"){  
+			      			isSign = 'no' ;  //状态转换
+ 			 			 }else{
+			                isSign = 'yes';
+			             }
+		                 if(isSign=="yes"){
+		                    $('register').style="margin-left:10;align:center;background:desk_percenter_bg_btn4.png,desk_percenter_bg_btn4_g.png";
+		                 }else{
+		                    $('register').style="margin-left:10;align:center;background:desk_percenter_bg_btn3.png,desk_percenter_bg_btn3_g.png";
+		                 }
+		                 
+		              }else{
+		                 hint("签到失败,请重新签到！");
+		                 if(isSign=="no"){
+		                    //$('register').text = "上班签到";
+		                    $('register').style="margin-left:10;align:center;background:desk_percenter_bg_btn3.png,desk_percenter_bg_btn3_g.png";
+		                 }else{
+		                    //$('register').text = "下班签到";
+		                    $('register').style="margin-left:10;align:center;background:desk_percenter_bg_btn4.png,desk_percenter_bg_btn4_g.png";
+		                 }
+		              }
+		          
+		          }
+			    
+			 },function(error) {
+			    if (error == 'timeout') {
+			        hint('连接服务器超时！');
+			    } else if (error == '404') {
+			        hint('链接超时重新登录！');
+			    } else if (error == '500') {
+			        hint('内部服务器错误！');
+			    } else {
+			        hint('访问网络错误！错误代码:' + error);
+			    }
+			    $page.open('index.xml',{animation:'down-to-up'});
+		    });
+			  loadFlag = '0';
+         }
+         function go_quickadd(){
+           $('quickAdd_popupmenu').open();
+           //$page.open('quickAdd.xml', {animation:'down-to-up'});
+        }
+         function toNewAdd(id){
+	         if(id=='innermail'){
+               $page.open('mail/mail_write.xml', {animation:'down-to-up'});
+               $('quickAdd_popupmenu').close();
+	         }else if(id=='information'){
+	           $page.open('information/new.xml', {animation:'down-to-up'});
+	           $('quickAdd_popupmenu').close();
+	         }else if(id=='workflow'){
+	           $page.open('workflow/workflow_list.xml?fromXml=quickadd', {animation:'down-to-up'});
+	           $('quickAdd_popupmenu').close();
+	         }else if(id=='workmanager_calendar'){
+	         
+	         }else if(id=='workmanager_workreport'){
+	           $page.open('report/reweek_new.xml', {animation:'down-to-up'});
+	           $('quickAdd_popupmenu').close();
+	         }else if(id=='workmanager_worklog'){
+	         
+	         }
+         
+       }
+       
+       function quitSys(){
+          if(confirm('确定要退出吗？')){
+             exit();
+          }
+       }
+       function go_SearchLinkbook(searchUser){
+            var storage = $phone.localStorage();
+            storage.setItem('inner_searchUser',searchUser);
+			$page.open('person/searchUser.xml',{animation:'down-to-up'});
+       }
+       
+       function reflushPersonCenter(){
+       	   $('content_per').hideTop();
+           refushMyApp('');
+           if(sys_location=='1'){checkSignIn();}
+       }
+		    
+    ]]>
+    </script> 
+	<page>
+	  <tabs>
+            <tab id="pubtab" label="应用中心" icon="desk_pubcenter_g.png,desk_pubcenter.png" >
+		       <title style="background:#3DAFFE">
+		            <left>
+		                <button role="back" style="background:null" onclick=";"/>
+		            </left>
+		            <center>
+		                <label style="color:#ffffff">全部应用</label>
+		            </center>
+		        </title>
+		        <content id="contentcust" style="background:#ffffff" ondragdown="setCustMenuDB();getRemindNum();$('contentcust').hideTop();" draggable="true">
+		            <grid id="gridcust" cols="4" style="vertical-spacing:0">
+		            </grid>
+		        </content>
+             </tab>
+             <tab id="persontab" label="个人中心"  icon="desk_personcenter_g.png,desk_personcenter.png" current="true">
+		       <title style="background:#3DAFFE">
+		            <left>
+		                <button role="back" style="background:null" onclick=";"/>
+		            </left>
+		            <center>
+		              <icon src="logo.png" style="align:center;"/>
+				    </center>
+		            <right>
+		                <button icon="desk_personcenter_add.png" onclick="go_quickadd();"/>
+		            </right>
+		        </title>
+		        <header>
+		            <row style="text-align:center;display:none;">
+		               	 <bmap id="bmap" center="39.915,116.404" zoom="14" style="display:none;"></bmap>
+					</row>
+		        </header>
+		        <dropmenu id="quickAdd_popupmenu"  position="top">
+			            <grid id="quickAdd_gridcust" cols="3" style="vertical-spacing:0">
+			               </grid>
+			    </dropmenu>
+		        <content id="content_per" style="background:#ffffff" ondragdown="reflushPersonCenter();" draggable="true">
+		            <list id="myphotoimg_list" type="transparent" style="height:200;background:desk_percenter_bg.png">
+					  <item>
+						<col><row><img effect="round" id="myphotoimg" style="align:center;width:90;height:90" default="login_per.png" src=""/></row></col>
+					  </item>
+					  <item>
+						<col><row><label id="desk_personcenter_label" style="align:center;color:#ffffff;font-size:18;"></label></row></col>
+					  </item>
+					  <item id="item_register" style="display:none;">
+						<col>
+						  <row>
+						    <button id="register" style="margin-right:10;align:center;background:desk_percenter_bg_btn3.png,desk_percenter_bg_btn3_g.png" 
+						    onclick="register();"/>
+                            <button style="margin-left:10;align:center;background:desk_percenter_bg_btn1.png,desk_percenter_bg_btn1_g.png" 
+                            onclick="$page.open('desktop/locationIndex.xml', {animation:'down-to-up'});"/>
+						   </row>
+						</col>
+					  </item>
+				    </list>
+				    <list style="background:#ffffff;">
+					    <item style="background:#ffffff;height:50;margin:5" onclick="openPopupMenu();">
+					      <col><row><label style="align:left;color:#38adff;">我的常用应用</label></row></col>
+					      <col><row><icon style="align:right" src="deskperson_add.png"/></row></col>
+						</item>
+		            </list>
+		            <list id="personcenter_list" style="background:#ffffff">
+					    
+		            </list>
+		        </content>
+             </tab>
+             <tab id="linkbook" label="通讯录" icon="desk_linkman_g.png,desk_linkman.png">
+		       <title style="background:#3DAFFE">
+		            <left>
+		                <button role="back" style="background:null" onclick=";"/>
+		            </left>
+		            <center>
+		              <label style="color:#ffffff">通讯录</label>
+				    </center>
+		        </title>
+		        <header>
+		            <row style="text-align:center;">
+		               <input type="search" placeholder="请输入姓名查询" name="username" id="username" onclick="go_SearchLinkbook(this.value);"/>
+					</row>
+		        </header>
+		        <content id="content_link"  style="background:#f0eff5" ondragdown="setLinkbookDB();$('content_link').hideTop();" draggable="true">
+				    <list id="mylinkbook_list" style="background:#ffffff;">
+		            </list>
+		        </content>
+             </tab>
+             <tab id="syssettab" label="设置" icon="desk_setting_g.png,desk_setting.png">
+		       <title style="background:#3DAFFE">
+		            <left>
+		                <button role="back" style="background:null" onclick=";"/>
+		            </left>
+		            <center>
+		              <label style="color:#ffffff">设置</label>
+				    </center>
+		        </title>
+		        <content id="content_seting"  style="background:#f0eff5">
+		            <list type="transparent" style="height:100;background:#ffffff;margin:10 0">
+					  <item onclick="$page.open('desktop/personInfo.xml',{animation:'down-to-up'});" >
+						<col>
+							<row><img effect="round" id="myphotoimg1" style="align:left;width:80;height:80" default="login_per.png" src=""/></row>
+						</col>
+						<col>
+						    <row><label style="color:#555555;font-size:16;">个人信息</label></row>
+						    <row><label style="color:#b8b8b8;" id="personName"></label></row>
+						</col>
+						<col>
+							<row><icon style="align:right" src="desk_setting_n.png"/></row>
+						</col>
+					  </item>
+				    </list>
+				    <list style="background:#ffffff;margin:10 0">
+					    <item style="background:#ffffff;padding:16 10" icon="desk_setting_p.png" onclick="$page.open('desktop/update_pass.xml', {animation:'down-to-up'});">
+					      <col><row><label style="color:#555555;font-size:16;">更改密码</label>
+					      <icon style="align:right" src="desk_setting_n.png"/></row></col>
+						</item>
+						<item style="background:#ffffff;padding:16 10" icon="desk_setting_p.png" onclick="toNewMenu('addInfoChannel','','');">
+					      <col><row><label style="color:#555555;font-size:16;">订阅信息</label>
+					      <icon style="align:right" src="desk_setting_n.png"/></row></col>
+						</item>
+						<item style="background:#ffffff;padding:16 10" icon="desk_setting_p.png" onclick="clearlogin();">
+					      <col><row><label style="color:#555555;font-size:16;">清理缓存</label>
+					      <icon style="align:right" src="desk_setting_n.png"/></row></col>
+						</item>
+						<item style="background:#ffffff;padding:16 10" icon="desk_setting_p.png" onclick="$page.open('desktop/push.xml', {animation:'down-to-up'});">
+					      <col><row><label style="color:#555555;font-size:16;">推送开关</label>
+					      <icon style="align:right" src="desk_setting_n.png"/></row></col>
+						</item>
+						<item style="background:#ffffff;padding:16 10" icon="desk_setting_p.png" onclick="clearAttach();">
+					      <col><row><label style="color:#555555;font-size:16;">清理附件</label>
+					      <icon style="align:right" src="desk_setting_n.png"/></row></col>
+						</item>
+						<!-- item style="background:#ffffff;padding:16 10" icon="desk_setting_p.png">
+					      <col><row><label style="color:#555555;font-size:16;">帮助中心</label>
+					      <icon style="align:right" src="desk_setting_n.png"/></row></col>
+						</item-->
+		            </list>
+		            <list style="background:#ffffff;margin:10 0">
+					    <item style="background:#ffffff;">
+					      <col><row><button style="width:1000;align:center;font-weight:bold;background:#ffffff;color:#999999;font-size:18;" onclick="gologinMenu();">安全退出</button></row></col>
+						</item>
+		            </list>
+		        </content>
+             </tab>
+       </tabs>
+       
+    </page>
+</imag>

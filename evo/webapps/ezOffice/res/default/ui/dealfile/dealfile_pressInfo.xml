@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+    <script>
+        <![CDATA[
+       	 	var storage = $phone.localStorage();
+       	 	var evoUrl = storage.getItem('evoUrl');
+       	 	var workId = $param['workId'];
+       	 	var sys_sys_userId = storage.getItem('sys_sys_userId');
+       	 	var bman = 0;
+        	$page.onload = function(){
+        		// 初始化头部内容
+        		createHeaderContent();
+        		// 创建表单内容
+        		createFormCon();
+        	}
+        	
+        	// 创建头部内容
+        	function createHeaderContent(){
+        		var webServiceUrl = storage.getItem('webServiceUrl');
+        		var workTitle = decodeURIComponent($param['worktitle']);
+        		var workSubmitTime = decodeURIComponent($param['worksubmittime']).substring(0,16);
+        		var empLivingPhoto = evoUrl +'/ezOffice/download/resizeimg.do?url=' + webServiceUrl + "upload/peopleinfo/" + $param['empLivingPhoto'];
+        		if($param['empLivingPhoto'] && $param['empLivingPhoto'] != 'null'){
+	        		$('empLivingPhoto').src = empLivingPhoto;
+        		}        		
+        		$('workflowTitle').text = workTitle;
+        		$('workSubmitTime').text = workSubmitTime;
+        	}
+        	
+        	// 创建表单内容
+        	function createFormCon(){
+        		$('workId').value = workId;
+        		$http.post(
+        			evoUrl + '/ezOffice/dealfile/getPressInfo.do',{workId : workId},
+        			function(data){
+        				if(!data){
+        					alert('获取催办数据失败！');
+        					return false;
+        				}
+        				var jsonData = eval('('+data+')');
+        				if(jsonData.logonerror &&jsonData.logonerror=='1'){
+		         			alert("该账号已在设备"+jsonData.deviceId+"上登录");
+		          			$page.open('../index.xml',{target:'_self'});
+		                    return;
+		                }
+        				if(!jsonData){
+        					alert('催办数据格式有误！');
+        					return false;
+        				}
+        				var result = jsonData.result;
+        				if('success' != result){
+        					alert('获取催办数据失败！');
+        					return false;	
+        				}
+        				var userName = jsonData.data_1;
+						var resultData = jsonData.data_0;
+						var msgResult = resultData.message.result;
+						if('1' != msgResult){
+        					alert('获取催办数据失败！');
+        					return false;	
+        				}
+        				var pressData = resultData.data;
+						var date = new Date();
+						var cbTime = date.getFullYear() + '-' + ((date.getMonth() + 1) > 9 ? (date.getMonth() + 1) : '0' + (date.getMonth() + 1))
+									 + '-' + date.getDate() + ' ' + date.getHours() + ':' + date.getMinutes();
+						var userListCon = '';
+						var userList = pressData.userList;
+						if(userList instanceof Array){
+							for(var i=0,length=userList.length;i<length;i++){
+							  if(sys_sys_userId!=userList[i].userId){
+							    
+								userListCon += '<row><checkbox name="cbUserId" id="cbUserId'+bman+'" value="'+userList[i].userId + ',' + userList[i].userName +'">'+
+								userList[i].userName + '</checkbox></row>';
+							    bman = bman+1;
+							  }
+							}
+						}else if(userList instanceof Object){
+						   if(sys_sys_userId!=userList.user.userId){
+						      
+							  userListCon += '<row><checkbox name="cbUserId" id="cbUserId'+bman+'" value="'+userList.user.userId + ',' + userList.user.userName +'">'+
+							  userList.user.userName + '</checkbox></row>';
+							  bman = bman+1;
+						   }
+						}
+		        		var items = '<item style="col-width:90,*">'+
+								'<col><row><label>被催办人：</label></row></col>'+
+								'<col>'+userListCon+'</col>'+
+							'</item>'+
+							'<item style="col-width:90,*">'+
+								'<col><row><label>催办标题：</label></row></col>'+
+								'<col><row><input type="text" name="cbTitle" value="'+pressData.title+'"/></row></col>'+
+							'</item>'+
+							'<item style="col-width:90,*">'+
+								'<col><row><label>催办内容：</label></row></col>'+
+								'<col><row><input type="text" name="cbContent" value="请抓紧时间办理！"/></row></col>'+
+							'</item>'+
+							'<item style="col-width:90,*">'+
+								'<col><row><label>催办人：</label></row></col>'+
+								'<col><row><input type="text" name="userName" value="'+userName+'" readonly="true" /></row></col>'+
+							'</item>'+
+							'<item style="col-width:90,*">'+
+								'<col><row><label>催办时间：</label></row></col>'+
+								'<col><row><input type="text" name="cbTime" value="'+cbTime+'" readonly="true" /></row></col>'+
+							'</item>';
+		        		$('content_form_list').addMore('<imag><list>' + items + '</list></imag>');
+        			},function(error) {
+				    if (error == 'timeout') {
+						hint('连接服务器超时！');
+				    } else if (error == '404') {
+						hint('链接超时重新登录！');
+				    } else if (error == '500') {
+						hint('内部服务器错误！');
+				    } else {
+						hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+				  }
+        		);
+        	}
+        	
+        	// 发送催办
+        	function sendFlow(){
+        	    var hasper = 'false';
+				for(var i=0;i<bman;i++){
+				  if($('cbUserId'+i)&&$('cbUserId'+i).checked==true){
+				     hasper = 'true';
+				  }
+				}
+				if(hasper=='false'){
+				    alert('请选择催办人！');
+					return false;
+				}
+        		$('sendForm').action = evoUrl + '/ezOffice/workflow/workflowPress.do';
+        		$('sendForm').submit(function(data){
+					if(!data){
+						alert('发送催办失败！');
+						return false;
+					}
+					var jsonData = eval('('+data+')');
+					if(jsonData.logonerror &&jsonData.logonerror=='1'){
+	         			alert("该账号已在设备"+jsonData.deviceId+"上登录");
+	          			$page.open('../index.xml',{target:'_self'});
+	                    return;
+	                }
+					var result = jsonData.result;
+					if('success' != result){
+						alert('发送催办失败！');
+						return false;
+					}
+					if(jsonData.data_0.message.result == '1'){
+						alert('发送催办成功！');
+						$page.close(-2);
+				        $page.close(-1);
+						$page.open('dealfile_index.xml',{target:'_self'});
+					}else{
+						alert('发送催办失败！');
+						return false;
+					}
+				}, function(error) {
+		                alert('发送失败！');
+		        });
+        	}
+        ]]>
+    </script>
+    <page>
+        <title style="background:#3daffe;tint-color:white">
+            <left>
+            	<button role="back"></button>
+            </left>
+            <center><label id="centerTitle">流程催办</label></center>
+        </title>
+        <header>
+        	<list>
+	        	<item style="col-width: 25%,*">
+		        	<col>
+		        		<row>
+	                    	<img src="" style="height:50;width:50;" id="empLivingPhoto" default="login_per.png"/>
+	                    </row>
+		        	</col>
+		        	<col>
+		        		<row>
+	                   		<label id="workflowTitle"></label>
+                    	</row>
+		        		<row>
+	                   		<label style="color:gray;font-size:13;" id="workSubmitTime"></label>
+                    	</row>
+		        	</col>
+	        	</item>
+        	</list>
+        </header>
+        <content style="background:white" id="content_form">
+			<form id="sendForm" multipart="true" prompt="请稍后...">
+				<input type="hidden" name="workId" id="workId" value="" />
+				<input type="hidden" name="smsRight" id="smsRight" value="" />
+				<list id="content_form_list">
+				</list>
+			</form>
+        </content>
+		<footer id="footer" style="background:#F9F9F9">
+			<list type="toolbar" id="footer_list">
+				<item>
+					<col>
+						<row style="height:60;">
+							<button onclick="sendFlow();" style="align:center;background:#3EAFFF,#007aff;color:#F0F9FF,white;border:0;corner-radius:3;width:300;height:40;font-size:14">发送催办</button>
+						</row>
+					</col>
+				</item>
+			</list>
+        </footer>
+    </page>
+</imag>

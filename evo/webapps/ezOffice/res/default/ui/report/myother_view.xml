@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+    <script>
+        <![CDATA[
+            var storage = $phone.localStorage();
+            var evoUrl = storage.getItem('evoUrl');
+			var sendRecordId = storage.getItem('report_reportid');
+			storage.removeItem("report_reportid");
+            $page.onload=function(){
+            	getReport();
+            }
+            
+            function getReport(){
+            	var listJson = {items:[]};
+            	var evoUrl = storage.getItem('evoUrl');
+            	$http.post(evoUrl+'/ezOffice/report/myOtherdetail.do', 
+					{sendRecordId:sendRecordId}, function(data){
+						var obj = JSON.parse(data);
+						if(obj.logonerror &&obj.logonerror=='1'){
+			     		    alert("该账号已在设备"+obj.deviceId+"上登录");
+			     		    $page.open('../index.xml',{target:'_self'});
+			                return;
+			            }
+						var result = obj.message.result;
+						if(result =="1"){
+							var data = obj.data.listReport;
+							var empName = data.reportEmpName+"";
+							if(empName==null || empName==""){
+								empName="";
+							}
+							$("empName").text=empName;
+							var title = data.reportTitle+"";
+							if(title==null || title==""){
+								title="";
+							}
+							$("title").text=title;
+							var reDepart = data.reportDepart+"";
+							if(reDepart==null || reDepart==""){
+								reDepart="";
+							}
+							$("reDepart").text=reDepart;
+							var reReader = data.reportReader+"";
+							if(reReader==null || reReader==""){
+								reReader="";
+							}
+							$("reReader").text=reReader;
+							var reDate = data.reportCourse+"";
+							if(reDate==null || reDate==""){
+								reDate="";
+							}
+							$("reDate").text=reDate;
+							var reCount = data.previousReport+"";
+							if(reCount==null || reCount==""){
+								reCount="";
+							}
+							$("reCount").text=reCount;
+							if(data.reportType=="0"){
+								$("type").text="每日";
+							}else if(data.reportType=="2"){
+								$("type").text="每半月";
+							}else if(data.reportType=="4"){
+								$("type").text="每季";
+							}else if(data.reportType=="5"){
+								$("type").text="每半年";
+							}else if(data.reportType=="6"){
+								$("type").text="每年";
+							}else{
+								$("type").text="临时";
+							}
+							var accessoryNameseries = data.accessoryName+"";
+							var accessorySaveNameseries = data.accessorySaveName;
+							if(accessoryNameseries !=null && accessoryNameseries!=""){
+								viewFiles(accessoryNameseries,accessorySaveNameseries);
+							}
+						}
+				},function(error) {
+					    if (error == 'timeout') {
+						hint('连接服务器超时！');
+					    } else if (error == '404') {
+						hint('链接超时重新登录！');
+					    } else if (error == '500') {
+						hint('内部服务器错误！');
+					    } else {
+						hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+				  });
+            }
+            
+            function viewFiles(accessoryNameseries,accessorySaveNameseries){
+			    $('docFiles').css('display','block');
+			    var path = 'workreport';
+	            $http.post(evoUrl+'/ezOffice/doc/dealFiles.do',
+	              {accessoryNameseries:accessoryNameseries,accessorySaveNameseries:accessorySaveNameseries,path:path},
+	              function(data) {
+		               if(data){
+		                   var obj = JSON.parse(data);
+		                   if(obj.logonerror &&obj.logonerror=='1'){
+				     		    alert("该账号已在设备"+obj.deviceId+"上登录");
+				     		    $page.open('../index.xml',{target:'_self'});
+				                return;
+				           }
+			               var attList = obj.attList;
+			               if(!attList==""){  //不为空，数据进行迭代,并为附件赋值
+			                  for(var k=0;k<attList.length;k++){
+			                      var files = $C('<row style="margin-bottom:5"><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath=workreport'+'&amp;viewName='+attList[k].realname+'\')">'+attList[k].realname+'</label></row>')
+			                      $('docFiles').add(files); 
+			                  }
+			               }else{     //无附件，或者后台处理异常
+			               
+			               }
+		               }
+		               
+		            },function(error) {
+					    if (error == 'timeout') {
+						hint('连接服务器超时！');
+					    } else if (error == '404') {
+						hint('链接超时重新登录！');
+					    } else if (error == '500') {
+						hint('内部服务器错误！');
+					    } else {
+						hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+				  });
+	        }
+        ]]>
+    </script>
+    <page>
+        <title style="background:#38adff;tint-color:white">
+            <left>
+              <button role="back"></button>
+            </left>
+            <center>
+                <label>查看其它汇报</label>
+            </center>
+        </title>
+        <content>
+            <list>
+                <item style="col-width:100,*">
+                    <col>
+                       <label style="font-size:16;color:#555555;">汇报类型：</label>
+                    </col>
+                    <col>
+                        <row><label style="align:right;font-size:16;color:#555555;">其它</label></row>
+                    </col>
+                </item>
+                <item style="col-width:100,*">
+                    <col>
+                       <label style="font-size:16;color:#555555;">类型：</label>
+                    </col>
+                    <col>
+                        <row><label id="type" style="align:right;font-size:16;color:#555555;"></label></row>
+                    </col>
+               </item>
+               <item style="col-width:100,*">
+                   <col >
+                      <label style="font-size:16;color:#555555;">标题：</label>
+                   </col>
+                   <col>
+                      <row><label id="title" name="title" style="align:right;border:0 white;font-size:16;color:#555555;"></label></row>
+                   </col>
+               </item>
+               <item style="col-width:100,*">
+                    <col>
+                       <label style="font-size:16;color:#555555;">被考核人：</label>
+                    </col>
+                    <col>
+                        <row><label id="empName" style="align:right;font-size:16;color:#555555;"></label></row>
+                    </col>
+                </item>
+                <item style="col-width:100,*">
+                    <col>
+                        <label style="font-size:16;color:#555555;">部门：</label>
+                    </col>
+                    <col>
+                        <row><label id="reDepart" style="align:right;font-size:16;color:#555555;"></label></row>
+                    </col>
+                </item>
+                <item style="col-width:100,*">
+                    <col>
+                       <label style="font-size:16;color:#555555;">提交至：</label>
+                    </col>
+                    <col>
+                        <row><label id="reReader" style="align:right;font-size:16;color:#555555;"></label></row>
+                    </col>
+                </item>
+                <item style="col-width:100,*">
+                    <col>
+                        <label style="font-size:16;color:#555555;">汇报日期：</label>
+                    </col>
+                    <col>
+                       <row><label id="reDate" style="align:right;font-size:16;color:#555555;"></label></row>
+                    </col>
+                </item>
+                <item style="col-width:100,*">
+                    <col>
+                       <label style="font-size:16;color:#555555;">相关附件：</label>
+                    </col>
+                    <col id="docFiles" style="display:none;">
+                    	
+                    </col>
+                </item>
+                <item style="col-width:100,*">
+                    <label style="margin-bottom:8;font-size:16;color:#555555;">汇报正文：</label>
+                    <row><label reusekey="reCount" id="reCount" style="font-size:16;color:#555555;"></label></row>
+                </item>
+            </list>
+        </content>
+    </page>
+</imag>

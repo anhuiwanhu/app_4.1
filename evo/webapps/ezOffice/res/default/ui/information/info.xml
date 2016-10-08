@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+<script>
+        <![CDATA[
+			var loadFlag = '0';  //函数执行置为1，提交之前进行判断，若为1，则禁止 提交，防重复提交
+	        var pagerOffset=0;
+	        var commUserChannelId = '';
+	        var comminformationTitle='';  //传递到评论页面的标题
+	        var info_appName;  //显示名
+	        var info_appSaveName;   //保存名
+	        var filesFlag = '0';  //附件弹出框标志位，0为未提交，1表示提交中。
+	         
+	        
+	         //页面家在完成后执行
+	        $page.onload = function() {
+	            var storage = $phone.localStorage();
+	            var informationId = storage.getItem('information_informationId');
+	            var informationType = storage.getItem('information_informationType');
+	            initList(informationId,informationType);
+	        }
+	        
+        function initList(informationId,informationType){
+            if(loadFlag == '1'){
+	        	return false;
+	        }
+	        loadFlag = '1';
+	      //  $('bottom_load').css('display','');
+	        $('info_content').showBottom();
+	        var storage = $phone.localStorage();
+			var evoUrl = storage.getItem('evoUrl');
+            $http.post(evoUrl+'/ezOffice/information/info.do',{informationId:informationId,informationType:informationType },  function(data) {
+                if(data){
+	                var obj = JSON.parse(data);
+	                if(obj.logonerror &&obj.logonerror=='1'){
+	         		    alert("该账号已在设备"+obj.deviceId+"上登录");
+	         		    $page.open('../index.xml',{target:'_self'});
+	                    return;
+	                }
+	                var result = obj.message.result;
+				    if(result =="1"){
+				       var data = obj.data;
+				       var informationTitle =data.informationTitle;   //标题
+				       var displayTitle = data.displayTitle;          //标题是否显示,1显示,0不显示
+				       if(displayTitle == '1'){ 
+				           $('displayTitle').css('display','block');  
+				       }
+				       
+				       //alert(informationTitle.length);
+				       if(informationTitle==null||informationTitle==undefined||informationTitle.length<=0){
+				           informationTitle = "";
+				       }
+				       $('informationTitle').text = informationTitle;
+				       comminformationTitle = informationTitle;
+				       
+				       var informationIssuer = data.informationIssuer;  //发布人
+				       if(informationIssuer==null||informationIssuer==undefined||informationIssuer.length<=0){
+				           informationIssuer = "";
+				       }
+				       $('informationIssuer').text = informationIssuer;
+				       //时间显示，年月日时分秒
+                       var informationIssueTime = data.informationIssueTime;  //发布时间
+                       var informationIssueTimeInfo="";
+                       if(informationIssueTime!=null&&informationIssueTime!=undefined&&informationIssueTime.length>20){
+                         informationIssueTimeInfo = informationIssueTime.substring(0,16)+"发布";
+                       }
+                       $('informationIssueTime').text = informationIssueTimeInfo; 
+				       
+				       /*
+				        *返回图片显示在内容之上。
+				        */
+				       var displayImage = data.displayImage;   //内容是否显示图片1显示，0不显示
+				       var picSaveNameList = data.picList; //获取所有图片的保存名列表
+				       if(displayImage == '1'){
+				       		 if(picSaveNameList!=undefined&&picSaveNameList!=null&&picSaveNameList!=""){
+						           var picSaveName = picSaveNameList.picSaveName;
+						           if(picSaveName!=""&&picSaveName!=null){
+							           if(picSaveName instanceof Array){   //数组
+							           	   var  content_pic = $C('<web id="content_pic" include="forum.css" style="color:#555555;margin:10 10;"></web>');
+								           $('info_content').add(content_pic);
+								           var imgHtmlStr = '';
+								           for(var i=0;i<picSaveName.length;i++){
+								              if(picSaveName[i].length>6){
+								                  var src = obj.serveUrl +  picSaveName[i].substring(0,6)+"/"+picSaveName[i];
+								                  var img_label = '<img src="'+src+'" style="align:center;margin-bottom:20;" />'
+								                  imgHtmlStr += '<article class="wh-article" ><div class="wh-article-fulltext" style="text-align:center;">' + img_label + '</div></article>';
+								              }
+								           }
+								           $('content_pic').html = imgHtmlStr;
+							          }else{   //对象
+							               if(picSaveName.length>6){
+								                  var src = obj.serveUrl + picSaveName.substring(0,6)+"/"+picSaveName;
+								                  var  content_pic = $C('<web id="content_pic" include="forum.css" style="color:#555555;margin:10 10;"></web>');
+					      						  $('info_content').add(content_pic);
+					      						  var img_label = '<img src="'+src+'" style="align:center;margin-bottom:20;" />'
+					       						  $('content_pic').html = '<article class="wh-article" ><div class="wh-article-fulltext" style="text-align:center;">' + img_label + '</div></article>';
+								              }
+							          }
+							       }
+						       }
+				       }
+				       
+				       var informationContent = data.informationContent;
+				      // alert(informationContent);
+				      //需要根据返回的informationType分别显示，2是直接网页跳转。
+				      // alert(data.informationType);
+				       if(data.informationType=="0"){   //返回普通类型
+					       var  content_label = $C('<row style="margin:12 12 0 12;padding: 0 20;"><label style="color:#555555;font-size:12;">'+informationContent+'</label></row>');
+					       $('info_content').add(content_label);
+				       }else if(data.informationType=="1"){   //返回html类型
+					       var  content_label = $C('<web id="content_web" include="forum.css" scalable="true" style="color:#555555;margin:10 10;"></web>');
+					       $('info_content').add(content_label);
+					       $('content_web').html = '<article class="wh-article" ><div class="wh-article-fulltext">' +obj.content+ '</div></article>';
+				       }else if(data.informationType=="2"){   //地址链接
+				           var  content_label = $C('<row><web id="web_2" ></web></row>');
+				           $('info_content').clear();
+				           $('info_content').add(content_label);
+				          // $('web_2').htm1 =  obj.data.informationContent;
+				          $('web_2').html = '<div style="text-align:center;" ><a href="'+obj.data.informationContent+'" >'+obj.data.informationContent+'</a></div>';
+				       }else if(data.informationType=="3"){   //文件链接
+				           var httpserver =  obj.httpserver;
+				           var attachurl = obj.attachurl;
+				           var content = obj.data.informationContent+'';
+				           var sys_server =obj.sys_server;
+				           var  filename = content.substring(content.indexOf(':')+1);
+				           var content_label = $C('<list-item><item style="col-width:85,*;" onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attachurl+'&amp;filename='+filename+'&amp;viewName='+content.substring(0,content.indexOf(':'))+'\')">'+
+								'<col>'+
+									'<row>'+
+										'<label>链接附件</label>'+
+									'</row>'+
+								'</col>'+
+								'<col>'+
+									'<row onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attachurl+'&amp;filename='+filename+'&amp;viewName='+content.substring(0,content.indexOf(':'))+'\')">'+
+										'<label style="color:#330000;text-decoration:underline;">'+content.substring(0,content.indexOf(':'))+'</label>'+
+									'</row> '+
+								'</col>'+
+							'</item></list-item>');
+							$('info_content').add(content_label);
+				       }else if(data.informationType=="4"){   //word 
+				           var httpserver =  obj.httpserver;
+				           var attachurl = obj.attachurl;
+				           var content = obj.data.informationContent;
+				           var sys_server =obj.sys_server;
+				           var viewName = informationTitle;
+				       //    alert(httpserver); alert(attachurl); alert(content);
+				           var content_label = $C('<list-item><item style="col-width:85,*;" onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attachurl+'&amp;filename='+content+'.doc&amp;viewName='+viewName+'.doc\')">'+
+								'<col>'+
+									'<row>'+
+										'<label>信息正文</label>'+
+									'</row>'+
+								'</col>'+
+								'<col>'+
+									'<row onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attachurl+'&amp;filename='+content+'.doc&amp;viewName='+viewName+'.doc\')">'+
+										'<label style="color:#330000;text-decoration:underline;">点击查看正文</label>'+
+									'</row> '+
+								'</col>'+
+							'</item></list-item>');
+							$('info_content').add(content_label);
+				       }else if(data.informationType=="5"){
+				           var httpserver =  obj.httpserver;
+				           var attachurl = obj.attachurl;
+				           var content = obj.data.informationContent;
+				           var sys_server =obj.sys_server;
+				           var viewName = informationTitle;
+				           var content_label = $C('<list-item><item style="col-width:85,*;" onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attachurl+'&amp;filename='+content+'.xls&amp;viewName='+viewName+'.xls\')">'+
+								'<col>'+
+									'<row>'+
+										'<label>信息正文</label>'+
+									'</row>'+
+								'</col>'+
+								'<col>'+
+									'<row onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attachurl+'&amp;filename='+content+'.xls&amp;viewName='+viewName+'.xls\')">'+
+										'<label style="color:#330000;text-decoration:underline;">点击查看正文</label>'+
+									'</row> '+
+								'</col>'+
+							'</item></list-item>');
+							$('info_content').add(content_label);
+				       }else if(data.informationType=="6"){
+				            var httpserver =  obj.httpserver;
+				            var attachurl = obj.attachurl;
+				            var content = obj.data.informationContent;
+				            var sys_server =obj.sys_server;
+				            var viewName = informationTitle;
+				            var content_label = $C('<list-item><item style="col-width:85,*;" onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attachurl+'&amp;filename='+content+'.ppt&amp;viewName='+viewName+'.ppt\')">'+
+								'<col>'+
+									'<row>'+
+										'<label>信息正文</label>'+
+									'</row>'+
+								'</col>'+
+								'<col>'+
+									'<row onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attachurl+'&amp;filename='+content+'.ppt&amp;viewName='+viewName+'.ppt\')">'+
+										'<label style="color:#330000;text-decoration:underline;">点击查看正文</label>'+
+									'</row> '+
+								'</col>'+
+							'</item></list-item>');
+							$('info_content').add(content_label);
+				       }
+				       
+				       var channelName = data.channelName;   //栏目名
+				       if(channelName!=null&&channelName!=""&&channelName!=undefined){
+				            if(channelName.length>=5){
+				               channelName =channelName.substring(0,4)+"...";
+				            }
+				       }
+				       $('channelName').text = channelName;  
+				       
+				       var informationKits = data.informationKits;  //阅读数
+				       if(informationKits==null||informationKits==""){
+				           informationKits = 0;
+				       }
+				       var kitsInfo = informationKits+"阅读";
+				       if(kitsInfo.length>=6){
+				            $('informationKits').text = informationKits+"";
+				       }else{
+				            $('informationKits').text = informationKits+"阅读";
+				       }
+				    //   var commentNum = data.commentNum;     //评论数
+				    //   var commentInfo = commentNum+"评论";
+				    //   if(commentInfo.length>=6){     //阅读数多于3位数，只显示数字
+				     //     $('commentNum').text = commentNum+"";
+				     //  }else{
+				       //   $('commentNum').text = commentInfo;
+				     //  }
+				       
+				       var informationCanRemark = data.informationCanRemark;  //是否有评论
+				       if(informationCanRemark =="1"){
+				          $('commentNum').css('display','');
+				       }else{
+				          $('commentNum').css('display','hidden');
+				       }
+				       
+				       var appList = data.appList;  //附件数量
+				       var  attachFiles = 0;
+				       if(appList!=""&&appList!=null&&appList!=undefined){
+				           var appSaveName = appList.appSaveName;
+				           if(appSaveName instanceof Array){ 
+				               attachFiles = appSaveName.length;
+				           }else if(appSaveName!=null&&appSaveName!=null&&appSaveName!=undefined){
+				               attachFiles = 1;
+				           }else{
+				               attachFiles = 0;
+				           }
+				           
+				           //附件名称信息，附件显示使用
+				          info_appName = appList.appName;  //显示名
+	                      info_appSaveName = appSaveName;   //保存名
+				        }
+				       
+				       if(attachFiles==0){
+				           $('attachFiles').css('display','hidden');
+				           $('attachFilesIcon').css('display','hidden');
+				       }else{
+				           $('attachFiles').text = "查看"+attachFiles+"个附件";
+				           $('attachFiles').css('display','');
+				           $('attachFilesIcon').css('display','');
+				       }
+				       
+	                }
+	            }
+	         //   $('bottom_load').css('display','none');
+	            $('info_content').hideBottom();
+	        	loadFlag = '0';
+	         },function(error){
+				    if (error == 'timeout') {
+				        hint('连接服务器超时！');
+				    } else if (error == '404') {
+				        hint('链接超时重新登录！');
+				    } else if (error == '500') {
+				        hint('内部服务器错误！');
+				    } else {
+				        hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+			    }
+	         );
+        }
+        
+       function  viewAttachFiles(){
+           if(filesFlag=='1'){
+              alert("请勿重复点击！");
+              return;
+           }
+           filesFlag ='1';
+           var objArr_real = info_appName;
+           var objArr_save = info_appSaveName;
+           var accessoryNameseries = '';
+           var accessorySaveNameseries = '';
+           var path = "information";  //附件上传路径
+           if(objArr_real instanceof Array){    //返回多个附件
+        	    for (var i = 0; i < objArr_real.length; i++) {
+        	        if(i<objArr_real.length-1){
+        	            accessoryNameseries +=objArr_real[i]+"|";
+        	            accessorySaveNameseries +=objArr_save[i]+"|";
+        	        }else if(i==objArr_real.length-1){
+        	            accessoryNameseries +=objArr_real[i];
+        	            accessorySaveNameseries +=objArr_save[i];
+        	        }
+        	    }
+        	    viewFiles(accessoryNameseries,accessorySaveNameseries,path);
+        	}else if(objArr_real!=null&&objArr_real!=null&&objArr_real!=undefined){   //返回一条数据
+        	    viewFiles(objArr_real,objArr_save,path);
+        	}
+           
+       }
+        
+        function viewFiles(accessoryNameseries,accessorySaveNameseries,path){
+            //初始化弹出框
+            $('docFiles').clear();
+            var fileTitle = $C('<list-item><item><row><label style="align:center">附件列表</label></row></item></list-item>');
+	        $('docFiles').add(fileTitle); 
+            var storage = $phone.localStorage();
+		    var evoUrl = storage.getItem('evoUrl');
+            $http.post(evoUrl+'/ezOffice/doc/dealFiles.do',{accessoryNameseries:accessoryNameseries,accessorySaveNameseries:accessorySaveNameseries,path:path},  function(data) {
+              // alert(data);
+               if(data){
+                   var obj = JSON.parse(data);
+                   if(obj.logonerror &&obj.logonerror=='1'){
+	         		    alert("该账号已在设备"+obj.deviceId+"上登录");
+	         		    $page.open('../index.xml',{target:'_self'});
+	                    return;
+	               }
+	               var attList = obj.attList;
+	               if(!attList==""){  //不为空，数据进行迭代,并为附件赋值
+	                  for(var k=0;k<attList.length;k++){
+	                      var files = $C('<list-item><item icon="mail_fujian.png"><label  style="text-decoration:underline;color:#38adff;"  onclick="$(\'popupmenu\').close();$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath=information'+'&amp;viewName='+attList[k].realname+'\')">'+attList[k].realname+'</label></item></list-item>');
+	                      $('docFiles').add(files); 
+	                  }
+	                  $('popupmenu').open();
+	               }else{     //无附件，或者后台处理异常
+	               
+	               }
+               }
+               filesFlag = '0';
+            });
+        }
+        ]]>
+</script>
+	<page style="background:white;">
+		<title style="background:#3daffe;tint-color:white;">
+		    <left>
+				<button role="back"/>
+			</left>
+            <center>
+                <label>查看信息</label>
+            </center>
+            <right>
+                <button target="_blank" style="color:#FFFFFF;font-size:18;display:hidden;" id="commentNum" onclick="toCommentList()" >评论</button>
+            </right>
+	    </title>
+	    <popupmenu id="popupmenu" position="center" onclose=""  style="width:260;height:260;border:1 white;background:white;">
+            <list style="border:0 white;" id="docFiles" >
+                
+            </list> 
+        </popupmenu>
+        <header>
+        	<list>
+        	    <item style="display:hidden;" id="displayTitle">
+					  <row>
+					      <label style="align:center;padding-top:-5;color:#555555;font-size:20;font-weight:bold;" id="informationTitle"></label>
+					  </row>
+					  <row style="margin-bottom:0;margin-top:7;">
+					      <label style="font-size:12;color:#b8b8b8;align:center;" id="informationIssuer"></label>
+						  <label style="font-size:12;color:#b8b8b8;margin-left:10;align:center;" id="informationIssueTime" ></label>
+					  </row>
+                </item>
+	        </list>
+        </header>
+	    <content id="info_content">
+	       
+         </content>
+         <footer id="test_footer" style="padding:5;margin-bottom:10;margin-top:10;">
+               <row>
+                  <icon src="mail_fujian.png" style="margin-left:10;display:hidden" id="attachFilesIcon"/><label style="align:left;font-size:16;margin-left:5;" id="attachFiles" onclick="viewAttachFiles()"></label>
+                  <button style="corner-radius:6;color:#b8b8b8;background:#ffffff;border:1 #b8b8b8;font-size:12;width:90;height:25;align:right;margin-right:10;padding:0 0;"  id="channelName"></button>
+                  <button style="corner-radius:6;color:#b8b8b8;background:#ffffff;border:1 #b8b8b8;font-size:12;width:90;height:25;align:right;margin-right:10;padding:0 0;" id="informationKits"></button>
+               </row>
+          </footer>
+	</page>
+	<script>
+        <![CDATA[
+        function toCommentList(){  //评论列表
+           var storage = $phone.localStorage();
+	       storage.setItem('information_informationTitle',comminformationTitle);
+	       $page.open('comment.xml', {animation:'down-to-up'});
+        }
+
+      ]]>
+   </script>
+</imag>

@@ -1,0 +1,1015 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+    <script>
+        <![CDATA[
+            var info = $phone.info();
+            var fromXml = $param['fromXml'];
+            var fujianwidth='';
+            if(info['platform']=='android'){
+              fujianwidth='width:200';
+            }
+        	//流程id---在打开流程表单页时设置的数据 保存在客户端本地
+        	var storage;
+        	var workId;
+        	var workStatus;
+        	var detailUrl;
+        	var webServiceUrl;
+        	var evoUrl;
+        	var commentmustnonull = '';
+        	var draftPerson = '';  //发起人
+        	var worktitle = '';  //流程标题 
+        	var worksubmittime = '';   //发起时间
+        	var passRoundCommFieldName = '';  //批示意见对于字段数据库名称
+        	var commFieldExistIsTrue = false;  ////批示意见是否在表单与节点中同时存在
+        	var bodyIndex = 1 ;      //正文index
+        	
+        	
+        	(function(){
+        		storage = $phone.localStorage();
+	           	workStatus = storage.getItem('workflow_workStatus');
+	           	workId = storage.getItem('workflow_workId');
+	           	webServiceUrl = storage.getItem('webServiceUrl');
+	           	evoUrl = storage.getItem('evoUrl');
+        	})();
+        	
+        	var itemContent = '';
+        	$page.onload = function(){
+        		$http.progress('正在加载，请稍后...').post(
+        			evoUrl + '/ezOffice/dealfile/process.do',{workId : workId},
+        			function(data){
+        				if(!data){
+        					alert('数据获取失败！');
+        				}
+        				var jsonData = eval('(' + data + ')');
+        				if(jsonData.logonerror && jsonData.logonerror=='1'){
+		         			alert("该账号已在设备"+jsonData.deviceId+"上登录");
+		          			$page.open('../index.xml',{target:'_self'});
+		                    return;
+		                } 
+        				var workInfoResult = jsonData.data_0.message.result;
+        				var detailResult = jsonData.data_1.message.result;
+        				//var personResult = jsonData.data_2.message.result;  || personResult != '1'
+        				if(workInfoResult != '1' || detailResult != '1'){
+        					alert('数据获取失败！');
+        				}
+        				var workInfo = jsonData.data_0.data.workInfo;
+        				commentmustnonull = workInfo.commentmustnonull;
+						var detailData = jsonData.data_1.data;
+        				var fieldList = detailData.fieldList.field;
+        				var showType;
+        				var readWrite;
+        				var fieldType;
+        				var $contentFormList = $('content_form_list');
+        				var selectContent = '';
+        				if(workInfo.passRoundCommField!=null && workInfo.passRoundCommField!=''){
+        					passRoundCommFieldName = workInfo.passRoundCommField.replace(/,/g,'');; //批示意见字段名赋值
+        				}
+        				//创建流程图
+       					createFlowImg(workInfo.flowgraphurl,jsonData.data_2.picRootPath);
+       					$('headers').css('display','');
+       					//初始化表单数据
+       					var officeList = jsonData.data_0.data.officelist;
+        				if(fieldList instanceof Array){
+        					for(var i=0,length=fieldList.length;i<length;i++){
+        						createFormData(fieldList[i],showType,readWrite,fieldType,selectContent,officeList);
+        					}
+        				}else if(fieldList instanceof Object){
+       						createFormData(fieldList,showType,readWrite,fieldType,selectContent,officeList);
+        				}else{
+        					
+        				}
+       					$contentFormList.addMore('<imag><list>' + itemContent + '</list></imag>');
+       					// 创建子表节点
+       					createSubTableCon($contentFormList,workInfo,detailData);
+						// 创建批示意见、退回意见
+						createCommentCon($contentFormList,workInfo,detailData,officeList);
+						// 创建工作流程信息隐藏域
+						createWorkInfoHiddenArea(workInfo,detailData);
+						//创建编辑正文附件名称
+						createBodyFileName(workInfo);
+						// 创建附件内容
+						createAttachCon();
+       					// 创建底部内容
+       					createFootContent(workInfo);
+        			},function(error) {
+				    if (error == 'timeout') {
+						hint('连接服务器超时！');
+				    } else if (error == '404') {
+						hint('链接超时重新登录！');
+				    } else if (error == '500') {
+						hint('内部服务器错误！');
+				    } else {
+						hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+				  }
+        		);
+	        }
+	        function createBodyFileName(workInfo){
+	        	draftPerson = workInfo.worksubmitperson == null ? '': workInfo.worksubmitperson;
+	        	worktitle =  workInfo.worktitle== null ? '': workInfo.worktitle;
+	        	worktitle = worktitle.replace('等待您的审阅！','');
+	        	worktitle = worktitle.replace('等待您的审阅','');
+	        	worktitle = worktitle.replace('等待您的办理！','');
+	        	worktitle = worktitle.replace('等待您的办理','');
+	        	worksubmittime = workInfo.worksubmittime == null ? '': workInfo.worksubmittime;
+	        	if(worksubmittime != null && worksubmittime != '' && worksubmittime.length>10){
+	        		worksubmittime = worksubmittime.substring(0,10).replace(/-/g,'');
+	        	}
+	        }
+	        
+	        // 退回流程
+	        function backFlow(){
+	        	//if(confirm('确定退回？')){
+					var urlParam = $('backForm').serialize()+'&empLivingPhoto=' + $param['empLivingPhoto'];
+					$page.open('../workflow/workflow_back.xml?'+urlParam,{target:'_self'});
+	        	//}
+	        }
+	        
+	        // 创建底部内容
+	        function createFootContent(workInfo){
+	        	var haveBackButton = workInfo.havebackbutton;
+	        	var modiButton = workInfo.modibutton;
+	        	storage.setItem('workflow_tableId',workInfo.worktable_id ? workInfo.worktable_id : '');
+				storage.setItem('workflow_recordId',workInfo.workrecord_id ? workInfo.workrecord_id : '');
+				storage.setItem('workflow_activityId',workInfo.initactivity ? workInfo.initactivity : '');
+				storage.setItem('workflow_stepCount',workInfo.workstepcount ? workInfo.workstepcount : '');
+				storage.setItem('workflow_isForkTask',workInfo.isForkTask ? workInfo.isForkTask : '');
+				storage.setItem('workflow_forkStepCount',workInfo.forkStepCount ? workInfo.forkStepCount : '');
+				storage.setItem('workflow_forkId',workInfo.forkId ? workInfo.forkId : '');
+				storage.setItem('workflow_smsRight',workInfo.smsRight ? workInfo.smsRight : '');
+				var empLivingPhoto = $param['empLivingPhoto'];
+				if(modiButton.indexOf('cmdTranRead')>-1){
+					var itemContent = 			
+		        	'<item style="col-width: 40%,60%">'+
+						'<col>'+
+							'<row style="height:50;">'+
+								'<button onclick="sendFlow();" style="align:center;background:#3EAFFF,#007aff;color:#F0F9FF,white;border:0;corner-radius:3;width:300;height:38;font-size:14">发送</button>'+
+							'</row>'+
+						'</col>'+
+						'<col onclick="openPopMenu(\'' + modiButton + '\')">'+
+						            '<row style="height:50;">'+
+										'<button onclick="openPopMenu(\'' + modiButton + '\')" style="align:center;background:workflow_footer_menu.png;width:20;height:20"/>'+
+						            '</row>'+
+						'</col>'+
+					'</item>';
+				}else{
+					var itemContent = 			
+		        	'<item>'+
+						'<col>'+
+							'<row style="height:50;">'+
+								'<button onclick="sendFlow();" style="align:center;background:#3EAFFF,#007aff;color:#F0F9FF,white;border:0;corner-radius:3;width:300;height:38;font-size:14">发送</button>'+
+							'</row>'+
+						'</col>'+
+					'</item>';
+				}
+	        	
+	        	$('footer_list').addMore('<imag><list>' + itemContent + '</list></imag>');
+	        }
+	        
+	         // 转阅
+	        function openPopMenu(modiButton){
+	            $('main_popupmenu').position='bottomright';
+	            $('main_popupmenu').style='offset-x:5;offset-y:-55';
+	            
+	            $('popupmenu_list').style='';
+	            $('popupmenu_list').clear();
+	            var itemvar = '';
+	        	itemvar = $C('<list-item><item id="tranInfoItem" onclick="tranRead();"  style="background:#3daffe,#474747;margin:0;padding:0;"><col><row style="margin:10;padding:10;"><label style="align:center;color:#F0F9FF,white;font-size:14;">转阅</label></row></col></item></list-item>');
+	            $('popupmenu_list').add(itemvar); 
+	       		$('main_popupmenu').open();
+	        }
+	        
+	        // 转办发送
+			function tranRead(){
+				$('main_popupmenu').close();
+				$page.open('../workflow/workflow_tranRead.xml?fromXml='+fromXml+'&workId='+workId+'&workcurstep='+encodeURIComponent($('workcurstep').value),
+				{animation:'down-to-up'});
+			}
+	        
+	        //创建流程图
+	        function createFlowImg(flowGraphUrl,picRootPath){
+	        	if(!(flowGraphUrl instanceof Array)){
+	        	//	var imgPath = webServiceUrl + 'upload/workflow_acc/' + flowGraphUrl + '?rand=' + Math.random();
+		        	var imgPath = picRootPath+flowGraphUrl;
+		        	$('flowgraphurl').value = imgPath;
+		        	var image = $C('<img src="' + imgPath + '" id="flowImg" progress="true" style="align:center;"/>');
+		        	$('content_flow_pic').add(image);
+	        	}else{
+	        		$('tabbar').remove($('imgItem'));
+	        		$('contents').remove($('content_flow_pic'));
+	        	}
+	        }
+	        
+			//创建工作流程信息隐藏域
+			function createWorkInfoHiddenArea(workInfo,detailData){
+				var paramList = detailData.paramList;
+				var fieldList = detailData.fieldList;
+				$('workcurstep').value = workInfo.workcurstep;
+				// 发送表单提交数据
+				/*
+				$('workId').value = workInfo.wf_work_id;
+				$('__sys_infoId').value = paramList.workrecord_id;
+				$('__sys_pageId').value = paramList.worktable_id;
+				$('__sys_formType').value = paramList.formType;
+				$('__main_tableName').value = fieldList.tableName;
+				$('tableId').value = workInfo.worktable_id;
+				$('recordId').value = workInfo.workrecord_id;
+				$('activityId').value = workInfo.initactivity;
+				$('stepCount').value = workInfo.workstepcount;
+				$('actiCommFieldType').value = workInfo.actiCommFieldType;
+				$('trantype').value = workInfo.trantype;
+				$('isForkTask').value = workInfo.isForkTask;
+				$('forkStepCount').value = workInfo.forkStepCount;
+				$('forkId').value = workInfo.forkId;
+				$('activityclass').value = paramList.activityclass;
+				$('commentField').value = workInfo.commentField;
+				$('commentmustnonull').value = workInfo.commentmustnonull;
+				$('backnocomment').value = workInfo.backnocomment;
+				$('backMailRange').value = workInfo.backMailRange;
+				$('smsRight').value = workInfo.smsRight;
+				$('worktitle').value = workInfo.worktitle;
+				$('workcurstep').value = workInfo.workcurstep;
+				$('worksubmittime').value = workInfo.worksubmittime;
+				*/
+			}
+			
+			//-------------------------------子表相关----------------------------------
+			// 创建子表数据
+			function createSubTableCon(contentFormList,workInfo,detailData){
+				var itemContent = '';
+				var subTableList = detailData.subTableList;
+				if(!subTableList){
+					return false;
+				}
+				var subFieldList;
+				var fieldCount = 0;
+				if(subTableList instanceof Array){
+					for(var i=0,length=subTableList.length;i<length;i++){
+						subFieldList = subTableList[i].subFieldList;
+						if(subFieldList instanceof Array){
+							fieldCount = subFieldList.length;
+						}else if(subFieldList instanceof Object){
+						    fieldCount = 1;
+						}else{
+							fieldCount = 0;
+						}
+						itemContent = '<item id="sub_' + i + '" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="align:left;font-size:16;color:#555555">子表('+subTableList[i].name+')填写:</label></row></col><col style="padding:10;margin:10;"><row>'+
+										   '<input readonly="true" style="border:0 white;font-size:16;text-align:right;color:#555555" type="text" placeholder="" value="'+fieldCount+'条子表数据>"/></row></col></item>';
+						contentFormList.addMore('<imag><list>' + itemContent + '</list></imag>');
+						$('sub_' + i).onclick = "openSubTableCon('" + JSON.stringify(subFieldList) + "')";
+					}
+				}else if(subTableList instanceof Object){
+						subFieldList = subTableList.subTable.subFieldList;		
+						if(!subFieldList){
+							subFieldList = subTableList.subTable;
+						}else{
+							if(subFieldList instanceof Array){
+								fieldCount = subFieldList.length;
+								itemContent = '<item id="sub" onclick="openSubTableCon('+subFieldList+');" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="align:left;font-size:16;color:#555555">子表('+subTableList.subTable.name+')填写:</label></row></col><col style="padding:10;margin:10;"><row>'+
+										   '<input readonly="true" style="border:0 white;font-size:16;text-align:right;color:#555555" type="text" value="'+fieldCount+'条子表数据>"/></row></col></item>';
+				                contentFormList.addMore('<imag><list>' + itemContent + '</list></imag>');
+								$('sub').onclick = "openSubTableCon('" + JSON.stringify(subFieldList) + "')";
+							}else if(subFieldList instanceof Object){
+							     if(subFieldList.dataId == null || subFieldList.dataId == ''|| subFieldList.dataId == '[]' ){  //没有子表
+								    	  fieldCount = 0;
+								 }else{
+								        fieldCount = 1;
+								 		itemContent = '<item id="sub" onclick="openSubTableCon('+subFieldList+');" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="align:left;font-size:16;color:#555555">子表('+subTableList.subTable.name+')填写:</label></row></col><col style="padding:10;margin:10;"><row>'+
+										   '<input readonly="true" style="border:0 white;font-size:16;text-align:right;color:#555555" type="text" value="'+fieldCount+'条子表数据>"/></row></col></item>';
+						                contentFormList.addMore('<imag><list>' + itemContent + '</list></imag>');
+										$('sub').onclick = "openSubTableCon('" + JSON.stringify(subFieldList) + "')";
+								 }
+							}else{
+							    fieldCount = 0;
+							}
+						}
+				}
+			}
+			// 打开子表
+			var subTabelItemContent = '';
+			function openSubTableCon(subFieldList){
+				$('subTabel_form_list').clear();
+				subTabelItemContent = '';
+				var subFieldList = JSON.parse(subFieldList);
+				if(subFieldList instanceof Array){
+					for(var i=0,length=subFieldList.length;i<length;i++){
+				        subTabelItemContent += '<item ><col><row><label style="align:left;font-size:14;">表'+eval(i+1)+'</label></row></col></item>';
+						createSubTableField(subFieldList[i].field);
+						subTabelItemContent += '<item></item>';
+					}
+				}else if(subFieldList instanceof Object){
+				    subTabelItemContent += '<item ><col><row><label style="align:left;font-size:14;">表1</label></row></col></item>';
+					createSubTableField(subFieldList.field);
+					subTabelItemContent += '<item></item>';
+				}
+				//$page.open('dealfile_subProcess.xml?workId=' + workId);
+				$('subTabel_form_list').addMore('<imag><list>' + subTabelItemContent + '</list></imag>');
+				$('subTabel_form_list').css('display','');
+				$('content_form_list').css('display','none');
+				$('subTable_footer_list').css('display','');
+				$('footer_list').css('display','none');
+				createSubTableFoot();
+			}
+			// 创建子表字段数据
+			function createSubTableField(fields){
+				//var fields = JSON.parse(fields);
+				if(fields instanceof Array){
+					for(var i=0,length=fields.length;i<length;i++){
+						getFieldCon(fields[i]);
+					}
+				}else if(fields instanceof Object){
+						getFieldCon(fields);
+				}
+			}
+			// 具体子表字段展示函数
+			function getFieldCon(field){
+				attachmentArray = new Array();
+				if(field.showtype == '115'){
+	        		subTabelItemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label>' + field.name + ':</label>';
+	        		//附件上传
+					attIndex = attIndex++;
+	        		var attId = 'attachments_' + attIndex;
+	        		if(field.value && field.value.length > 0){
+		        		attachmentArray.push(field.value + ';attachments_' + attIndex);
+	        		}
+	        		subTabelItemContent += '</row></col><col id="' + attId + '" style="padding:10;margin:10;"></col></item>';
+				}else if(field.showtype == '116'){
+					// word
+					subTabelItemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label>' + field.name + ':</label>'+
+	        		'</row></col><col style="padding:10;margin:10;" id="docFiles"></col></item>';
+	        		viewFiles('docFiles',"正文",field.value+".doc","information",".doc");   //显示名不能为空
+				}else if(field.showtype == '117'){
+					// excel
+					subTabelItemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label>' + field.name + ':</label>'+
+	        		'</row></col><col style="padding:10;margin:10;" id="xlsFiles"></col></item>';
+	        		viewFiles('xlsFiles',"正文",field.value+".xls","information",".xls");   //显示名不能为空
+				}else if(field.showtype == '118'){
+				    // wps
+					subTabelItemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label>' + field.name + ':</label>'+
+	        		'</row></col><col style="padding:10;margin:10;" id="wpsFiles"></col></item>';
+	        		viewFiles('wpsFiles',"正文",field.value+".wps","information",".wps");   //显示名不能为空
+				}else{
+					subTabelItemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label>' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+					subTabelItemContent += '<row><label style="align:right">' + (field.hiddenval == "undefined" ? "" : field.hiddenval) + '</label></row></col></item>';
+				}
+				// 创建附件内容
+				createAttachCon();
+			}
+			// 创建打开子表时的底部按钮
+			function createSubTableFoot(){
+				$('subTable_footer_list').clear();
+				var footContent = 			
+			        	'<item>'+
+							'<col>'+
+								'<row style="height:50;">'+
+									'<button onclick="goBack();" '+
+									'style="align:center;background:#3EAFFF,#007aff;color:#F0F9FF,white;border:0;corner-radius:3;width:400;height:38;font-size:14">返回</button>'+
+								'</row>'+
+							'</col>'+
+						'</item>';
+				$('subTable_footer_list').addMore('<imag><list>' + footContent + '</list></imag>');
+			}
+			
+			// 返回主表界面
+			function goBack(){
+				$('subTabel_form_list').css('display','none');
+				$('content_form_list').css('display','');
+				$('subTable_footer_list').css('display','none');
+				$('footer_list').css('display','');
+			}
+			//-------------------------------子表相关----------------------------------
+
+			// 创建审批意见、退回意见
+			function createCommentCon(contentFormList,workInfo,detailData,officeList){
+				var itemContent = '';
+				var passRoundCommField = workInfo.passRoundCommField;   //待办文件使用passRoundCommField字段
+				var passRoundCommFieldType = workInfo.passRoundCommFieldType;
+				var commentList = detailData.commentList;
+				if(passRoundCommFieldType != '-1' && (passRoundCommField == '-1' || passRoundCommField == 'nullCommentField' ||
+				   passRoundCommField == 'autoCommentField' || passRoundCommField == 'null'||passRoundCommField==null)){   
+				    if(commFieldExistIsTrue == true){
+				    	return;
+				    }
+				    var passRoundCommFieldName = workInfo.passRoundCommFieldName;
+				    var commentViewName = '';
+				    var  workcurstep =  workInfo.workcurstep;
+				    if(passRoundCommFieldName == '' || passRoundCommFieldName == null){
+				    	commentViewName = workcurstep ;
+				    }else{
+				    	commentViewName = passRoundCommFieldName;
+				    }
+					itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">'+commentViewName+':</label></row></col><col style="padding:10;margin:10;"><row>'+
+								   '<textarea style="font-size:16;color:#555555" rows="5" name="comment_input" id="comment_input" maxrows="5"></textarea></row></col></item>'+
+								   '<item id="" style="col-width:*,40,40,50,40"><col><row></row></col>'+
+								   <!-- '<col><row><icon id="qianzhang" src="workflow_spread.png" style="display:none;width:30;height:30;"/></row></col>'+ -->
+								   '<col><row><icon id="shouxie" onclick="doDraft();" src="workflow_sx.png" style="display:none;width:30;height:30;"/></row></col>'+
+								   '<col><row><icon id="yuyin" onclick="doRecordSound();" src="workflow_yy.png" style="display:none;width:30;height:30;"/></row></col>'+
+								   '<col><row>'+
+								   '<icon id="commentAdd" src="deskperson_add.png" style="width:30;height:30;align:right;" onclick="openCommentMenu();"/>'+
+								   '</row></col></item>'+
+								   '<item onclick="openUseComment(\'' + officeList + '\');"><row><label style="align:right;color:#C9C9C9;">选择常用语></label></row></item>'+
+								   '<item id="comment_input_sxyy" style="display:none;col-width:40,*,40"></item>';
+				}
+				if(commentList){
+					if(commentList instanceof Array){
+						for(var i=0,length=commentList.length;i<length;i++){
+							commentType = commentList[i].type;
+							if(commentType == '4'){
+								// 手写
+								//commentShouxie = evoUrl+'/ezOffice/download/file.do?url='+encodeURIComponent(commentShouxie)+'&amp;filename=aaa.png&amp;uploadPath=workflow_acc&amp;isDecode=false';
+								commentShouxieOaUrl = webServiceUrl + 'upload/workflow_acc/' + commentList[i].content.substring(0,6) + '/' + commentList[i].content;
+								commentShouxie = evoUrl+'/ezOffice/download/resizeHandSign.do?url='+commentShouxieOaUrl;
+								itemContent += '<item onclick="view_sxContent(\'' + commentShouxie + '\');" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">'+commentList[i].step+'</label></row></col><col style="padding:10;margin:10;"><row>'+
+											   '<img src="'+commentShouxie+'"/></row>';
+							}else if(commentType == '5'){
+								// 语音
+								commentYuyin = webServiceUrl + 'upload/workflow_acc/' + commentList[i].content.substring(0,6) + '/' + commentList[i].content;
+								itemContent += '<item onclick="playSound(\'' + commentYuyin + '\',\''+commentList[i].content+'\')" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">'+commentList[i].step+'</label></row></col><col style="padding:10;margin:10;"><row>'+
+											   '<label style="align:left;color:#555555;font-size:16;">'+(commentList[i].content ? commentList[i].content : "")+'</label></row>';
+							}else{
+								itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">'+commentList[i].step+'</label></row></col><col style="padding:10;margin:10;"><row>'+
+											   '<label style="align:left;color:#555555;font-size:16;">'+(commentList[i].content ? commentList[i].content : "")+'</label></row>';
+							}
+							itemContent += '<row><label style="align:right;color:#555555;font-size:16;">'+commentList[i].person+'('+commentList[i].date+')</label></row></col></item>';
+						}
+					}else if(commentList instanceof Object){
+						commentType = commentList.comment.type;
+						if(commentType == '4'){
+							// 手写
+							commentShouxieOaUrl = webServiceUrl + 'upload/workflow_acc/' + commentList.comment.content.substring(0,6) + '/' + commentList.comment.content;
+						    commentShouxie = evoUrl+'/ezOffice/download/resizeHandSign.do?url='+commentShouxieOaUrl;
+							itemContent += '<item onclick="view_sxContent(\'' + commentShouxie + '\');"  style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">'+commentList.comment.step+'</label></row></col><col style="padding:10;margin:10;"><row>'+
+									   	   '<img src="'+commentShouxie+'"/></row>';
+						}else if(commentType == '5'){
+							// 语音
+							commentYuyin = webServiceUrl + 'upload/workflow_acc/' + commentList.comment.content.substring(0,6) + '/' + commentList.comment.content;
+							itemContent += '<item onclick="playSound(\'' + commentYuyin + '\',\''+commentList.comment.content+'\')" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">'+commentList.comment.step+'</label></row></col><col style="padding:10;margin:10;"><row>'+
+										   '<label style="color:#330000;text-decoration:underline;align:right">'+(commentList.comment.content ? commentList.comment.content : "")+'</label></row>';
+						}else{
+							itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col><row><label style="align:left;font-size:16;color:#555555">'+commentList.comment.step+'</label></row></col><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+
+										   '<label style="align:right;color:#555555;font-size:16;">'+(commentList.comment.content ? commentList.comment.content : "")+'</label></row>';
+						}
+						itemContent += '<row><label style="align:right;color:#555555;font-size:16;">'+commentList.comment.person+'('+commentList.comment.date+')</label></row></col></item>';
+					}
+				}
+				// 退回意见填写未处理 TODO
+				var commentMustNoNull = workInfo.commentmustnonull;
+				var backNoComment = workInfo.backnocomment;
+				var backComment = detailData.backComment;
+				if(backComment){
+					itemContent += '<item style="col-width:90,*"><col><row><label style="align:left;font-size:16;color:#555555">退回意见:</label></row></col><col style="padding:10;margin:10;"><row>'+
+								   '<label style="align:right;color:#555555;font-size:16;">'+backComment+'</label></row></col></item>';
+				}
+				contentFormList.addMore('<imag><list>' + itemContent + '</list></imag>');
+			}
+
+	        //全屏查看
+	        function fullScreenBrowse(){
+				var flowgraphurl =$('flowgraphurl').value;
+				storage.setItem('flowgraphurl',flowgraphurl);
+				$page.open('dealfile_viewBigPic.xml',{target:'_blank'});
+	        }
+	               
+	        // 需要创建附件下载内容的数组
+	        var attachmentArray = new Array();
+	        // 创建附件下载内容
+	        function createAttachCon(){
+	        	var attachments;
+	        	attachmentArray.map(function(attachmentInfo){
+	        		attachments = attachmentInfo.split(';');
+					$http.post(evoUrl + '/ezOffice/doc/dealFiles.do', {
+						accessoryNameseries : attachments[1].replace(/,/g,'|'),
+						accessorySaveNameseries : attachments[0].replace(/,/g,'|'),
+						path : 'customform'
+					}, function(data) {
+						if (data) {
+							var obj = JSON.parse(data);
+							if(obj.logonerror && obj.logonerror=='1'){
+			         			alert("该账号已在设备"+obj.deviceId+"上登录");
+			          			$page.open('../index.xml',{target:'_self'});
+			                    return;
+			                } 
+							var attList = obj.attList;
+							var attachIdArr = attachmentInfo.split(';');  //解决异步提交时，会造成获取的attachIdArr不是请求的那个。后面的数组元素会覆盖前面的数组元素。
+							if (!attList == '') { //不为空，遍历,并为附件赋值
+								for (var k = 0; k < attList.length; k++) {
+									var files = $C('<row><label style="color:#330000;color:blue;align:right;"  onclick="$http.download(\'' + evoUrl+'/ezOffice/download/file.do?url=' + attList[k].attachurlser + '&amp;filename=' + attList[k].savename +'&amp;viewName=' + attList[k].realname + '\')">' + attList[k].realname + '</label></row>');
+									$(attachIdArr[2]).add(files);
+								}
+							} else { //无附件，或者后台处理异常
+								alert('附件下载失败！');
+							}
+						}
+					},function(error) {
+				    if (error == 'timeout') {
+						hint('连接服务器超时！');
+				    } else if (error == '404') {
+						hint('链接超时重新登录！');
+				    } else if (error == '500') {
+						hint('内部服务器错误！');
+				    } else {
+						hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+				  });
+	        	});
+	        }
+	        
+	        // 附件数标识
+	        var attIndex = 0;
+	        //初始化表单数据
+	        function createFormData(field,showType,readWrite,fieldType,selectContent,officeList){
+	        	showType = field.showtype;
+	        	readWrite = field.readwrite;
+	        	fieldType = field.fieldtype;
+	        	if(showType == '115'){
+	        		var attId = 'attachments_' + attIndex;
+	        		//附件上传
+	        		if(field.value && field.value.length > 0){
+		        		attachmentArray.push(field.value + ';attachments_' + attIndex);
+	        		}
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">' + field.name + ':</label>'+
+	        		'<input type="hidden" value="' + field.value + '"/></row></col><col id="' + attId + '" style="padding:10;margin:10;"></col></item>';
+	        		attIndex++;
+	        	}else if(showType == '116'){
+	        		// Word编辑
+		        	itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">' + field.name + ':</label>'+
+	        		'</row></col><col style="padding:10;margin:10;" id="docFiles"></col></item>';
+	        		viewFiles('docFiles',"正文",field.value+".doc","information",".doc");   //显示名不能为空
+	        	}else if(showType == '117'){
+	        		// Excel编辑
+		        	itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">' + field.name + ':</label>'+
+	        		'</row></col><col style="padding:10;margin:10;" id="xlsFiles"></col></item>';
+	        		viewFiles('xlsFiles',"正文",field.value+".xls","information",".xls");   //显示名不能为空
+	        	}else if(showType == '118'){
+	        		// WPS编辑
+		        	itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">' + field.name + ':</label>'+
+	        		'</row></col><col style="padding:10;margin:10;" id="wpsFiles"></col></item>';
+	        		viewFiles('wpsFiles',"正文",field.value+".wps","information",".wps");   //显示名不能为空
+	        	}else if(showType == '401'){
+	        	    if(passRoundCommFieldName == field.sysname){
+	        	    	commFieldExistIsTrue = true;
+	        	    }
+		        	itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">' + field.name + ':</label>'+
+		        				   '</row></col><col style="padding:10;margin:10;">';
+        			//批示意见
+	        		var commentList = field.dataList;
+	        		var commentType = '';
+	        		var commentShouxie = '';
+					var commentYuyin = '';
+					if(commentList){
+		        		if(commentList instanceof Array){
+							for(var i=0,length=commentList.length;i<length;i++){
+								commentType = commentList[i].type;
+								if(commentType == '4'){
+									// 手写
+									commentShouxie = webServiceUrl + 'upload/workflow_acc/' + commentList[i].content.substring(0,6) + '/' + commentList[i].content;
+									//commentShouxie = evoUrl+'/ezOffice/download/file.do?url='+encodeURIComponent(commentShouxie)+'&amp;filename=aaa.png&amp;uploadPath=workflow_acc&amp;isDecode=false';
+									itemContent += '<row onclick="view_sxContent(\'' + commentShouxie + '\');"><img src="'+commentShouxie+'"/></row>';
+								}else if(commentType == '5'){
+									// 语音
+									commentYuyin = webServiceUrl + 'upload/workflow_acc/' + commentList[i].content.substring(0,6) + '/' + commentList[i].content;
+									itemContent += '<row onclick="playSound(\'' + commentYuyin + '\',\''+commentList[i].content+'\')"><label style="align:left;font-size:16;color:#555555">'+(commentList[i].content ? commentList[i].content : "")+'</label></row>';
+								}else{
+									itemContent += '<row><label style="align:left;font-size:16;color:#555555">'+(commentList[i].content ? commentList[i].content : "")+'</label></row>';
+								}
+								itemContent += '<row><label style="align:right;color:#555555;font-size:16;">'+commentList[i].person+'('+commentList[i].date+')</label></row>';
+							}
+						}else if(commentList instanceof Object){
+							commentType = commentList.comment.type;
+							if(commentType == '4'){
+								// 手写
+								commentShouxie = webServiceUrl + 'upload/workflow_acc/' + commentList.comment.content.substring(0,6) + '/' + commentList.comment.content;
+								//commentShouxie = evoUrl+'/ezOffice/download/file.do?url='+encodeURIComponent(commentShouxie)+'&amp;filename=aaa.png&amp;uploadPath=workflow_acc&amp;isDecode=false';
+								itemContent += '<row onclick="view_sxContent(\'' + commentShouxie + '\');"><img src="'+commentShouxie+'"/></row>';
+							}else if(commentType == '5'){
+								// 语音
+								commentYuyin = webServiceUrl + 'upload/workflow_acc/' + commentList.comment.content.substring(0,6) + '/' + commentList.comment.content;
+								itemContent += '<row onclick="playSound(\'' + commentYuyin + '\',\''+commentList.comment.content+'\')"><label style="align:left;font-size:16;color:#555555">'+(commentList.comment.content ? commentList.comment.content : "")+'</label></row>';
+							}else{
+								itemContent += '<row><label style="align:left;font-size:16;color:#555555">'+(commentList.comment.content ? commentList.comment.content : "")+'</label></row>';
+							}
+							itemContent += '<row><label style="align:right;color:#555555;font-size:16;">'+commentList.comment.person+'('+commentList.comment.date+')</label></row>';
+						}
+					}
+	        		if(readWrite == '1'){
+	        			itemContent += '<row><textarea rows="5" maxrows="5" name="comment_input" id="comment_input"></textarea></row></col></item>'+
+	        			               
+	        			               '<item id="" style="col-width:*,40,40,50,40"><col><row></row></col>'+
+									   '<col><row><icon id="shouxie" onclick="doDraft();" src="workflow_sx.png" style="display:none;width:30;height:30;"/></row></col>'+
+									   '<col><row><icon id="yuyin" onclick="doRecordSound();" src="workflow_yy.png" style="display:none;width:30;height:30;"/></row></col>'+
+									   '<col><row>'+
+									   '<icon id="commentAdd" src="deskperson_add.png" style="width:30;height:30;align:right;" onclick="openCommentMenu();"/>'+
+									   '</row></col></item>'+
+									   '<item onclick="openUseComment(\'' + officeList + '\');" ><row><label style="align:right;color:#C9C9C9;">选择常用语></label></row></item>'+
+									   '<item id="comment_input_sxyy" style="display:none;col-width:40,*,40"></item>';
+
+	        		}else{
+		        		itemContent += '</col></item>';
+	        		}
+	        	}else{
+		        	itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">' + field.name + ':</label>'+
+		        				   '</row></col><col style="padding:10;margin:10;">';
+		        	// 只读数据
+	        		itemContent += '<row><label style="align:right;color:#555555;font-size:16;">' + field.value + '</label></row></col></item>';
+	        	}
+	        }
+	        
+	        // 选择用户
+	        var userIdConIdVal;
+	        var userNameConIdVal;
+	        function selectUser(userIdConId,userNameConId,range){
+	        	userIdConIdVal = userIdConId;
+	        	userNameConIdVal = userNameConId;
+		        storage.setItem('sys_selectuser_range',range);
+		        storage.setItem('sys_selectuser_userids',$(userIdConIdVal).value);
+		        storage.setItem('sys_selectuser_usernames',$(userNameConIdVal).value);
+		        storage.setItem('sys_selectuser_returnfuc','setUserInfo');
+			    $page.open('../public/selectUser.xml', {animation:'down-to-up'});
+			}
+	        
+	        // 设置选人值
+	        function setUserInfo(id,name,userIdConIdVal,userNameConIdVal){
+	        	$(userIdConId).value = id;
+	        	$(userNameConId).value = name;
+	        }
+	        
+	        //加载流程记录页面数据
+	        var recordLoadFlag = '0';
+	        function loadFlowRecord(){
+	        	if(recordLoadFlag == '1'){
+	        		return false;
+	        	}
+	        	recordLoadFlag = '1';
+				$http.post(
+        			evoUrl + '/ezOffice/dealfile/getFlowRecord.do',{workId : workId},
+        			function(data){
+        				if(!data){
+        					alert('查询流程记录失败！');
+        					return false;
+        				}
+        				var jsonData = eval('(' + data + ')');
+        				if(jsonData.logonerror && jsonData.logonerror=='1'){
+		         			alert("该账号已在设备"+jsonData.deviceId+"上登录");
+		          			$page.open('../index.xml',{target:'_self'});
+		                    return;
+		                }
+        				var data_0 = jsonData.data_0;
+        				if(!data_0){
+        					alert('查询流程记录失败！');
+        					return false;
+        				}
+        				var result = data_0.message.result;
+        				if(result != '1'){
+        					alert('查询流程记录失败！');
+        					return false;
+        				}
+        				var recordArray = data_0.data;
+        				if(!recordArray){
+        					alert('无流程记录！');
+        					return false;
+        				}
+        				var listJson = {items:[]};
+	        			var itemJson;
+	        			var logReceive;
+        				if(recordArray instanceof Array){
+        					for(var i=0,length=recordArray.length;i<length;i++){
+        						logReceive = recordArray[i].logReceive;
+        						if(logReceive instanceof Array){logReceive = '';}
+        						itemJson = {
+			                        template : 0,
+			                        widgets : {
+			                            logUserName : {text : recordArray[i].logUserName},
+			                            logTime : {text : recordArray[i].logTime.substring(0,16)},
+			                            logAction : {text : recordArray[i].logAction},
+			                            logReceive : {text : logReceive}
+			                        }
+			                    }
+			                    listJson.items.push(itemJson);
+        					}
+        				}else if(recordArray instanceof Object){
+        					logReceive = recordArray.log.logReceive;
+							itemJson = {
+		                        template : 0,
+		                        widgets : {
+		                            logUserName : {text : recordArray.log.logUserName},
+		                            logTime : {text : recordArray.log.logTime == undefined ? "" :recordArray.log.logTime.substring(0,16)},
+		                            logAction : {text : recordArray.log.logAction},
+		                            logReceive : {text : logReceive}
+		                        }
+		                    }
+		                    listJson.items.push(itemJson);
+        				}
+        				$('content_flow_record_list').update(listJson);
+        			},function(error) {
+				    if (error == 'timeout') {
+						hint('连接服务器超时！');
+				    } else if (error == '404') {
+						hint('链接超时重新登录！');
+				    } else if (error == '500') {
+						hint('内部服务器错误！');
+				    } else {
+						hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+				  }
+        		);
+	        }
+	        
+	        // 待阅发送  
+			function sendFlow(){
+			    //表单验证
+				if(!checkForm()){
+					return false;
+				}
+				//if(!confirm('确定发送？')){
+				//	return false;
+				//}
+				$('sendForm').action = evoUrl + '/ezOffice/workflow/readOver.do?workId='+workId;
+				$('sendForm').submit(function(data) {
+					if(!data){
+						alert('保存表单失败！');
+						return false;
+					}
+					var dataJson = eval('('+data+')');
+					if(dataJson.logonerror && dataJson.logonerror=='1'){
+	         			alert("该账号已在设备"+dataJson.deviceId+"上登录");
+	          			$page.open('../index.xml',{target:'_self'});
+	                    return;
+	                }
+					var result = dataJson.result;
+					if(result == 'success'){
+						alert('发送成功！');
+					    $page.close(-1);
+					    $page.open('dealfile_index.xml?workStatus=2',{target:'_self'});				    
+					}else{
+						alert('发送失败！');					
+					}
+	            }, function(error) {
+	                alert('发送异常！');
+	            });
+			}
+			//发送时验证表单
+	        function checkForm(){
+	            var flag = true;
+	        	if(commentmustnonull == 'true'){
+		        	if($('comment_input') != null){
+			            var comment = $('comment_input').value;
+			            if(drfNum == 0 &&  comment == ''){ 
+			            	alert('批示意见不能为空！')
+			            	flag = false;
+			            }
+			        }
+	            }
+	        	return flag;
+	        }
+			
+			// 打开常用语菜单
+	        function openUseComment(officeList) {
+	        	if(!officeList){
+	        		return false;
+	        	}
+	        	var officeArray = officeList.split(',');
+	        	var actionMenuCon = '<actionmenu title="选择常用语" onclose="">';
+	        	officeArray.map(function(office){
+	        	    if(office != 'undefined'){
+	        			actionMenuCon += '<item label="' + office + '" onclick="setCommentVal(\'' + office + '\')"/>';
+	        		}
+	        	});
+        		actionMenuCon += '</actionmenu>';
+	            var menu = $C(actionMenuCon);
+	            menu.open();
+	        }
+	        // 设置意见框中的值
+	        function setCommentVal(value){
+	        	$('comment_input').value += value;
+	        }
+			
+			// 打开手写签批或语言签批菜单
+			function openCommentMenu(){
+				var $commentAdd = $('commentAdd');
+				if($commentAdd.src == 'deskperson_add.png'){
+					$('commentAdd').src = 'workflow_del.png';
+					$('shouxie').css('display','');
+					$('yuyin').css('display','');
+				}else if($commentAdd.src == 'workflow_del.png'){
+					$('commentAdd').src = 'deskperson_add.png';
+					$('shouxie').css('display','none');
+					$('yuyin').css('display','none');
+				}
+			}
+			
+			var drfNum = '0';
+			//手写审批
+			function doDraft() {
+				if(drfNum == "1"){
+					alert("不能重复签批！");
+					return;
+				}
+		        $page.graffiti({
+		        	type: 'sign',
+		            complete: function(path){
+		        		$('comment_input_shouxie').value = path;
+		        		$('commentType').value = "4";
+						var row = $C('<row id="sxrow" style="background:#ffffff"><icon src="'+path+'" style="width:270;height:80;"/><icon id="imageId" src="mail_del.png" style="width:30;height:30;align:right;"/></row>');
+						$('comment_input_sxyy').add(row);
+						drfNum = "1";
+						$('comment_input_sxyy').onclick = 'delrow_sx()';
+						$('comment_input_sxyy').css('display','block');
+		            }
+		        });
+		    }
+		    //删除手写审批内容
+		    function delrow_sx(){
+		    	if(!confirm('确定删除手写审批内容？')){
+					return false;
+				}
+		    	$('comment_input_shouxie').value="";
+        		$('commentType').value ="0";
+        		$('comment_input_sxyy').remove($('sxrow'));
+        		drfNum = '0';
+        		$('comment_input_sxyy').css('display','none');
+			}
+			
+			//全屏显示手写审批内容
+			function view_sxContent(path){
+				$page.open('dealfile_viewBiggraffiti.xml?sxContenturl='+encodeURIComponent(path),{target:'_blank'});
+			}
+			
+		    //语音审批
+			function doRecordSound(){
+			   if(drfNum == "1"){
+					alert("不能重复签批！");
+					return;
+			   }
+	           $phone.recordSound({
+	        	    success: function(path) {
+	        	  		$('comment_input_yuyin').value=path;
+	        			$('commentType').value ="5";
+	        			var showpath = path.substring(path.lastIndexOf('/')+1,path.length);
+						var row = $C('<row id="yyrow"><label style="color:blue;'+fujianwidth+'">'+showpath+'</label><icon id="imageId" src="mail_del.png" style="width:30;height:30;" onclick="delrow_yy();"/></row>');
+						$('comment_input_sxyy').add(row);
+						drfNum = "1";
+						$('comment_input_sxyy').onclick = 'delrow_yy()';
+						$('comment_input_sxyy').css('display','');
+	                },
+	                error: function() {
+	                   hint('录音失败');
+	                }
+	           });
+			}
+			//删除语音审批内容
+			function delrow_yy(){
+				if(!confirm('确定删除语音审批内容？')){
+					return false;
+				}
+				$('comment_input_yuyin').value="";
+    			$('commentType').value ="0";
+    			$('comment_input_sxyy').remove($('yyrow'));
+    			drfNum = '0';
+				$('comment_input_sxyy').css('display','none');
+			}
+			
+		    //播放语音
+			function playSound(path,filename){
+			    commentYuyinUrl =  evoUrl+'/ezOffice/download/playSound.do?url='+path+'&filename='+filename;
+			    $http.post(evoUrl + '/ezOffice/download/playSound.do', {
+						url : path,
+						filename : filename
+					}, function(data) {
+					   // alert(data);
+						$phone.playSound(evoUrl+'/ezOffice/upload/'+filename); 
+					},function(error) {
+				    if (error == 'timeout') {
+						hint('连接服务器超时！');
+				    } else if (error == '404') {
+						hint('链接超时重新登录！');
+				    } else if (error == '500') {
+						hint('内部服务器错误！');
+				    } else {
+						hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+				  }
+				);
+			}
+			
+			function viewFiles(filetype,accessoryNameseries,accessorySaveNameseries,path,fileType){
+	            var storage = $phone.localStorage();
+			    var evoUrl = storage.getItem('evoUrl');
+	            $http.post(evoUrl+'/ezOffice/doc/dealFiles.do',{accessoryNameseries:accessoryNameseries,accessorySaveNameseries:accessorySaveNameseries,path:path},  function(data) {
+	               if(data){
+	                   var obj = JSON.parse(data);
+	                   if(obj.logonerror && obj.logonerror=='1'){
+		         			alert("该账号已在设备"+obj.deviceId+"上登录");
+		          			$page.open('../index.xml',{target:'_self'});
+		                    return;
+		               }
+		               var attList = obj.attList;
+		               if(!attList==""){  //不为空，数据进行迭代,并为附件赋值
+		                  for(var k=0;k<attList.length;k++){
+		                      var viewName = draftPerson +worksubmittime +worktitle+"的正文"+bodyIndex+fileType;
+		                      bodyIndex++;
+		                      var files = $C('<row><label style="color:#38adff;align:left;font-size:16;"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath=govdocumentmanager'+'&amp;viewName='+viewName+'\')">查看正文</label></row>')
+		                      $(filetype).add(files); 
+		                  }
+		               }else{     //无附件，或者后台处理异常
+		               
+		               }
+	               }
+	            },function(error) {
+					    if (error == 'timeout') {
+					        hint('连接服务器超时！');
+					    } else if (error == '404') {
+					        hint('页面不存在！');
+					    } else if (error == '500') {
+					        hint('内部服务器错误！');
+					    } else {
+					        hint('访问网络错误！错误代码:' + error);
+					    }
+					    $page.open('../index.xml',{animation:'down-to-up'});
+				   }
+	            );
+	        }
+			
+        ]]>
+    </script>
+    <page>
+        <title style="background:#3daffe;tint-color:white">
+            <left>
+            	<button role="back"></button>
+            </left>
+            <center><label id="centerTitle">待阅文件</label></center>
+        </title>
+        <header id="headers" style="display:none">
+        	<tabbar id="tabbar" style="label-color:#b8b8b8,#008eef;indicator-color:#008eef;background:#f9f9f9;">
+                <item label="流程表单"></item>
+                <item id="imgItem" label="流程图"></item>
+                <item label="流程记录" onclick="loadFlowRecord();"></item>
+            </tabbar>
+        </header>
+        <popupmenu id="main_popupmenu">
+			<list id="popupmenu_list">
+		    </list>
+		</popupmenu>
+		<contents id="contents">
+            <content style="background:white" id="content_form">
+				<form id="sendForm" multipart="true" prompt="请稍后...">
+					<list id="content_form_list">
+					<item style="display:none">
+						<row>
+						   <input type="hidden" id="commentType" name="commentType" value="0"/>
+						   <input type="hidden" id="workcurstep" name="workcurstep" value=""/>
+						   <input type="file" style="display:none;" id="comment_input_shouxie" name="comment_input_shouxie" value=""/>
+						   <input type="file" style="display:none;" id="comment_input_yuyin" name="comment_input_yuyin" value=""/>
+						 </row>
+					</item>
+					</list>
+					<list id="subTabel_form_list" style="display:none;">
+					</list>
+				</form>
+            </content>
+            <content style="background:white" id="content_flow_pic">
+            	<input type="hidden" name="flowGraphUrl" id="flowgraphurl" value="" />
+            	<button onclick="fullScreenBrowse();" id="bottonselect" target="_blank">全屏查看</button>
+            </content>
+            <content style="background:white" id="content_flow_record">
+            	<list id="content_flow_record_list" reuse="true">
+        			<item style="col-width:3%,32%,2%,26%,2%,32%,*;" >
+        			    <col>
+            			</col>
+            			<col>
+            				<row>
+            					<label reusekey="logUserName" style="color:#555555;align:left"></label>
+            				</row>
+            				<row><label reusekey="logTime" style="align:left;font-size:8;color:#B8b8b8"></label></row>
+            			</col>
+            			<col>
+            			</col>
+            			<col>
+            				<row>
+            					<label reusekey="logAction" style="align:left;font-size:10;color:#38adff"></label>
+            				</row>
+            			</col>
+            			<col>
+            			</col>
+            			<col>
+            				<row>
+            					<label reusekey="logReceive" style="align:left;color:#555555;padding-right:2"></label>
+            				</row>
+            			</col>
+            			<col>
+            			</col>
+            		</item>
+            	</list>
+            </content>
+        </contents>
+		<footer id="footer" style="background:#F9F9F9">
+			<list type="toolbar" id="footer_list">
+			</list>
+			<list id="subTable_footer_list">
+			</list>
+        </footer>
+    </page>
+</imag>

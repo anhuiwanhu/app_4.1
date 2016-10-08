@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+    <script>
+        <![CDATA[
+			var storage = $phone.localStorage();
+			var mailId = storage.getItem('mail_reMailid');
+			var mailuserId = storage.getItem('mail_reMailuserid');
+			storage.removeItem("mail_reMailid");
+			storage.removeItem("mail_reMailuserid");
+			var evoUrl = storage.getItem('evoUrl');
+			$page.onload=function(){
+            	mailView();
+            }
+			
+			function mailView(){
+				$http.post(evoUrl+'/ezOffice/mail/remailDetail.do', 
+					{mailuserId:mailuserId,mailId:mailId}, function(data){
+					    var obj = JSON.parse(data);
+					    if(obj.logonerror &&obj.logonerror=='1'){
+		         		    alert("该账号已在设备"+obj.deviceId+"上登录");
+		         		    $page.open('../index.xml',{target:'_self'});
+		                    return;
+		                }
+						var result = obj.message.result;
+						var newcontent = obj.newcontent;
+						if(result =="1"){
+							var data = obj.data;
+							//当发件人是系统时，回复邮件没有回复等操作
+							if((data.mailposterid+"")=="0" || (data.mailpostername+"")=="系統"){
+								$('relayType').css('display', 'none');
+							}
+							if((data.mailpostername+"")==null || (data.mailpostername+"")==""){
+								$("mailpostername").text="";
+							}else{
+								$("mailpostername").text=data.mailpostername;
+							}
+							if((data.mailto+"")==null || (data.mailto+"")==""){
+								$("mailto").text="";
+							}else{
+								$("mailto").text=data.mailto;
+							}
+							if((data.mailcc+"")==null || (data.mailcc+"")==""){
+								$("mailcc").text="";
+							}else{
+								$("mailcc").text=data.mailcc;
+							}
+							if((data.mailsubject+"")==null || (data.mailsubject+"")==""){
+								$("mailsubject").text="无主题";
+							}else{
+								$("mailsubject").text=data.mailsubject;
+							}
+							if(data.maillevel=="2"){
+								$("maillevel").checked=true;
+							}
+							if(data.mailneedrevert=="1"){
+								$("mailneedrevert").checked=true;
+							}
+							if(data.mailSign=="1"){
+								$("mailSign").checked=true;
+							}
+							if(data.mailanonymous=="1"){
+								$("mailanonymous").checked=true;
+							}
+							var mailcontenttype = data.mailcontenttype;
+							if(mailcontenttype =='1'){
+								$("mailweb").html=newcontent;
+								$('mailweb').css('display', 'block');
+								$('mailcontent').css('display', 'none');
+							}else{
+								$("mailcontent").text=newcontent;
+								$('mailweb').css('display', 'none');
+								$('mailcontent').css('display', 'block');
+							}
+							
+							var objArr = data.attachments;
+		                    var accessoryNameseries="";
+		                    var accessorySaveNameseries="";
+		                     if((objArr+"")!=null && (objArr+"")!=""){
+		                     	if(objArr instanceof Array){    //返回多条数据
+					        	    for (var i = 0; i < objArr.length; i++) {
+					        	        if(i<objArr.length-1){
+					        	            accessoryNameseries += objArr[i].name+"|";
+					        	            accessorySaveNameseries += objArr[i].savename+"|";
+					        	        }else if(i==objArr.length-1){
+					        	            accessoryNameseries += objArr[i].name;
+					        	            accessorySaveNameseries += objArr[i].savename;
+					        	        }
+					        	    }
+					        	    viewFiles(accessoryNameseries,accessorySaveNameseries);
+					        	}else if(objArr instanceof Object){   //返回一条数据
+					        	    viewFiles(objArr.file.name,objArr.file.savename);
+					        	}
+		                     }
+						}
+					},function(error) {
+						toErro(error);
+					});
+			}
+			
+			function viewFiles(accessoryNameseries,accessorySaveNameseries){
+			    $('docFiles').css('display','block');
+			    var path = 'innerMailbox';
+	            $http.post(evoUrl+'/ezOffice/doc/dealFiles.do',
+	              {accessoryNameseries:accessoryNameseries,accessorySaveNameseries:accessorySaveNameseries,path:path},
+	              function(data) {
+		               if(data){
+		                   var obj = JSON.parse(data);
+		                   if(obj.logonerror &&obj.logonerror=='1'){
+			         		    alert("该账号已在设备"+obj.deviceId+"上登录");
+			         		    $page.open('../index.xml',{target:'_self'});
+			                    return;
+			                }
+			               var attList = obj.attList;
+			               if(!attList==""){  //不为空，数据进行迭代,并为附件赋值
+			                  for(var k=0;k<attList.length;k++){
+			                      var files = $C('<row style="margin-bottom:5"><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath=innerMailbox'+'&amp;viewName='+attList[k].realname+'\')">'+attList[k].realname+'</label></row>')
+			                      $('docFiles').add(files); 
+			                  }
+			               }else{     //无附件，或者后台处理异常
+			               
+			               }
+		               }
+		               
+		            },function(error) {
+						toErro(error);
+					});
+	        }
+			
+            function openPopupMenu() {
+                $('popmenu').open();
+            }
+
+			function reply(type){
+				storage.setItem('mail_type',type);
+				storage.setItem('mail_mailId',mailId);
+				storage.setItem('mail_mailuserId',mailuserId);
+				$('popmenu').close();
+				$page.open('mail_reply.xml',{target:'_self'});
+			}
+			
+			function toErro(error){
+				if (error == 'timeout') {
+					hint('连接服务器超时！');
+				} else if (error == '404') {
+					hint('链接超时重新登录！');
+				} else if (error == '500') {
+					hint('内部服务器错误！');
+				} else {
+					hint('访问网络错误！错误代码:' + error);
+				}
+				$page.open('../index.xml',{animation:'down-to-up'});
+			}
+        ]]>
+    </script>
+    <page>
+        <popupmenu id="popmenu" position="topright" style="width:100">
+            <list>
+                <item onclick="reply('sign');" style="background:#3daffe,#474747">
+                    <row>
+                        <label onclick="reply('sign');" style="margin-left:10;font-size:16;color:#ffffff">回复</label>
+                    </row>
+                </item>
+                <item onclick="reply('signAttach');" style="background:#3daffe,#474747">
+                    <row>
+                        <label onclick="reply('signAttach');" style="margin-left:10;font-size:16;color:#ffffff">回复(带附件)</label>
+                    </row>
+                </item>
+                <item onclick="reply('all');" style="background:#3daffe,#474747">
+                    <row>
+                        <label onclick="reply('all');" style="margin-left:10;font-size:16;color:#ffffff">回复全部</label>
+                    </row>
+                </item>
+                <item onclick="reply('relay');" style="background:#3daffe,#474747">
+                    <row>
+                        <label onclick="reply('relay');" style="margin-left:10;font-size:16;color:#ffffff">转发</label>
+                    </row>
+                </item>
+            </list>
+		</popupmenu> 
+        <title style="background:#38adff;tint-color:white">
+            <left>
+                <button role="back"></button>
+            </left>
+            <center>
+                <label>查看邮件</label>
+            </center>
+            <right>
+                <button id="relayType" onclick="openPopupMenu();" icon="mail_relay.png"></button>
+            </right>
+        </title>
+        <content>
+        	 <list>
+                    <item style="col-width:100,*">
+                        <col>
+                           <label style="font-size:16;color:#555555;">发件人：</label>
+                        </col>
+                        <col>
+                           <row><label id="mailpostername" style="align:right;font-size:16;color:#555555"></label></row>
+                        </col>
+                    </item>
+                    <item style="col-width:100,*">
+                        <col>
+                           <label style="font-size:16;color:#555555;">收件人：</label>
+                        </col>
+                        <col>
+                           <row><label id="mailto" style="align:right;font-size:16;color:#555555"></label></row>
+                        </col>
+                    </item>
+                    <item style="col-width:100,*">
+                        <col >
+                           <label style="font-size:16;color:#555555;">抄送人：</label>
+                        </col>
+                        <col>
+                           <row><label id="mailcc" style="align:right;font-size:16;color:#555555"></label></row>
+                        </col>
+                    </item>
+                    <item style="col-width:100,*">
+                        <col>
+                            <label style="font-size:16;color:#555555;">主题：</label>
+                        </col>
+                        <col>
+							<row><label id="mailsubject" style="align:right;font-size:16;color:#555555"></label></row>
+                        </col>
+                    </item>
+                    <item style="col-width:60,*">
+                        <col>
+                           <label style="font-size:16;color:#555555;">选项：</label>
+                        </col>
+                        <col>
+                            <row>
+                               <checkbox id="maillevel" style="align:right;font-size:16;color:#555555" disabled="true">紧急</checkbox>
+                               <checkbox id="mailneedrevert" disabled="true" style="align:right;font-size:16;color:#555555">回执</checkbox>
+                               <checkbox id="mailSign" disabled="true" style="align:right;font-size:16;color:#555555">签名</checkbox>
+                               <checkbox id="mailanonymous" disabled="true" style="align:right;font-size:16;color:#555555">匿名</checkbox>
+                            </row>
+                        </col>
+                    </item>
+                    <item style="col-width:100,*">
+                        <col>
+                           <label style="font-size:16;color:#555555;">附件：</label>
+                        </col>
+                        <col id="docFiles" style="display:none;">
+                        	
+                        </col>
+                    </item>
+                    <item>
+                        <label style="margin-bottom:5;font-size:16;color:#555555;">正文：</label>
+                        <label id="mailcontent" style="font-size:16;color:#555555;"></label>
+                        <web id="mailweb" style="display:none"/>
+                    </item>
+
+                </list>
+        </content>
+    </page>
+</imag>

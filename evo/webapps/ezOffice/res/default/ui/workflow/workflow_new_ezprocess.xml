@@ -1,0 +1,1742 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+    <script>
+        <![CDATA[
+            var info = $phone.info();
+            var fujianwidth='';
+            if(info['platform']=='android'){
+              fujianwidth='width:200';
+            }
+            var fileTotle = 0 ;  //附件最多能上传5个
+	        var fileindex =0;    //附件最多能上传5个
+            var fileAddressArr = new Array();
+            var fileTypeArr = new Array();   //附件上传时，存储对应数组fileAddressArr中的类型。pic:图片类型，sound：声音类型，file：其他附件类型
+	        
+	        function getAttanchNum(){
+				if(fileTotle>=5){
+					hint('上传附件不能超过5个！');
+					return false;
+				}
+				return true;
+			}
+			function doRelatedAcc(file,appendId,sysname){   
+		       	 var menu = $C('<actionmenu cancelTitle="取消">' +
+								 '<item style="text-decoration:underline;" label="拍照"     onclick="doFileCamera(this,\'' + appendId + '\',\'' + sysname + '\')"/>' +
+								 '<item style="text-decoration:underline;" label="相册照片" onclick="doFilePhotoAlbum(this,\'' + appendId + '\',\'' + sysname + '\')"/>' +
+								 '<item style="text-decoration:underline;" label="录音文件" onclick="doFileRecordSound(this,\'' + appendId + '\',\'' + sysname + '\')"/>' +
+								 '<item style="text-decoration:underline;" label="其他文件" onclick="doFileBrowse(this,\'' + appendId + '\',\'' + sysname + '\')"/>' +
+							'</actionmenu>');
+		               menu.show();
+		    }
+		    function doFilePhotoAlbum(file,appendId,sysname){    //上传文件选择相册
+				    if(!getAttanchNum()){
+						return;
+					}
+					$page.browseImage({
+						complete: function(path) {
+						 	var showpath = path.substring(path.lastIndexOf('/')+1,path.length);
+                            var row = $C('<row id="row' + fileindex + '"><icon style="padding-left:20;width:20;height:25;" src="mail_fujian.png"/>'+
+						    '<label id="attachmentId' + fileindex + '" style="color:blue;'+fujianwidth+'">' + showpath + '</label>'+
+						    '<icon id="imageId" src="mail_del.png" style="width:12;height:12;" onclick="delrow(\'' + fileindex + '\',\'' + appendId + '\');"/></row>');
+						    $(appendId).add(row);
+						    $('content_form_list').addMore('<imag><list><item><row><input type="file" style="display:none;" value="' + path + '" name="attachment_main_' + sysname + '"  id="input_file' + fileindex + '"/></row></item></list></imag>');
+				        	fileindex++;
+				        	fileTotle++;
+				        },
+				        error: function() {
+				            hint('上传图片失败！');
+				        }
+					  });
+		     }
+		 function doFileCamera(file,appendId,sysname) {  //拍照
+			if(!getAttanchNum()){
+				return;
+			}
+		    $phone.camera({
+		        success: function(path) {
+		        	var showpath = path.substring(path.lastIndexOf('/')+1,path.length);
+		        	
+		        	var row = $C('<row id="row' + fileindex + '"><icon style="padding-left:20;width:20;height:25;" src="mail_fujian.png"/>'+
+						    '<label id="attachmentId' + fileindex + '" style="color:blue;'+fujianwidth+'">' + showpath + '</label>'+
+						    '<icon id="imageId" src="mail_del.png" style="width:12;height:12;" onclick="delrow(\'' + fileindex + '\',\'' + appendId + '\');"/></row>');
+						    $(appendId).add(row);
+						    $('content_form_list').addMore('<imag><list><item><row><input type="file" style="display:none;" value="' + path + '" name="attachment_main_' + sysname + '"  id="input_file' + fileindex + '"/></row></item></list></imag>');
+				      
+		        	fileindex++;
+		        	fileTotle++;
+		        },
+		        error: function() {
+		            hint('拍照失败！');
+		        }
+		    });
+		}
+		
+		 function doFileRecordSound(file,appendId,sysname) {
+			if(!getAttanchNum()){
+				return;
+			}
+		    $phone.recordSound({
+		        success: function(path) {
+		        	var showpath = path.substring(path.lastIndexOf('/')+1,path.length);
+		        	
+		        	var row = $C('<row id="row' + fileindex + '"><icon style="padding-left:20;width:20;height:25;" src="mail_fujian.png"/>'+
+						    '<label id="attachmentId' + fileindex + '" style="color:blue;'+fujianwidth+'">' + showpath + '</label>'+
+						    '<icon id="imageId" src="mail_del.png" style="width:12;height:12;" onclick="delrow(\'' + fileindex + '\',\'' + appendId + '\');"/></row>');
+						    $(appendId).add(row);
+						    $('content_form_list').addMore('<imag><list><item><row><input type="file" style="display:none;" value="' + path + '" name="attachment_main_' + sysname + '"  id="input_file' + fileindex + '"/></row></item></list></imag>');
+				      
+		        	fileindex++;
+		        	fileTotle++;
+		        },
+		        error: function() {
+		            hint('录音失败！');
+		        }
+		    });
+		}
+		function doFileBrowse(file,appendId,sysname) { //附件上传
+				if (!getAttanchNum()) {
+					return;
+				}
+				$page.browse({
+					complete: function(path) {
+						var showpath = path.substring(path.lastIndexOf('/') + 1, path.length);
+						if (showpath.indexOf(".") == -1) {
+							hint("无后缀名的附件不允许上传，请重新选择");
+							return false;
+						}
+						var filenameExt = path.substring(path.lastIndexOf('\.')+1,path.length);
+			        	if(filenameExt == 'exe'){
+			        	    hint("后缀名为exe的附件不允许上传，请重新选择");
+			        		return false;
+			        	}
+			        	if(filenameExt == 'cmd'){
+			        	    hint("后缀名为cmd的附件不允许上传，请重新选择");
+			        		return false;
+			        	}
+			        	if(filenameExt == 'jsp'){
+			        	    hint("后缀名为jsp的附件不允许上传，请重新选择");
+			        		return false;
+			        	}
+						var row = $C('<row id="row' + fileindex + '"><icon style="padding-left:20;width:20;height:25;" src="mail_fujian.png"/>'+
+						'<label id="attachmentId' + fileindex + '" style="color:blue;'+fujianwidth+'">' + showpath + '</label>'+
+						'<icon id="imageId" src="mail_del.png" style="width:12;height:12;" onclick="delrow(\'' + fileindex + '\',\'' + appendId + '\');"/></row>');
+						$(appendId).add(row);
+						//$('input_file'+fileindex).value = path;
+						$('content_form_list').addMore('<imag><list><item><row><input type="file" style="display:none;" value="' + path + '" name="attachment_main_' + sysname + '"  id="input_file' + fileindex + '"/></row></item></list></imag>');
+						fileindex++;
+						fileTotle++;
+					}
+				});
+			}
+			
+			function delrow(index,appendId) { //删除附件
+				if (confirm('确认删除附件吗？')) {
+					$('input_file' + index).value = "";
+					$(appendId).remove($('row' + index));
+					fileTotle--;
+				}
+			}
+		
+    ]]>
+    </script> 
+
+<script>
+
+        <![CDATA[
+        	//流程id---在打开流程表单页时设置的数据 保存在客户端本地
+        	var storage;
+        	var webServiceUrl;
+        	var evoUrl;
+        	var centerTitle_str='';
+        	(function(){
+        		storage = $phone.localStorage();
+	           	webServiceUrl = storage.getItem('webServiceUrl');
+	           	evoUrl = storage.getItem('evoUrl');
+        	})();
+        	var orgId = storage.getItem('sys_orgId');
+        	var itemContent = '';
+        	var model = $param['model'];
+        	var fromXml = $param['fromXml'];
+        	$page.onload = function(){
+        		centerTitle_str =  decodeURIComponent($param['processName']);
+        	    if(centerTitle_str.length>15){
+        	      centerTitle_str = centerTitle_str.substring(0,15)+'...';
+        	    }
+        		$('centerTitle').text = centerTitle_str;
+        		$http.post(
+        			evoUrl + '/ezOffice/workflow/newezform.do',{pageId : decodeURIComponent($param['pageId']) , processId : decodeURIComponent($param['processId'])},
+        			function(data){
+        				if(!data){
+        					alert('数据获取失败！');
+        				}
+        				var jsonData = eval('(' + data + ')');
+        				if(jsonData.logonerror &&jsonData.logonerror=='1'){
+			         		alert("该账号已在设备"+jsonData.deviceId+"上登录");
+		          			$page.open('../index.xml',{target:'_self'});
+		                    return;
+		                }
+        				//var workInfoResult = jsonData.data_0.message.result;
+        				var detailResult = jsonData.data_0.message.result;
+        				//var personResult = jsonData.data_2.message.result;  || personResult != '1'
+        				if(detailResult != '1'){
+        					alert('数据获取失败！');
+        				}
+        				//var workInfo = jsonData.data_0.data.workInfo;
+						var detailData = jsonData.data_0.data;
+        				var fieldList = detailData.fieldList.field;
+        				var showType;
+        				var readWrite;
+        				var fieldType;
+        				var $contentFormList = $('content_form_list');
+        				var selectContent = '';
+        				//创建流程图
+       					//createFlowImg(workInfo.flowgraphurl);
+       					//初始化表单数据
+        				if(fieldList instanceof Array){
+        					for(var i=0,length=fieldList.length;i<length;i++){
+        						createFormData(fieldList[i],showType,readWrite,fieldType,selectContent);
+        					}
+        				}else if(fieldList instanceof Object){
+       						createFormData(fieldList,showType,readWrite,fieldType,selectContent);
+        				}else{
+        					
+        				}
+       					$contentFormList.addMore('<imag><list>' + itemContent + '</list></imag>');
+       					// 创建子表节点
+       					createSubTableCon($contentFormList,detailData);
+       					openAllSubTabel($contentFormList,detailData);   //进入页面执行一次打开子表
+       					// 创建工作流程信息隐藏域
+						createWorkInfoHiddenArea(detailData);
+       					// 创建底部内容
+       					createFootContent();
+        			},function(error) {
+				    if (error == 'timeout') {
+						hint('连接服务器超时！');
+				    } else if (error == '404') {
+						hint('链接超时重新登录！');
+				    } else if (error == '500') {
+						hint('内部服务器错误！');
+				    } else {
+						hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+				  }
+        		);
+	        }
+	        
+	        // 创建子表数据
+			function createSubTableCon(contentFormList,detailData){
+				var itemContent = '';
+				var subTableList = detailData.subTableList;
+				if(!subTableList){
+					return false;
+				}
+				var subFieldList;
+				var fieldCount = 0;
+				if(subTableList instanceof Array){
+				    var tableNames = '';
+				    //多个子表
+					for(var i=0,length=subTableList.length;i<length;i++){
+					    var tableName = subTableList[i].tableName;
+					    if(tableName==null || tableName == '' ||tableName.length == 0 ){
+					        return; 
+					    }
+						subFieldList = subTableList[i].subFieldList;
+						itemContent = '<item id="item_' + tableName + '" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="align:left;font-size:16;color:#555555">'+subTableList[i].name+':</label></row></col><col style="padding:10;margin:10;"><row>'+
+										   '<input type="hidden" id="'+tableName+'" name="'+tableName+'" style="display:none;" value=""/><input type="hidden" id="json_'+tableName+'" name="json_'+tableName+'" style="display:none;" value=""/><input id="'+tableName+'_count" name="'+tableName+'_count" readonly="true" style="border:0 white;font-size:16;text-align:right;color:#555555" type="text" placeholder="" value="'+fieldCount+'条子表数据>"/></row></col></item>';
+						contentFormList.addMore('<imag><list>' + itemContent + '</list></imag>');
+						$('item_' + tableName).onclick = "openSubTableCon('" + JSON.stringify(subFieldList) + "','"+tableName+"','"+subTableList[i].name+"')";
+						tableNames += tableName+',';
+					}
+					//设置子表
+					$('save_subformname').value = tableNames;
+				}else if(subTableList instanceof Object){
+						subFieldList = subTableList.subTable.subFieldList;
+						var tableName = subTableList.subTable.tableName;
+						if(tableName==null || tableName == '' ||tableName.length == 0 ){
+					        return false; 
+					    }
+						if(!subFieldList){
+							subFieldList = subTableList.subTable;
+						}
+						itemContent = '<item id="item_'+tableName+'" onclick="openSubTableCon('+subFieldList+');" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="align:left;font-size:16;color:#555555">'+subTableList.subTable.name+':</label></row></col><col style="padding:10;margin:10;"><row>'+
+									  '<input type="hidden" id="'+tableName+'" name="'+tableName+'" style="display:none;" value=""/><input type="hidden" id="json_'+tableName+'" name="json_'+tableName+'" style="display:none;" value=""/><input id="'+tableName+'_count" name="'+tableName+'_count" readonly="true" style="border:0 white;font-size:16;text-align:right;color:#555555" type="text" value="'+fieldCount+'条子表数据>"/></row></col></item>';
+
+						contentFormList.addMore('<imag><list>' + itemContent + '</list></imag>');
+						$('item_'+tableName).onclick = "openSubTableCon('"+JSON.stringify(subFieldList)+"','"+tableName+"','"+subTableList.subTable.name+"')";
+						//设置子表
+						$('save_subformname').value = tableName+',';
+				}
+			}
+			
+			var subTabelItemContent = '';
+			//当前子表Data
+			var global_subFieldList = '';
+			//当前子表名
+			var global_subTableName = '';
+			//当前子表字段总数
+			var global_subTableFieldlen = 0;
+			//当前子表数据总数（包括已添加的数据）
+			var global_subDatalen=0;
+			//当前子表删除的下标 |分割
+			var global_subDelIndex='';
+			//当前子表数据总数（不包括已添加的数据）
+			var global_subDatalen_cur=1;
+			
+			function openAllSubTabel(contentFormList,detailData){
+				var subTableList = detailData.subTableList;
+				if(!subTableList){
+					return false;
+				}
+				var subFieldList;
+				if(subTableList instanceof Array){
+				    //多个子表
+					for(var i=0,length=subTableList.length;i<length;i++){
+					    var tableName = subTableList[i].tableName;
+					    if(tableName==null || tableName == '' ||tableName.length == 0 ){
+					        return; 
+					    }
+						subFieldList = subTableList[i].subFieldList;
+					    default_openSubTableCon(JSON.stringify(subFieldList) ,tableName,subTableList[i].name);
+					}
+					//设置子表
+				}else if(subTableList instanceof Object){
+						subFieldList = subTableList.subTable.subFieldList;
+						var tableName = subTableList.subTable.tableName;
+						if(tableName==null || tableName == '' ||tableName.length == 0 ){
+					        return; 
+					    }
+						if(!subFieldList){
+							subFieldList = subTableList.subTable;
+						}
+						default_openSubTableCon(JSON.stringify(subFieldList),tableName,subTableList.subTable.name);
+				}
+			}
+			
+			
+			///初始化页面时打开子表
+			function default_openSubTableCon(subFieldList,tableName,subTableTitle){
+				$('subTabel_form_list').clear();
+				subTabelItemContent = '';
+				global_subFieldList = subFieldList;
+				global_subTableName = tableName;
+				global_subDelIndex = '';
+				var subFieldList = JSON.parse(subFieldList);
+				if(subFieldList instanceof Array){
+					for(var i=0,length=subFieldList.length;i<length;i++){
+					    var subdataId = subFieldList[i].dataId;
+					    subTabelItemContent += '<item id="item_subbutton_'+global_subTableName+i+'" onclick="deleteIteminList(\''+i+'\');"><col><row><label style="align:left;font-size:14;">表'+eval(i+1)+'</label></row></col><col><row><label style="align:right;font-size:14;color:red">删除</label><input type="hidden" id="sub_dataId'+i+'" name="sub_dataId'+i+'" style="display:none;" value=""/></row></col></item>';
+						createSubTableField(subFieldList[i].field,i);
+						global_subDatalen = length;
+					}
+				}else if(subFieldList instanceof Object){
+				    var subdataId = subFieldList.dataId;
+				    subTabelItemContent += '<item id="item_subbutton_'+global_subTableName+'0" onclick="deleteIteminList(\'0\');"><col><row><label style="align:left;font-size:14;">表1</label></row></col><col><row><label style="align:right;font-size:14;color:red">删除</label><input type="hidden" id="sub_dataId0" name="sub_dataId0" style="display:none;" value=""/></row></col></item>';
+					createSubTableField(subFieldList.field,0);
+					global_subDatalen = 1;
+				}
+				$('subTabel_form_list').update('<imag><list>' + subTabelItemContent + '</list></imag>');
+				default_goBackSaveSubForm();
+			}
+			
+			function default_goBackSaveSubForm(){
+			    var subFieldList = JSON.parse(global_subFieldList);
+			    _subfieldjson = '';
+			    var subFormxml = '';
+			    var subDataCount=0;
+			    if(global_subDatalen>0){
+				    subFormxml += '<table>';
+				    subFormxml += '<tableName>'+global_subTableName+'</tableName>';
+				    _subfieldjson += '[';
+				    for(var k=0;k<global_subDatalen;k++){
+				      //没有被删除的数据
+				      if(global_subDelIndex.indexOf('|'+k+'|')==-1){
+					        subFormxml += '<fields>';
+	                        subFormxml += '<dataId>'+$('sub_dataId'+k).value+'</dataId>';
+	                        
+	                        _subfieldjson += '{"dataId":"'+$('sub_dataId'+k).value+'",';
+	                        
+							if(subFieldList instanceof Array){
+								subFormxml += getSubTableFieldValue(subFieldList[0].field,k);
+							}else if(subFieldList instanceof Object){
+								subFormxml += getSubTableFieldValue(subFieldList.field,k);
+							}
+							
+							_subfieldjson += '},';
+							
+							subFormxml += '</fields>';
+							subDataCount = subDataCount+1;
+						}
+					 }
+					//清除逗号
+					var  tmp = _subfieldjson.substr(_subfieldjson.length-1);
+					if(tmp==','){
+						_subfieldjson = _subfieldjson.substr(0,_subfieldjson.length-1);
+					}
+					_subfieldjson += ']';
+					//alert(_subfieldjson);
+					subFormxml += '</table>';
+				}
+				//设置显示数据条数
+                $(global_subTableName+'_count').value = subDataCount+'条子表数据';
+                if(_subfieldjson==''||_subfieldjson=='[]'){
+                   _subfieldjson='';
+                   subFormxml='';
+                }
+                //设置临时数据
+                $('json_'+global_subTableName).value = _subfieldjson;
+				$(global_subTableName).value=subFormxml;
+			}
+			
+			
+			
+			//打开子表
+			function openSubTableCon(subFieldList,tableName,subTableTitle){
+			    $('leftButton').css('display','none');
+			    if(subTableTitle != null && subTableTitle.length>15){
+        	      subTableTitle = subTableTitle.substring(0,15)+'...';
+        	    }
+        		$('centerTitle').text = subTableTitle;
+			    
+			    //有临时存储的数据就取临时数据
+			    if($('json_'+tableName).value!=''&&$('json_'+tableName).value!='[]'){
+			       subFieldList = $('json_'+tableName).value;
+			    }
+				$('subTabel_form_list').clear();
+				subTabelItemContent = '';
+				global_subFieldList = subFieldList;
+				global_subTableName = tableName;
+				global_subDelIndex = '';
+				var subFieldList = JSON.parse(subFieldList);
+				if(subFieldList instanceof Array){
+					for(var i=0,length=subFieldList.length;i<length;i++){
+					    var subdataId = subFieldList[i].dataId;
+					    subTabelItemContent += '<item id="item_subbutton_'+global_subTableName+i+'" onclick="deleteIteminList(\''+i+'\');"><col><row><label style="align:left;font-size:14;">表'+eval(i+1)+'</label></row></col><col><row><label style="align:right;font-size:14;color:red">删除</label><input type="hidden" id="sub_dataId'+i+'" name="sub_dataId'+i+'" style="display:none;" value=""/></row></col></item>';
+				
+						createSubTableField(subFieldList[i].field,i);
+						global_subDatalen = length;
+					}
+				}else if(subFieldList instanceof Object){
+				    var subdataId = subFieldList.dataId;
+				    subTabelItemContent += '<item id="item_subbutton_'+global_subTableName+'0" onclick="deleteIteminList(\'0\');"><col><row><label style="align:left;font-size:14;">表1</label></row></col><col><row><label style="align:right;font-size:14;color:red">删除</label><input type="hidden" id="sub_dataId0" name="sub_dataId0" style="display:none;" value=""/></row></col></item>';
+					createSubTableField(subFieldList.field,0);
+					global_subDatalen = 1;
+				}
+
+				$('subTabel_form_list').update('<imag><list>' + subTabelItemContent + '</list></imag>');
+				$('subTabel_form_list').css('display','');
+				$('content_form_list').css('display','none');
+				$('subTable_footer_list').css('display','');
+				$('footer_list').css('display','none');
+				createSubTableFoot();
+				//有合计项
+				if(totalFieldcon!=''){
+				  $('topright').css('display','');
+				  $('topright').text="合计项";
+				  $('topright').onclick="sub_total();";
+				}
+			}
+			//合计字段
+	        var totalFieldcon = '';
+	        
+	        //添加合计字段
+	        function pushTotalFieldcon(conId,fieldname){
+
+	        	if(totalFieldcon.indexOf(conId+',')==-1){
+	        	   totalFieldcon += conId+','+fieldname+';';
+	        	}
+	        }
+			function sub_total(){
+			   var totalFieldcons = totalFieldcon.split(";");
+			   $('totallist').clear();
+               var itemtot = $C('<list-item><item><col><row><label style="color:#38adff;align:center;font-size:16;">合计项</label></row></col></item></list-item>');
+	           $('totallist').add(itemtot); 
+			   for(var i=0,length=totalFieldcons.length;i<length;i++){
+			       if(totalFieldcons[i]!=''){
+			         var ff = totalFieldcons[i].split(",");
+			         var sumd = 0;
+			         for(var j=0;j<global_subDatalen;j++){
+			            //没有被删除的数据
+				        if(global_subDelIndex.indexOf('|'+j+'|')==-1){
+			               var thisvalue=$(ff[0]+j).value;
+			               if(thisvalue==''){thisvalue=0;}
+			               sumd = eval(sumd) + eval(thisvalue);
+			               sumd = sumd.toFixed(2);
+			            }
+			         }
+			         var itemtot = $C('<list-item><item><col><row><label style="color:#38adff;font-size:14;">'+ff[1]+'合计：</label><label style="color:#38adff;font-size:14;" >'+sumd+'</label></row></col></item></list-item>');
+	                 $('totallist').add(itemtot); 
+			       }
+	        		
+	        	}
+	        	$('popupmenu').open();
+			}
+
+			//删除子表数据 x：数据下标
+			function deleteIteminList(x){
+              if(global_subDatalen_cur==1){
+                return;
+              }
+              for(var i=0;i<global_subTableFieldlen;i++){
+			    $('subTabel_form_list').remove($('item_subfield_'+global_subTableName+x+i));
+			  }
+			  $('subTabel_form_list').remove($('item_subbutton_'+global_subTableName+x));
+			  global_subDelIndex += '|'+x+'|';
+			  
+			  global_subDatalen_cur=global_subDatalen_cur-1;
+			  $('sub_overbutton').text="完成("+global_subDatalen_cur+")";
+
+			}
+			//新增子表数据
+			function addIteminList(subFieldList){
+                var subFieldList = JSON.parse(subFieldList);
+                var subTabelItemContentAdd = '';
+				if(subFieldList instanceof Array){
+				    subTabelItemContentAdd += '<item id="item_subbutton_'+global_subTableName+global_subDatalen+'" onclick="deleteIteminList(\''+global_subDatalen+'\');"><col><row><label style="align:left;font-size:14;">表'+eval(global_subDatalen+1)+'</label></row></col><col><row><label style="align:right;font-size:14;color:red">删除</label><input type="hidden" id="sub_dataId'+global_subDatalen+'" name="sub_dataId'+global_subDatalen+'" style="display:none;" value=""/></row></col></item>';
+				    subTabelItemContentAdd += createSubTableField_add(subFieldList[0].field,global_subDatalen);
+				}else if(subFieldList instanceof Object){
+				    subTabelItemContentAdd += '<item id="item_subbutton_'+global_subTableName+global_subDatalen+'" onclick="deleteIteminList(\''+global_subDatalen+'\');"><col><row><label style="align:left;font-size:14;">表'+eval(global_subDatalen+1)+'</label></row></col><col><row><label style="align:right;font-size:14;color:red">删除</label><input type="hidden" id="sub_dataId'+global_subDatalen+'" name="sub_dataId'+global_subDatalen+'" style="display:none;" value=""/></row></col></item>';
+					subTabelItemContentAdd += createSubTableField_add(subFieldList.field,global_subDatalen);
+				}
+				global_subDatalen = global_subDatalen+1;
+				$('subTabel_form_list').addMore('<imag><list>' + subTabelItemContentAdd + '</list></imag>');
+				global_subDatalen_cur=global_subDatalen_cur+1;
+				$('sub_overbutton').text="完成("+global_subDatalen_cur+")";
+			}
+			// 创建子表字段数据 传入的k 是标识数据下标
+			function createSubTableField_add(fields,k){
+                var itemContent = '';
+				if(fields instanceof Array){
+					for(var i=0,length=fields.length;i<length;i++){
+						itemContent += getFieldCon(fields[i],k,i);
+						//设置字段数
+						global_subTableFieldlen = length;
+					}
+				}else if(fields instanceof Object){
+						itemContent += getFieldCon(fields,k,0);
+						global_subTableFieldlen = 1;
+				}
+				return itemContent;
+				
+			}
+			//子表新增数据  i：数据条数 j：字段条数
+			function getFieldCon(field,i,j){
+
+			   var showType = field.showtype;
+			   var fieldType = field.fieldtype;
+			   var readWrite = field.readwrite;
+			   var mustfilled = field.mustfilled;
+
+	        	var mustfilled_view = '';
+        	    if(mustfilled && mustfilled=='1'){
+        	       mustfilled_view = '<label style="align:left;font-size:12;color:#FF4617">*</label>';
+        	    }
+                var itemContent = '';
+			    if(showType == '101' && readWrite == '1'){
+        			itemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555;">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//单行文本
+	        		if(fieldType == '1000000'){
+	        			itemContent += '<row><input style="font-size:16;color:#555555" id="_sub_' + field.sysname +i+ '" type="number" name="_sub_' + field.sysname +i+ '" value="" maxlength="9"/></row>';
+	        		}else if(fieldType == '1000001'){
+	        			itemContent += '<row><input style="font-size:16;color:#555555" id="_sub_' + field.sysname +i+ '" type="number" name="_sub_' + field.sysname +i+ '" value="" maxlength="18"/></row>';
+	        		}else{
+	        			itemContent += '<row><input style="font-size:16;color:#555555" id="_sub_' + field.sysname +i+ '" type="text" name="_sub_' + field.sysname +i+ '" value=""/></row>';
+	        		}
+	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else if(showType == '102' && readWrite == '1'){
+	        		itemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//密码输入
+	        		itemContent += '<row><input id="_sub_' + field.sysname +i+ '" type="password" name="_sub_' + field.sysname +i+ '" value=""/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else if(showType == '103' && readWrite == '1'){
+	        		itemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//单选
+	        		selectContent = '<row><select style="font-size:16;" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '">'+
+	        			'<option value="">请选择</option>';
+	        		for(var index=0,size=field.dataList.length;index<size;index++){
+		        		selectContent += '<option value="'+field.dataList[index].hiddenval+'">'+field.dataList[index].showval+'</option>';
+	        		}
+	        		selectContent += '</select>';
+	        		itemContent += selectContent + '</row>';
+	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else if(showType == '104' && readWrite == '1'){
+	        		itemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//多选
+	        		selectContent = '';
+	        		for(var index=0,size=field.dataList.length;index<size;index++){
+	        		    selectContent += '<row>';
+		        		if(field.hiddenval){
+							if((field.hiddenval + ',').indexOf(field.dataList[index].hiddenval + ',') > -1){
+			        			selectContent += '<checkbox style="align:left;font-size:16;" id="_sub_' + field.sysname +i+index+ '" name="_sub_' + field.sysname +i+ '" value="'+field.dataList[index].hiddenval+',">'+field.dataList[index].showval+'</checkbox>';
+			        		}else{
+			        			selectContent += '<checkbox style="align:left;font-size:16;" id="_sub_' + field.sysname +i+index+ '" name="_sub_' + field.sysname +i+ '" value="'+field.dataList[index].hiddenval+',">'+field.dataList[index].showval+'</checkbox>';
+			        		}
+		        		}else{
+		        			selectContent += '<checkbox style="align:left;font-size:16;" id="_sub_' + field.sysname +i+index+ '" name="_sub_' + field.sysname +i+ '" value="'+field.dataList[index].hiddenval+',">'+field.dataList[index].shownval+'</checkbox>';
+		        		}
+		        		selectContent += '</row>';
+	        		}
+	        		itemContent += selectContent;
+	        		pushMustFillCheckboxArray(mustfilled,field.name,'_sub_' + field.sysname+i,field.dataList.length);
+	        	}else if(showType == '105' && readWrite == '1'){
+	        		itemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//下拉框
+	        		selectContent = '<row><select style="align:right;font-size:16;" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '">'+
+	        			'<option value="">请选择</option>';
+	        		for(var index=0,size=field.dataList.length;index<size;index++){
+		        		selectContent += '<option value="'+field.dataList[index].hiddenval+'">'+field.dataList[index].showval+'</option>';
+	        		}
+	        		selectContent += '</select>';
+	        		itemContent += selectContent + '</row>';
+	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else if(showType == '107' && readWrite == '1'){
+	        		itemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//日期
+	        		itemContent += '<row><input style="color:#555555;font-size:16;" type="date" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value=""/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else if(showType == '108' && readWrite == '1'){
+	        		itemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//时间 
+	        		itemContent += '<row><input style="color:#555555;font-size:16;" type="time" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value=""/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else if(showType == '109' && readWrite == '1'){
+	        		itemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//日期 时间 
+	        		itemContent += '<row><input style="color:#555555;font-size:16;" type="datetime" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value=""/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else if(showType == '110' && readWrite == '1'){
+	        		itemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//多行文本
+	        		itemContent += '<row><textarea style="color:#555555;font-size:16;" rows="5" maxrows="5" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '"></textarea></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else if(( showType == '213' || showType == '215'|| showType =='406'|| showType =='601'|| showType =='602'|| showType =='603'|| showType =='604'|| showType =='605'|| showType =='607'|| showType =='701'|| showType =='702'|| showType =='201'|| showType =='202' || showType =='207'  ) && readWrite == '1'){
+	        		itemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		var  labelVal = '';
+	        		if(field.dataList == null ||field.dataList == ''||field.dataList==undefined){
+	        			labelVal = field.value;
+	        		}else{
+	        		    labelVal = field.dataList.val.showval;
+	        		}
+	        		if(labelVal == '' || labelVal== null){
+	        			labelVal = '';
+	        		}
+				//登录人信息
+	        		itemContent += '<row><label style="align:right;color:#555555;font-size:16;">' + labelVal + '</label><input type="hidden" name="_sub_' + field.sysname +i+ '" value="' + labelVal + '"/></row>';
+	        	}else if(showType == '301' && readWrite == '1'){
+	        		itemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//金额
+	        		if(fieldType == '1000000' || fieldType == '1000001'){
+	        			itemContent += '<row><input style="color:#555555;font-size:16;" type="number" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value="" maxlength="9"/></row>';
+	        		}else{
+	        			itemContent += '<row><input style="color:#555555;font-size:16;" type="text" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value="" maxlength="9"/></row>';
+	        		}
+	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else if(showType == '302' && readWrite == '1'){
+	        		itemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//金额
+        			itemContent += '<row><input style="color:#555555;font-size:16;" type="text" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value="" maxlength="18"/></row>';
+        			pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else if(showType == '210' && readWrite == '1'){
+	        		itemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*0*\',\'0\')" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//单选人 全部
+	        		itemContent += '<row>'+
+	        					   '<input onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*0*\',\'0\')" style="color:#555555;font-size:16;" readonly="true" type="text" name="_subShow_' + field.sysname +i+ 
+	        					   '" value="" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '<input type="hidden" id="_sub_' + field.sysname +i+'"   name="_sub_' + field.sysname +i+'" value=""/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else if(showType == '211' && readWrite == '1'){
+	        		itemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*0*\',\'1\')" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//多选人 全部
+	        		itemContent += '<row>'+
+	        					   '<input onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*0*\',\'1\')" style="color:#555555;font-size:16;" readonly="true" type="text" name="_subShow_' + field.sysname +i+ 
+	        					   '" value="" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '<input type="hidden" id="_sub_' + field.sysname +i+'" name="_sub_' + field.sysname +i+'" value=""/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else if(showType == '212' && readWrite == '1'){
+	        		itemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*0*\',\'2\')" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//单选组织
+	        		itemContent += '<row>'+
+	        					   '<input onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*0*\',\'2\')" style="color:#555555;font-size:16;" readonly="true" type="text" name="_subShow_' + field.sysname +i+ '" value="" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '<input type="hidden" id="_sub_' + field.sysname +i+'" name="_sub_' + field.sysname +i+'" value=""/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else if(showType == '214' && readWrite == '1'){
+	        		itemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*0*\',\'3\')" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//多选组织
+	        		itemContent += '<row>'+
+	        					   '<input onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*0*\',\'3\')" style="color:#555555;font-size:16;" readonly="true" type="text" name="_subShow_' + field.sysname +i+ 
+	        					   '" value="" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '<input type="hidden" id="_sub_' + field.sysname +i+'" name="_sub_' + field.sysname +i+'" value=""/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	
+	        	}else if(showType == '704' && readWrite == '1'){
+	        		itemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*'+orgId+'*\',\'0\')" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//单选人 本组织
+	        		itemContent += '<row>'+
+	        					   '<input onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*'+orgId+'*\',\'0\')" readonly="true" style="color:#555555;font-size:16;" type="text" name="_subShow_' + field.sysname + 
+	        					   '" value="" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '<input type="hidden" id="_sub_' + field.sysname +i+'" name="_sub_' + field.sysname +i+'" value=""/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else if(showType == '705' && readWrite == '1'){
+	        		itemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*'+orgId+'*\',\'1\')" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//多选人 本组织
+	        		itemContent += '<row>'+
+	        					   '<input onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*'+orgId+'*\',\'1\')" readonly="true" style="color:#555555;font-size:16;" type="text" name="_subShow_' + field.sysname +i+ 
+	        					   '" value="" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '<input type="hidden" id="_sub_' + field.sysname +i+'" name="_sub_' + field.sysname +i+'" value=""/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else if(showType == '708' && readWrite == '1'){
+	        		itemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//流程发起人
+	        		itemContent += '<row><label style="align:right;color:#555555;font-size:16;">' + field.value + '</label><input type="hidden" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value="' + field.value + '"/></row>';
+	        	}else if(showType == '113' || showType == '115' || showType == '116' || showType == '117' || showType == '118'){
+	        		itemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		itemContent += '<row><label style="align:left;font-size:12;color:#FF4617">该字段暂不支持手机办理，请于电脑端操作...</label><input type="hidden" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value=""/></row>';
+	        	    pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else{            // 只读数据
+	        		itemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555;">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		itemContent += '<row><label style="align:right;color:#555555;font-size:16;"></label><input type="hidden" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value=""/></row>';
+	        	}
+	        	itemContent += '</col></item>';
+	        	
+	        	return itemContent;
+			}
+			// 创建子表字段数据 传入的k 是标识数据下标
+			function createSubTableField(fields,k){
+				if(fields instanceof Array){
+					for(var i=0,length=fields.length;i<length;i++){
+						getFieldCon2(fields[i],k,i);
+						//设置字段数
+						global_subTableFieldlen = length;
+					}
+				}else if(fields instanceof Object){
+						getFieldCon2(fields,k,0);
+						global_subTableFieldlen = 1;
+				}
+				
+			}
+			// 具体子表字段展示函数  i：数据条数 j：字段条数
+			function getFieldCon2(field,i,j){
+			   var showType = field.showtype;
+			   var fieldType = field.fieldtype;
+			   var readWrite = field.readwrite;
+			   var mustfilled = field.mustfilled;
+
+	        	var mustfilled_view = '';
+        	    if(mustfilled && mustfilled=='1'){
+        	       mustfilled_view = '<label style="align:left;font-size:12;color:#FF4617">*</label>';
+        	    }
+        	    //设置合计字段
+        	    var totfield = field.totfield;
+		        if(totfield=='0'){
+        	       pushTotalFieldcon('_sub_' + field.sysname,field.name);
+        	    }
+
+			   if(showType == '101' && readWrite == '1'){
+        			subTabelItemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555;">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//单行文本
+	        		if(fieldType == '1000000'){
+	        			subTabelItemContent += '<row><input style="font-size:16;color:#555555" id="_sub_' + field.sysname +i+ '" type="number" name="_sub_' + field.sysname +i+ '" value="' + field.value + '" maxlength="9"/></row>';
+	        		}else if(fieldType == '1000001'){
+	        			subTabelItemContent += '<row><input style="font-size:16;color:#555555" id="_sub_' + field.sysname +i+ '" type="number" name="_sub_' + field.sysname +i+ '" value="' + field.value + '" maxlength="18"/></row>';
+	        		}else{
+	        			subTabelItemContent += '<row><input style="font-size:16;color:#555555" id="_sub_' + field.sysname +i+ '" type="text" name="_sub_' + field.sysname +i+ '" value="' + field.value + '"/></row>';
+	        		}
+	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else if(showType == '102' && readWrite == '1'){
+	        		subTabelItemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//密码输入
+	        		subTabelItemContent += '<row><input id="_sub_' + field.sysname +i+ '" type="password" name="_sub_' + field.sysname +i+ '" value="' + field.value + '"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else if(showType == '103' && readWrite == '1'){
+	        		subTabelItemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//单选
+	        		selectContent = '<row><select style="font-size:16;" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '">'+
+	        			'<option value="">请选择</option>';
+	        		for(var index=0,size=field.dataList.length;index<size;index++){
+		        		if(field.hiddenval){
+			        		if(field.hiddenval == field.dataList[index].hiddenval){
+			        			selectContent += '<option selected="true" value="'+field.dataList[index].hiddenval+'">'+field.dataList[index].showval+'</option>';
+			        		}else{
+			        			selectContent += '<option value="'+field.dataList[index].hiddenval+'">'+field.dataList[index].showval+'</option>';
+			        		}
+		        		}else{
+		        			selectContent += '<option value="'+field.dataList[index].hiddenval+'">'+field.dataList[index].showval+'</option>';
+		        		}
+	        		}
+	        		selectContent += '</select>';
+	        		subTabelItemContent += selectContent + '</row>';
+	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else if(showType == '104' && readWrite == '1'){
+	        		subTabelItemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//多选
+	        		selectContent = '';
+	        		for(var index=0,size=field.dataList.length;index<size;index++){
+	        		    selectContent += '<row>';
+		        		if(field.hiddenval){
+							if((field.hiddenval + ',').indexOf(field.dataList[index].hiddenval + ',') > -1){
+			        			selectContent += '<checkbox style="align:left;font-size:16;" checked="true" id="_sub_' + field.sysname +i+index+ '" name="_sub_' + field.sysname +i+ '" value="'+field.dataList[index].hiddenval+',">'+field.dataList[index].showval+'</checkbox>';
+			        		}else{
+			        			selectContent += '<checkbox style="align:left;font-size:16;" id="_sub_' + field.sysname +i+index+ '" name="_sub_' + field.sysname +i+ '" value="'+field.dataList[index].hiddenval+',">'+field.dataList[index].showval+'</checkbox>';
+			        		}
+		        		}else{
+		        			selectContent += '<checkbox style="align:left;font-size:16;" id="_sub_' + field.sysname +i+index+ '" name="_sub_' + field.sysname +i+ '" value="'+field.dataList[index].hiddenval+',">'+field.dataList[index].shownval+'</checkbox>';
+		        		}
+		        		selectContent += '</row>';
+	        		}
+	        		subTabelItemContent += selectContent;
+	        		pushMustFillCheckboxArray(mustfilled,field.name,'_sub_' + field.sysname+i,field.dataList.length);
+	        	}else if(showType == '105' && readWrite == '1'){
+	        		subTabelItemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//下拉框
+	        		selectContent = '<row><select style="align:right;font-size:16;" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '">'+
+	        			'<option value="">请选择</option>';
+	        		for(var index=0,size=field.dataList.length;index<size;index++){
+		        		if(field.hiddenval){
+			        		if(field.hiddenval == field.dataList[index].hiddenval){
+			        			selectContent += '<option selected="true" value="'+field.dataList[index].hiddenval+'">'+field.dataList[index].showval+'</option>';
+			        		}else{
+			        			selectContent += '<option value="'+field.dataList[index].hiddenval+'">'+field.dataList[index].showval+'</option>';
+			        		}
+		        		}else{
+		        			selectContent += '<option value="'+field.dataList[index].hiddenval+'">'+field.dataList[index].showval+'</option>';
+		        		}
+	        		}
+	        		selectContent += '</select>';
+	        		subTabelItemContent += selectContent + '</row>';
+	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else if(showType == '107' && readWrite == '1'){
+	        		subTabelItemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//日期
+	        		subTabelItemContent += '<row><input style="color:#555555;font-size:16;" type="date" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value="' + field.value + '"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else if(showType == '108' && readWrite == '1'){
+	        		subTabelItemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//时间 
+	        		subTabelItemContent += '<row><input style="color:#555555;font-size:16;" type="time" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value="' + field.value + '"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else if(showType == '109' && readWrite == '1'){
+	        		subTabelItemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//日期 时间 
+	        		subTabelItemContent += '<row><input style="color:#555555;font-size:16;" type="datetime" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value="' + field.value + '"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else if(showType == '110' && readWrite == '1'){
+	        		subTabelItemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//多行文本
+	        		subTabelItemContent += '<row><textarea style="color:#555555;font-size:16;" rows="5" maxrows="5" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '">' + field.value + '</textarea></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else if(( showType == '213' || showType == '215'|| showType =='406'|| showType =='601'|| showType =='602'|| showType =='603'|| showType =='604'|| showType =='605'|| showType =='607'|| showType =='701'|| showType =='702'|| showType =='201'|| showType =='202' || showType =='207'  ) && readWrite == '1'){
+	        		subTabelItemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		var  labelVal = '';
+	        		if(field.dataList == null ||field.dataList == ''||field.dataList==undefined){
+	        			labelVal = field.value;
+	        		}else{
+	        		    labelVal = field.dataList.val.showval;
+	        		}
+	        		if(labelVal == '' || labelVal== null){
+	        			labelVal = '';
+	        		}
+				//登录人信息
+	        		subTabelItemContent += '<row><label style="align:right;color:#555555;font-size:16;">' + labelVal + '</label><input type="hidden" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value="' + labelVal + '"/></row>';
+	        	}else if(showType == '301' && readWrite == '1'){
+	        		subTabelItemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//金额
+	        		if(fieldType == '1000000' || fieldType == '1000001'){
+	        			subTabelItemContent += '<row><input style="color:#555555;font-size:16;" type="number" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value="' + field.value + '" maxlength="9"/></row>';
+	        		}else{
+	        			subTabelItemContent += '<row><input style="color:#555555;font-size:16;" type="text" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value="' + field.value + '" maxlength="9"/></row>';
+	        		}
+	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else if(showType == '302' && readWrite == '1'){
+	        		subTabelItemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//金额
+        			subTabelItemContent += '<row><input style="color:#555555;font-size:16;" type="text" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value="' + field.value + '" maxlength="18"/></row>';
+        			pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else if(showType == '210' && readWrite == '1'){
+	        		subTabelItemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*0*\',\'0\')" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//单选人 全部
+	        		subTabelItemContent += '<row>'+
+	        					   '<input onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*0*\',\'0\')" style="color:#555555;font-size:16;" readonly="true" type="text" name="_subShow_' + field.sysname +i+ 
+	        					   '" value="' + field.value + '" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '<input type="hidden" id="_sub_' + field.sysname +i+'"   name="_sub_' + field.sysname +i+'" value="' + field.hiddenval + '"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else if(showType == '211' && readWrite == '1'){
+	        		subTabelItemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*0*\',\'1\')" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//多选人 全部
+	        		subTabelItemContent += '<row>'+
+	        					   '<input onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*0*\',\'1\')" style="color:#555555;font-size:16;" readonly="true" type="text" name="_subShow_' + field.sysname +i+ 
+	        					   '" value="' + field.value + '" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '<input type="hidden" id="_sub_' + field.sysname +i+'" name="_sub_' + field.sysname +i+'" value="' + field.hiddenval + '"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else if(showType == '212' && readWrite == '1'){
+	        		subTabelItemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*0*\',\'2\')" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//单选组织
+	        		subTabelItemContent += '<row>'+
+	        					   '<input onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*0*\',\'2\')" style="color:#555555;font-size:16;" readonly="true" type="text" name="_subShow_' + field.sysname +i+ '" value="' + field.value + '" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '<input type="hidden" id="_sub_' + field.sysname +i+'" name="_sub_' + field.sysname +i+'" value="' + field.hiddenval + '"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else if(showType == '214' && readWrite == '1'){
+	        		subTabelItemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*0*\',\'3\')" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//多选组织
+	        		subTabelItemContent += '<row>'+
+	        					   '<input onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*0*\',\'3\')" style="color:#555555;font-size:16;" readonly="true" type="text" name="_subShow_' + field.sysname +i+ 
+	        					   '" value="' + field.value + '" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '<input type="hidden" id="_sub_' + field.sysname +i+'" name="_sub_' + field.sysname +i+'" value="' + field.hiddenval + '"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	
+	        	}else if(showType == '704' && readWrite == '1'){
+	        		subTabelItemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*'+orgId+'*\',\'0\')" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//单选人 本组织
+	        		subTabelItemContent += '<row>'+
+	        					   '<input onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*'+orgId+'*\',\'0\')" readonly="true" style="color:#555555;font-size:16;" type="text" name="_subShow_' + field.sysname + 
+	        					   '" value="' + field.value + '" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '<input type="hidden" id="_sub_' + field.sysname +i+'" name="_sub_' + field.sysname +i+'" value="' + field.hiddenval + '"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else if(showType == '705' && readWrite == '1'){
+	        		subTabelItemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*'+orgId+'*\',\'1\')" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//多选人 本组织
+	        		subTabelItemContent += '<row>'+
+	        					   '<input onclick="selectUser(\'_sub_' + field.sysname +'\',\'_subShow_' + field.sysname +'\',\'*'+orgId+'*\',\'1\')" readonly="true" style="color:#555555;font-size:16;" type="text" name="_subShow_' + field.sysname +i+ 
+	        					   '" value="' + field.value + '" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '<input type="hidden" id="_sub_' + field.sysname +i+'" name="_sub_' + field.sysname +i+'" value="' + field.hiddenval + '"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else if(showType == '708' && readWrite == '1'){
+	        		subTabelItemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//流程发起人
+	        		subTabelItemContent += '<row><label style="align:right;color:#555555;font-size:16;">' + field.value + '</label><input type="hidden" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value="' + field.value + '"/></row>';
+	        	}else if(showType == '113' || showType == '115' || showType == '116' || showType == '117' || showType == '118'){
+	        		subTabelItemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		subTabelItemContent += '<row><label style="align:left;font-size:12;color:#FF4617">该字段暂不支持手机办理，请于电脑端操作...</label><input type="hidden" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value="' + field.value + '"/></row>';
+	        	    pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else{            // 只读数据
+	        		subTabelItemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555;">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		subTabelItemContent += '<row><label style="align:right;color:#555555;font-size:16;">' + field.value + '</label><input type="hidden" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value="' + field.value + '"/></row>';
+	        	}
+	        	subTabelItemContent += '</col></item>';
+	        	
+			}
+			
+			// 创建打开子表时的底部按钮
+			function createSubTableFoot(){
+				$('subTable_footer_list').clear();
+				var footContent = 			
+			        	'<item>'+
+							'<col><row style="height:50;"><button onclick="goBack();" '+
+									'style="padding:2;align:center;background:#3EAFFF,#007aff;color:#F0F9FF,white;border:0;corner-radius:3;width:100;height:38;font-size:14">返回主表</button></row></col>'+
+							'<col><row style="height:50;"><button id="sub_addbutton" '+
+									'style="padding:2;align:center;background:#3EAFFF,#007aff;color:#F0F9FF,white;border:0;corner-radius:3;width:100;height:38;font-size:14">新增</button></row></col>'+
+							'<col><row style="height:50;"><button id="sub_overbutton" onclick="goBackSaveSubForm();" '+
+									'style="padding:2;align:center;background:#3EAFFF,#007aff;color:#F0F9FF,white;border:0;corner-radius:3;width:100;height:38;font-size:14">完成('+global_subDatalen_cur+')</button></row></col>'+
+						'</item>';
+				$('subTable_footer_list').addMore('<imag><list>' + footContent + '</list></imag>');
+				$('sub_addbutton').onclick = "addIteminList('"+global_subFieldList+"')";
+			}
+	        // 子表返回主表界面
+			function goBack(){
+			    $('leftButton').css('display','block');
+				$('subTabel_form_list').css('display','none');
+				$('content_form_list').css('display','');
+				$('subTable_footer_list').css('display','none');
+				$('footer_list').css('display','');
+				$('centerTitle').text = centerTitle_str;
+				//有合计项
+				if(totalFieldcon!=''){
+				  $('topright').css('display','none');
+				  $('topright').text="";
+				  $('topright').onclick=";";
+				}
+			}
+			//保存数据的json
+			var _subfieldjson='';
+			// 子表保存并返回主表界面
+			function goBackSaveSubForm(){
+				$('leftButton').css('display','block');
+			    var subFieldList = JSON.parse(global_subFieldList);
+			    _subfieldjson = '';
+			    var subFormxml = '';
+			    var subDataCount=0;
+			    if(global_subDatalen>0){
+				    subFormxml += '<table>';
+				    subFormxml += '<tableName>'+global_subTableName+'</tableName>';
+				    
+				    _subfieldjson += '[';
+	                        
+				    for(var k=0;k<global_subDatalen;k++){
+				      //没有被删除的数据
+				      if(global_subDelIndex.indexOf('|'+k+'|')==-1){
+					        subFormxml += '<fields>';
+	                        subFormxml += '<dataId>'+$('sub_dataId'+k).value+'</dataId>';
+	                        
+	                        _subfieldjson += '{"dataId":"'+$('sub_dataId'+k).value+'",';
+	                        
+							if(subFieldList instanceof Array){
+								subFormxml += getSubTableFieldValue(subFieldList[0].field,k);
+							}else if(subFieldList instanceof Object){
+								subFormxml += getSubTableFieldValue(subFieldList.field,k);
+							}
+							
+							_subfieldjson += '},';
+							
+							subFormxml += '</fields>';
+							subDataCount = subDataCount+1;
+						}
+					 }
+					//清除逗号
+					var  tmp = _subfieldjson.substr(_subfieldjson.length-1);
+					if(tmp==','){
+						_subfieldjson = _subfieldjson.substr(0,_subfieldjson.length-1);
+					}
+					_subfieldjson += ']';
+					//alert(_subfieldjson);
+					subFormxml += '</table>';
+				}
+
+				//设置显示数据条数
+                $(global_subTableName+'_count').value = subDataCount+'条子表数据';
+                if(_subfieldjson==''||_subfieldjson=='[]'){
+                   _subfieldjson='';
+                   subFormxml='';
+                }
+                //设置临时数据
+                $('json_'+global_subTableName).value = _subfieldjson;
+				$(global_subTableName).value=subFormxml;
+				$('subTabel_form_list').css('display','none');
+				$('content_form_list').css('display','');
+				$('subTable_footer_list').css('display','none');
+				$('footer_list').css('display','');
+				
+				$('centerTitle').text = centerTitle_str;
+				//有合计项
+				if(totalFieldcon!=''){
+				  $('topright').css('display','none');
+				  $('topright').text="";
+				  $('topright').onclick=";";
+				}
+			}
+			function getSubTableFieldValue(fields,k){
+                var _subfieldxml='';
+                
+                _subfieldjson += '"field":[';
+				if(fields instanceof Array){
+					for(var i=0;i<fields.length;i++){
+					   //多选单独处理
+					   if(fields[i].showtype=='104'){
+					      var chkstr = '';
+					      var dataListJson = '';
+					      if(fields[i].dataList){
+					         dataListJson = ',"dataList":'+JSON.stringify(fields[i].dataList);
+					      }
+					      for(var index=0;index<fields[i].dataList.length;index++){
+					         if($('_sub_' + fields[i].sysname +k+index).checked){
+					            chkstr += $('_sub_' + fields[i].sysname +k+index).value;
+					         }
+					      }
+					       _subfieldxml += '<field>';
+						   _subfieldxml += '<fieldName>'+fields[i].sysname+'</fieldName>';
+						   _subfieldxml += '<value>'+chkstr+'</value>';
+						   _subfieldxml += '</field>';
+						   
+						   _subfieldjson += '{"id":"'+fields[i].id+'","sysname":"'+fields[i].sysname+'","name":"'+fields[i].name+'","showtype":"'+fields[i].showtype+'","value":"'+chkstr+'","hiddenval":"'+chkstr+'","expressionval":"'+fields[i].expressionval+'","readwrite":"'+fields[i].readwrite+'","fieldtype":"'+fields[i].fieldtype+'","mustfilled":"'+fields[i].mustfilled+'"'+dataListJson+'},';
+					   }else if(fields[i].showtype=='210'||fields[i].showtype=='211'||fields[i].showtype=='212'||fields[i].showtype=='214'||fields[i].showtype=='704'||fields[i].showtype=='705'){  //都是选人框
+
+					      var dataListJson = '';
+					      if(fields[i].dataList){
+					         dataListJson = ',"dataList":'+JSON.stringify(fields[i].dataList);
+					      }
+					      var hidevalue = $('_sub_'+fields[i].sysname+k).value;
+					      var showvalue = $('_subShow_'+fields[i].sysname+k).value;
+					      
+					       _subfieldxml += '<field>';
+						   _subfieldxml += '<fieldName>'+fields[i].sysname+'</fieldName>';
+						   _subfieldxml += '<value>'+hidevalue+'</value>';
+						   _subfieldxml += '</field>';
+						   
+						   _subfieldjson += '{"id":"'+fields[i].id+'","sysname":"'+fields[i].sysname+'","name":"'+fields[i].name+'","showtype":"'+fields[i].showtype+'","value":"'+showvalue+'","hiddenval":"'+hidevalue+'","expressionval":"'+fields[i].expressionval+'","readwrite":"'+fields[i].readwrite+'","fieldtype":"'+fields[i].fieldtype+'","mustfilled":"'+fields[i].mustfilled+'"'+dataListJson+'},';
+						   
+					   }else{
+					       var dataListJson = '';
+					       if(fields[i].dataList){
+					         dataListJson = ',"dataList":'+JSON.stringify(fields[i].dataList);
+					       }
+					       if(!$('_sub_'+fields[i].sysname+k)){alert('_sub_'+fields[i].sysname+k);}
+						   _subfieldxml += '<field>';
+						   _subfieldxml += '<fieldName>'+fields[i].sysname+'</fieldName>';
+						   _subfieldxml += '<value>'+$('_sub_'+fields[i].sysname+k).value+'</value>';
+						   _subfieldxml += '</field>';
+						   
+						   _subfieldjson += '{"id":"'+fields[i].id+'","sysname":"'+fields[i].sysname+'","name":"'+fields[i].name+'","showtype":"'+fields[i].showtype+'","value":"'+$('_sub_'+fields[i].sysname+k).value+'","hiddenval":"'+fields[i].hiddenval+'","expressionval":"'+fields[i].expressionval+'","readwrite":"'+fields[i].readwrite+'","fieldtype":"'+fields[i].fieldtype+'","mustfilled":"'+fields[i].mustfilled+'"'+dataListJson+'},';
+					    }
+					}
+					//清除逗号
+					var  tmp = _subfieldjson.substr(_subfieldjson.length-1);
+					if(tmp==','){
+						_subfieldjson = _subfieldjson.substr(0,_subfieldjson.length-1);
+					}
+				}else if(fields instanceof Object){
+				    //多选字段单独处理
+					   if(fields.showtype=='104'){
+					      var chkstr = '';
+					      var dataListJson = '';
+					      if(fields.dataList){
+					         dataListJson = ',"dataList":'+JSON.stringify(fields.dataList);
+					      }
+					      for(var index=0;index<fields.dataList.length;index++){
+					         if($('_sub_' + fields.sysname +k+index).checked){
+					            chkstr += $('_sub_' + fields.sysname +k+index).value;
+					         }
+					      }
+					       _subfieldxml += '<field>';
+						   _subfieldxml += '<fieldName>'+fields.sysname+'</fieldName>';
+						   _subfieldxml += '<value>'+chkstr+'</value>';
+						   _subfieldxml += '</field>';
+						   
+						   _subfieldjson += '{"id":"'+fields.id+'","sysname":"'+fields.sysname+'","name":"'+fields.name+'","showtype":"'+fields.showtype+'","value":"'+chkstr+'","hiddenval":"'+chkstr+'","expressionval":"'+fields.expressionval+'","readwrite":"'+fields.readwrite+'","fieldtype":"'+fields.fieldtype+'","mustfilled":"'+fields.mustfilled+'"'+dataListJson+'}';
+					   }else if(fields.showtype=='210'||fields.showtype=='211'||fields.showtype=='212'||
+					       fields.showtype=='214'||fields.showtype=='704'||fields.showtype=='705'){  //都是选人框
+
+					        var dataListJson = '';
+					        if(fields.dataList){
+					           dataListJson = ',"dataList":'+JSON.stringify(fields.dataList);
+					        }
+					        var hidevalue = $('_sub_'+fields.sysname+k).value;
+					        var showvalue = $('_subShow_'+fields.sysname+k).value;
+					      
+					       _subfieldxml += '<field>';
+						   _subfieldxml += '<fieldName>'+fields.sysname+'</fieldName>';
+						   _subfieldxml += '<value>'+hidevalue+'</value>';
+						   _subfieldxml += '</field>';
+						   
+						   _subfieldjson += '{"id":"'+fields.id+'","sysname":"'+fields.sysname+'","name":"'+fields.name+'","showtype":"'+fields.showtype+'","value":"'+showvalue+'","hiddenval":"'+hidevalue+'","expressionval":"'+fields.expressionval+'","readwrite":"'+fields.readwrite+'","fieldtype":"'+fields.fieldtype+'","mustfilled":"'+fields.mustfilled+'"'+dataListJson+'},';
+						   
+					   }else{
+					        var dataListJson = '';
+					        if(fields.dataList){
+					           dataListJson = ',"dataList":'+JSON.stringify(fields.dataList);
+					        }
+						    _subfieldxml += '<field>';
+						    _subfieldxml += '<fieldName>'+fields.sysname+'</fieldName>';
+						    _subfieldxml += '<value>'+$('_sub_'+fields.sysname+k).value+'</value>';
+							_subfieldxml += '</field>';
+							
+							_subfieldjson += '{"id":"'+fields.id+'","sysname":"'+fields.sysname+'","name":"'+fields.name+'","showtype":"'+fields.showtype+'","value":"'+$('_sub_'+fields.sysname+k).value+'","hiddenval":"'+fields.hiddenval+'","expressionval":"'+fields.expressionval+'","readwrite":"'+fields.readwrite+'","fieldtype":"'+fields.fieldtype+'","mustfilled":"'+fields.mustfilled+'"'+dataListJson+'}';
+						}
+				}
+				_subfieldjson += ']';
+				return _subfieldxml;
+				
+			}
+	               
+	       // 创建工作流程信息隐藏域
+	        function createWorkInfoHiddenArea(detailData){
+	        	$('sysPageId').value = decodeURIComponent($param['pageId']);
+	        	$('processId').value = decodeURIComponent($param['processId']);
+	        	$('mailTableName').value = detailData.fieldList.tableName;
+	        }
+	        
+	        // 创建底部内容
+	        function createFootContent(){
+				itemContent = 			
+		        	'<item style="col-width: 100%">'+
+						'<col>'+
+							'<row style="height:50;">'+
+								'<button onclick="sendFlow();" '+
+								'style="align:center;background:#3EAFFF,#007aff;color:#F0F9FF,white;border:0;corner-radius:3;width:300;height:38;font-size:14">发送</button>'+
+							'</row>'+
+						'</col>'+
+					'</item>';
+	        	$('footer_list').addMore('<imag><list>' + itemContent + '</list></imag>');
+	        }
+
+	        // 需要创建附件下载内容的数组
+	        var attachmentArray = new Array();
+	        
+	        // 创建附件下载内容
+	        function createAttachCon(){
+	        	var attachments;
+	        	attachmentArray.map(function(attachmentInfo){
+	        		attachments = attachmentInfo.split(';');
+					$http.post(evoUrl + '/ezOffice/doc/dealFiles.do', {
+						accessoryNameseries : attachments[1].replace(/,/g,'|'),
+						accessorySaveNameseries : attachments[0].replace(/,/g,'|'),
+						path : 'customform'
+					}, function(data) {
+						if (data) {
+							var obj = JSON.parse(data);
+							if(obj.logonerror &&obj.logonerror=='1'){
+				         		alert("该账号已在设备"+obj.deviceId+"上登录");
+			          			$page.open('../index.xml',{target:'_self'});
+			                    return;
+			                }
+							var attList = obj.attList;
+							if (!attList == '') { //不为空，遍历,并为附件赋值
+								for (var k = 0; k < attList.length; k++) {
+									var files = $C('<row><label style="color:#330000;color:blue;align:right;"  onclick="$http.download(\'' + evoUrl+'/ezOffice/download/file.do?url=' + attList[k].attachurlser + '&amp;filename=' + attList[k].savename +'&amp;viewName='+attList[k].realname+ '\')">' + attList[k].realname + '</label></row>')
+									$(attachments[2]).add(files);
+								}
+							} else { //无附件，或者后台处理异常
+								alert('附件下载失败！');
+							}
+						}
+					},function(error) {
+				    if (error == 'timeout') {
+						hint('连接服务器超时！');
+				    } else if (error == '404') {
+						hint('链接超时重新登录！');
+				    } else if (error == '500') {
+						hint('内部服务器错误！');
+				    } else {
+						hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+				  });
+	        	});
+	        }
+			
+	        //必填标识
+	        var mustfilled;
+	        
+	        //必填项数组
+	        var mustFillCon = new Array();
+	        
+	        //添加数组元素 
+	        function pushMustFillArray(mustfilled,fieldName,conId){
+	        	if(mustfilled == '0'){
+	        		return false;
+	        	}
+	        	mustFillCon.push(fieldName + ';' + conId);
+	        }
+	        
+	        //必填checkbox
+	        var mustFillCheckbox = new Array();
+	        
+	        //添加数组元素 
+	        function pushMustFillCheckboxArray(mustfilled,fieldName,conId,len){
+	        	if(mustfilled == '0'){
+	        		return false;
+	        	}
+	        	mustFillCheckbox.push(fieldName + ';' + conId+ ';' +len);
+	        }
+	        
+	        //不能编辑的必填字段
+	        var mustFillWord = new Array();
+	        
+	        //添加数组元素 
+	        function pushMustFillWord(mustfilled,fieldName,conId){
+	        	if(mustfilled == '0'){
+	        		return false;
+	        	}
+	        	mustFillWord.push(fieldName + ';' + conId);
+	        }
+	        
+	        //发送时验证表单
+	        function checkForm(){
+	        	var fieldInfoArray;
+	        	var flag = true;
+	        	for(var i=0,length=mustFillCon.length;i<length;i++){
+	        		if(!mustFillCon[i]){
+	        			return false;
+	        		}
+	        		fieldInfoArray = mustFillCon[i].split(';');
+	        		if(!($(fieldInfoArray[1]).value)){
+	        			alert(fieldInfoArray[0] + ' 不能为空！');
+			        	return false;
+	        		}
+	        	}
+	        	for(var i=0,length=mustFillCheckbox.length;i<length;i++){
+	        		if(!mustFillCheckbox[i]){
+	        			return false;
+	        		}
+
+	        		var chefieldInfoArray = mustFillCheckbox[i].split(';');
+	        		var fname = chefieldInfoArray[0];
+	        		var conId = chefieldInfoArray[1];
+	        		var len = eval(chefieldInfoArray[2]);
+	        		
+	        		flag = false;
+	        		for(var j=0;j<len;j++){
+	        		    if(($(conId+j).checked)){
+	        		        flag = true;
+		        		}
+	        		}
+	        		if(!flag){
+	        		   alert(fname + ' 不能为空！');
+	        		   return false;
+	        		}
+	        		
+	        	}
+	        	for(var i=0,length=mustFillWord.length;i<length;i++){
+	        		if(!mustFillWord[i]){
+	        			return false;
+	        		}
+	        		var mustFillWordArray = mustFillWord[i].split(';');
+	        		alert(mustFillWordArray[0] + ' 不能在手机编辑，请于pc端操作！');
+	        		return false;
+	        	}
+	        	return flag;
+	        }
+	        
+	        //初始化表单数据
+	        function createFormData(field,showType,readWrite,fieldType,selectContent){
+	        	showType = field.showtype;
+	        	readWrite = field.readwrite;
+	        	fieldType = field.fieldtype;
+	        	mustfilled = field.mustfilled;
+	        	
+	        	var mustfilled_view = '';
+        	    if(mustfilled && mustfilled=='1'){
+        	       mustfilled_view = '<label style="align:left;font-size:12;color:#FF4617">*</label>';
+        	    }
+
+	        	if(showType == '101' && readWrite == '1'){
+	        	    
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//单行文本
+	        		if(fieldType == '1000000'){
+	        			itemContent += '<row><input style="color:#555555;font-size:16;" type="number" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '" value="' + field.value + '" maxlength="9"/></row>';
+	        		}else if(fieldType == '1000001'){
+	        			itemContent += '<row><input style="color:#555555;font-size:16;" type="number" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '" value="' + field.value + '" maxlength="18"/></row>';
+	        		}else{
+	        			itemContent += '<row><input style="color:#555555;font-size:16;" type="text" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '" value="' + field.value + '"/></row>';
+	        		}
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
+	        	}else if(showType == '102' && readWrite == '1'){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//密码输入
+	        		itemContent += '<row><input type="password" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '" value="' + field.value + '"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
+	        	}else if(showType == '103' && readWrite == '1'){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//单选
+	        		selectContent = '<row><select style="font-size:16;" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '">'+
+	        			'<option value="">请选择</option>';
+	        		for(var index=0,size=field.dataList.length;index<size;index++){
+		        		if(field.hiddenval){
+			        		if(field.hiddenval == field.dataList[index].hiddenval){
+			        			selectContent += '<option selected="true" value="'+field.dataList[index].hiddenval+'">'+field.dataList[index].showval+'</option>';
+			        		}else{
+			        			selectContent += '<option value="'+field.dataList[index].hiddenval+'">'+field.dataList[index].showval+'</option>';
+			        		}
+		        		}else{
+		        			selectContent += '<option value="'+field.dataList[index].hiddenval+'">'+field.dataList[index].showval+'</option>';
+		        		}
+	        		}
+	        		selectContent += '</select>';
+	        		itemContent += selectContent + '</row>';
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
+	        	}else if(showType == '104' && readWrite == '1'){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//多选
+	        		selectContent = '';
+	        		for(var index=0,size=field.dataList.length;index<size;index++){
+	        		    selectContent += '<row>';
+		        		if(field.hiddenval){
+							if((field.hiddenval + ',').indexOf(field.dataList[index].hiddenval + ',') > -1){
+			        			selectContent += '<checkbox style="align:left;font-size:16;" id="_main_' + field.sysname +index+ '" checked="true" name="_main_' + field.sysname + '" value="'+field.dataList[index].hiddenval+',">'+field.dataList[index].showval+'</checkbox>';
+			        		}else{
+			        			selectContent += '<checkbox style="align:left;font-size:16;" id="_main_' + field.sysname +index+ '" name="_main_' + field.sysname + '" value="'+field.dataList[index].hiddenval+',">'+field.dataList[index].showval+'</checkbox>';
+			        		}
+		        		}else{
+		        			selectContent += '<checkbox style="align:left;font-size:16;" id="_main_' + field.sysname +index+ '" name="_main_' + field.sysname + '" value="'+field.dataList[index].hiddenval+',">'+field.dataList[index].shownval+'</checkbox>';
+		        		}
+		        		selectContent += '</row>';
+	        		}
+	        		itemContent += selectContent;
+	        		pushMustFillCheckboxArray(mustfilled,field.name,'_main_' + field.sysname,field.dataList.length);
+	        	}else if(showType == '105' && readWrite == '1'){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//下拉框
+	        		selectContent = '<row><select style="font-size:16;" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '">'+
+	        			'<option value="">请选择</option>';
+	        		for(var index=0,size=field.dataList.length;index<size;index++){
+		        		if(field.hiddenval){
+			        		if(field.hiddenval == field.dataList[index].hiddenval){
+			        			selectContent += '<option selected="true" value="'+field.dataList[index].hiddenval+'">'+field.dataList[index].showval+'</option>';
+			        		}else{
+			        			selectContent += '<option value="'+field.dataList[index].hiddenval+'">'+field.dataList[index].showval+'</option>';
+			        		}
+		        		}else{
+		        			selectContent += '<option value="'+field.dataList[index].hiddenval+'">'+field.dataList[index].showval+'</option>';
+		        		}
+	        		}
+	        		selectContent += '</select>';
+	        		itemContent += selectContent + '</row>';
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
+	        	}else if(showType == '204'){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//当前日期
+	        		itemContent += '<row><input style="color:#555555;font-size:16;" type="date" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '" value="' + field.value + '" readonly="true"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
+	        	}else if(showType == '703'){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//当前日期时间
+	        		itemContent += '<row><input style="color:#555555;font-size:16;" type="date" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '" value="' + field.value + '" readonly="true"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
+	        	}else if(showType == '107' && readWrite == '1'){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//日期
+	        		itemContent += '<row><input style="color:#555555;font-size:16;" type="date" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '" value="' + field.value + '"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
+	        	}else if(showType == '108' && readWrite == '1'){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//时间 
+	        		itemContent += '<row><input style="color:#555555;font-size:16;" type="time" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '" value="' + field.value + '"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
+	        	}else if(showType == '109' && readWrite == '1'){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//日期 时间 
+	        		itemContent += '<row><input style="color:#555555;font-size:16;" type="datetime" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '" value="' + field.value + '"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
+	        	}else if(showType == '110' && readWrite == '1'){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//多行文本
+	        		itemContent += '<row><textarea style="color:#555555;font-size:16;" rows="5" maxrows="5" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '">' + field.value + '</textarea></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
+	        	}else if(showType == '111' && readWrite == '1'){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//自动编号
+	        		itemContent += '<row><label style="align:right;color:#555555;font-size:16;">' + field.value + '</label></row>';
+	        	}else if(showType == '113' && readWrite == '1'){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//html编辑
+	        		itemContent += '<row><textarea style="color:#555555;font-size:16;" rows="5" maxrows="5" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '">' + field.value + '</textarea></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
+	        	}else if(showType == '115'){
+	        		//fileindex = fileindex++;
+	        		var attId = 'attachments_' + field.sysname;
+	        		//附件上传
+	        		if(field.value && field.value.length > 0){
+		        		attachmentArray.push(field.value + ';attachments_' + fileindex);
+	        		}
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label>'+
+	        		'<input type="hidden" name="_mainfile_' + field.sysname + '"/></row></col><col id="' + attId + '" style="padding:10;margin:10;">';
+	        		if(readWrite == '1'){
+	        		    itemContent += '<row id="fileRow" onclick="doRelatedAcc(this,\'' + attId + '\',\'' + field.sysname + '\')"><icon src="mail_addfu.png" style="width:28;height:28;" onclick="doRelatedAcc(this,\'' + attId + '\',\'' + field.sysname + '\')"/></row>';
+	        		}
+	        	}else if(showType == '116'){
+	        		//Word编辑
+	        		if(field.value && field.value.length > 0){
+		        		attachmentArray.push(field.value + ';attachments');
+	        		}
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col id="wordEdit" style="padding:10;margin:10;">';
+	        		if(readWrite == '1'){
+	        			itemContent += '<row><label style="align:left;font-size:12;color:#FF4617">该字段暂不支持手机办理，请于电脑端操作...</label></row>';
+	        		}
+	        		pushMustFillWord(mustfilled,field.name,'wordEdit');
+	        	}else if(showType == '117'){
+	        		//Excel编辑
+	        		if(field.value && field.value.length > 0){
+		        		attachmentArray.push(field.value + ';attachments');
+	        		}
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col id="excelEdit" style="padding:10;margin:10;">';
+	        		if(readWrite == '1'){
+	        			itemContent += '<row><label style="align:left;font-size:12;color:#FF4617">该字段暂不支持手机办理，请于电脑端操作...</label></row>';
+	        		}
+	        		pushMustFillWord(mustfilled,field.name,'excelEdit');
+	        	}else if(showType == '118'){
+	        		//WPS编辑 118
+	        		if(field.value && field.value.length > 0){
+		        		attachmentArray.push(field.value + ';attachments');
+	        		}
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col id="wpsEdit" style="padding:10;margin:10;">';
+	        		if(readWrite == '1'){
+	        			itemContent += '<row><label style="align:left;font-size:12;color:#FF4617">该字段暂不支持手机办理，请于电脑端操作...</label></row>';
+	        		}
+	        		pushMustFillWord(mustfilled,field.name,'wpsEdit');
+	        	}else if(( showType == '213' || showType == '215'|| showType =='406'|| showType =='601'|| showType =='602'|| showType =='603'|| showType =='604'|| showType =='605'|| showType =='607'|| showType =='701'|| showType =='702'|| showType =='201'|| showType =='202' || showType =='207'  ) && readWrite == '1'){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//登录人信息
+	        		itemContent += '<row><label style="align:right;color:#555555;font-size:16;">' + field.value + '</label><input type="hidden" name="_main_' + field.sysname + '" value="' + field.value + '"/></row>';
+	        	}else if(showType == '301' && readWrite == '1'){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//金额
+	        		if(fieldType == '1000000' || fieldType == '1000001'){
+	        			itemContent += '<row><input style="color:#555555;font-size:16;" type="number" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '" value="' + field.value + '" maxlength="9"/></row>';
+	        		}else{
+	        			itemContent += '<row><input style="color:#555555;font-size:16;" type="text" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '" value="' + field.value + '" maxlength="9"/></row>';
+	        		}
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
+	        	}else if(showType == '302' && readWrite == '1'){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//金额
+        			itemContent += '<row><input style="color:#555555;font-size:16;" type="text" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '" value="' + field.value + '" maxlength="18"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
+	        	}else if(showType == '210' && readWrite == '1'){
+	        		itemContent += '<item onclick="selectUser(\'_main_' + field.sysname +'\',\'_mainShow_' + field.sysname +'\',\'*0*\',\'0\')" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//单选人 全部
+	        		itemContent += '<row>'+
+	        					   '<input onclick="selectUser(\'_main_' + field.sysname +'\',\'_mainShow_' + field.sysname +'\',\'*0*\',\'0\')" style="color:#555555;font-size:16;" readonly="true" type="text" name="_mainShow_' + field.sysname + 
+	        					   '" value="' + field.value + '" id="_mainShow_' + field.sysname +'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '<input type="hidden" id="_main_' + field.sysname +'" name="_main_' + field.sysname +'" value="' + field.hiddenval + '"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
+	        	}else if(showType == '211' && readWrite == '1'){
+	        		itemContent += '<item onclick="selectUser(\'_main_' + field.sysname +'\',\'_mainShow_' + field.sysname +'\',\'*0*\',\'1\')" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//多选人 全部
+	        		itemContent += '<row >'+
+	        					   '<input onclick="selectUser(\'_main_' + field.sysname +'\',\'_mainShow_' + field.sysname +'\',\'*0*\',\'1\')" style="color:#555555;font-size:16;" readonly="true" type="text" name="_mainShow_' + field.sysname + 
+	        					   '" value="' + field.value + '" id="_mainShow_' + field.sysname +'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '<input type="hidden" id="_main_' + field.sysname +'" name="_main_' + field.sysname +'" value="' + field.hiddenval + '"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
+	        	}else if(showType == '212' && readWrite == '1'){
+	        		itemContent += '<item onclick="selectUser(\'_main_' + field.sysname +'\',\'_mainShow_' + field.sysname +'\',\'*0*\',\'2\')" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//单选组织
+	        		itemContent += '<row >'+
+	        					   '<input onclick="selectUser(\'_main_' + field.sysname +'\',\'_mainShow_' + field.sysname +'\',\'*0*\',\'2\')" style="color:#555555;font-size:16;" readonly="true" type="text" name="_mainShow_' + field.sysname + 
+	        					   '" value="' + field.value + '" id="_mainShow_' + field.sysname +'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '<input type="hidden" id="_main_' + field.sysname +'" name="_main_' + field.sysname +'" value="' + field.hiddenval + '"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
+	        	}else if(showType == '214' && readWrite == '1'){
+	        		itemContent += '<item onclick="selectUser(\'_main_' + field.sysname +'\',\'_mainShow_' + field.sysname +'\',\'*0*\',\'3\')" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//多选组织
+	        		itemContent += '<row >'+
+	        					   '<input onclick="selectUser(\'_main_' + field.sysname +'\',\'_mainShow_' + field.sysname +'\',\'*0*\',\'3\')" style="color:#555555;font-size:16;" readonly="true" type="text" name="_mainShow_' + field.sysname + 
+	        					   '" value="' + field.value + '" id="_mainShow_' + field.sysname +'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '<input type="hidden" id="_main_' + field.sysname +'" name="_main_' + field.sysname +'" value="' + field.hiddenval + '"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
+	        	}else if(showType == '401'){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//批示意见
+	        		if(field.dataList.comment){
+	        			for(var j = 0,comLen = field.dataList.comment.length;j < comLen;j ++){
+		        			itemContent += '<row><label style="align:right;color:#555555">' + field.dataList.comment[j].content + '</label></row>';
+	        			}
+	        		}
+	        		if(readWrite == '1'){
+	        			itemContent += '<row><textarea style="color:#555555;font-size:16;" rows="5" maxrows="5" name="comment_input" id="comment_input"></textarea></row>';
+		        		pushMustFillArray(mustfilled,field.name,'comment_input');
+	        		}
+	        	}else if(showType == '704' && readWrite == '1'){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//单选人 本组织
+	        		itemContent += '<row >'+
+	        					   '<input onclick="selectUser(\'_main_' + field.sysname +'\',\'_mainShow_' + field.sysname +'\',\'*'+orgId+'*\',\'0\')" style="color:#555555;font-size:16;" readonly="true" type="text" name="_mainShow_' + field.sysname + 
+	        					   '" value="' + field.value + '" id="_mainShow_' + field.sysname +'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '<input type="hidden" id="_main_' + field.sysname +'" name="_main_' + field.sysname +'" value="' + field.hiddenval + '"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
+	        	}else if(showType == '705' && readWrite == '1'){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//多选人 本组织
+	        		itemContent += '<row >'+
+	        					   '<input onclick="selectUser(\'_main_' + field.sysname +'\',\'_mainShow_' + field.sysname +'\',\'*'+orgId+'*\',\'1\')" style="color:#555555;font-size:16;" readonly="true" type="text" name="_mainShow_' + field.sysname + 
+	        					   '" value="' + field.value + '" id="_mainShow_' + field.sysname +'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '<input type="hidden" id="_main_' + field.sysname +'" name="_main_' + field.sysname +'" value="' + field.hiddenval + '"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
+	        	}else if(showType == '708' && readWrite == '1'){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		//流程发起人
+	        		itemContent += '<row><label style="align:right;color:#555555;font-size:16;">' + field.value + '</label><input type="hidden" name="_main_' + field.sysname + '" value="' + field.value + '"/></row>';
+	        	}else if(showType == '808' && readWrite == '1'){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		itemContent += '<row><label style="align:left;font-size:12;color:#FF4617">该字段暂不支持手机办理，请于电脑端操作...</label></row>';
+	            }else if(showType == '404' && readWrite == '1'){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		itemContent += '<row><label style="align:left;font-size:12;color:#FF4617">该字段暂不支持手机办理，请于电脑端操作...</label></row>';
+	        	}else if(showType == '405' && readWrite == '1'){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		itemContent += '<row><label style="align:left;font-size:12;color:#FF4617">该字段暂不支持手机办理，请于电脑端操作...</label></row>';
+	        	}
+	        	// 只读数据
+	        	else{
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		itemContent += '<row><label style="align:right;color:#555555;font-size:16;">' + field.value + '</label></row>';
+	        	}
+	        	itemContent += '</col></item>';
+	        }
+	        
+	        // 选择用户
+	        var userIdConIdVal;
+	        var userNameConIdVal;
+	        function selectUser(userIdConId,userNameConId,range,type){
+	        	userIdConIdVal = userIdConId;
+	        	userNameConIdVal = userNameConId;
+		        storage.setItem('sys_selectuser_range',range);
+		        storage.setItem('sys_selectuser_userids',$(userIdConIdVal).value);
+		        storage.setItem('sys_selectuser_usernames',$(userNameConIdVal).value);
+		        storage.setItem('sys_selectuser_returnfuc','setUserInfo');
+		        if('0' == type){
+				    $page.open('../public/selectSingleUser.xml', {animation:'down-to-up'});
+		        }else if('1' == type){
+				    $page.open('../public/selectUser.xml', {animation:'down-to-up'});
+		        }else if('2' == type){
+				    $page.open('../public/selectSingleOrg.xml', {animation:'down-to-up'});
+		        }else if('3' == type){
+				    $page.open('../public/selectOrg.xml', {animation:'down-to-up'});
+		        }
+			}
+	        
+	        // 设置选人值
+	        function setUserInfo(id,name){
+	        	$(userIdConIdVal).value = name + ';' + id;
+	        	$(userNameConIdVal).value = name;
+	        }
+	        
+	        //加载流程记录页面数据
+	        var recordLoadFlag = '0';
+	        function loadFlowRecord(){
+	        	if(recordLoadFlag == '1'){
+	        		return false;
+	        	}
+	        	recordLoadFlag = '1';
+				$http.post(
+        			evoUrl + '/ezOffice/dealfile/getFlowRecord.do',{workId : workId},
+        			function(data){
+        				if(!data){
+        					alert('查询流程记录失败！');
+        					return false;
+        				}
+        				var jsonData = eval('(' + data + ')');
+        				if(jsonData.logonerror &&jsonData.logonerror=='1'){
+			         		alert("该账号已在设备"+jsonData.deviceId+"上登录");
+		          			$page.open('../index.xml',{target:'_self'});
+		                    return;
+		                }
+        				var data_0 = jsonData.data_0;
+        				if(!data_0){
+        					alert('查询流程记录失败！');
+        					return false;
+        				}
+        				var result = data_0.message.result;
+        				if(result != '1'){
+        					alert('查询流程记录失败！');
+        					return false;
+        				}
+        				var recordArray = data_0.data;
+        				if(!recordArray){
+        					alert('无流程记录！');
+        					return false;
+        				}
+        				var listJson = {items:[]};
+	        			var itemJson;
+	        			var logReceive;
+        				if(recordArray instanceof Array){
+        					for(var i=0,length=recordArray.length;i<length;i++){
+        						logReceive = recordArray[i].logReceive;
+        						if(logReceive instanceof Array){
+        							logReceive = '';
+        						}else{
+        							logReceive = logReceive.replace(',','');
+        						}
+        						itemJson = {
+			                        template : 0,
+			                        widgets : {
+			                            logUserName : {text : recordArray[i].logUserName},
+			                            logTime : {text : recordArray[i].logTime.substring(0,16)},
+			                            logAction : {text : recordArray[i].logAction},
+			                            logReceive : {text : logReceive}
+			                        }
+			                    }
+			                    listJson.items.push(itemJson);
+        					}
+        				}else if(recordArray instanceof Object){
+        					logReceive = recordArray.logReceive;
+       						if(logReceive instanceof Array){
+       							logReceive = '';
+       						}else{
+       							logReceive = logReceive.replace(',','');
+       						}
+							itemJson = {
+		                        template : 0,
+		                        widgets : {
+		                            logUserName : {text : recordArray.logUserName},
+		                            logTime : {text : recordArray.logTime.substring(0,16)},
+		                            logAction : {text : recordArray.logAction},
+		                            logReceive : {text : logReceive}
+		                        }
+		                    }
+		                    listJson.items.push(itemJson);
+        				}
+        				$('content_flow_record_list').update(listJson);
+        			},function(error) {
+				    if (error == 'timeout') {
+						hint('连接服务器超时！');
+				    } else if (error == '404') {
+						hint('链接超时重新登录！');
+				    } else if (error == '500') {
+						hint('内部服务器错误！');
+				    } else {
+						hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+				  }
+        		);
+	        }
+			
+			// 发送流程 
+			function sendFlow(){
+				//表单验证
+				if(!checkForm()){
+					return false;
+				}
+				$('sendForm').action = evoUrl + '/ezOffice/workflow/sendnew.do';
+				$('sendForm').submit(function(data) {
+					if(!data){
+						alert('保存表单失败！');
+						return false;
+					}
+					var dataJson = eval('('+data+')');
+					if(dataJson.logonerror &&dataJson.logonerror=='1'){
+		         		alert("该账号已在设备"+dataJson.deviceId+"上登录");
+	          			$page.open('../index.xml',{target:'_self'});
+                        return;
+                    }
+					var result = dataJson.result;
+					if(result == 'success'){
+						var infoId = dataJson.data_0.data.infoId;
+						var processId = encodeURIComponent($param['processId']);
+						$page.open('workflow_first_ezsend.xml?processId='+processId+'&businessId='+infoId+'&model='+model+'&fromXml='+fromXml,
+						{animation:'down-to-up'});
+					}else{
+						alert('保存表单失败！');					
+					}
+	            }, function(error) {
+	                alert('提交失败！');
+	            });
+			}
+			
+			
+			
+			function goToback(){
+			  $page.close(0);   //关闭当前页面
+			}
+			
+        ]]>
+</script>
+    <page style="background:#38b0f9;">
+        <header>
+            <row style="background:#38b0f9;height:50;">
+               		<icon style="align:left;margin-left:13;width:10;" src="mail_back.png" onclick="goToback();" id="leftButton"/><icon style="align:left;width:12;alpha:0;" src="mail_back.png" onclick="goToback();" />
+               		<label style="align:center;color:white;font-size:18;" id="centerTitle"></label>
+               		<label style="align:right;color:white;font-size:18;margin-right:12;" id="topright" ></label>
+             </row>
+        </header>
+        <popupmenu id="popupmenu" position="center" onclose=""  style="width:260;height:260;border:1 white;background:white;">
+            <list style="border:0 white;" id="totallist" >
+                
+            </list> 
+        </popupmenu>
+           <content style="background:white" id="content_form">
+			   <form id="sendForm" multipart="true" prompt="请稍后...">
+					<list id="content_form_list">
+						<item style="display:none">
+							<row>
+								<input id="sysPageId" type="hidden" name="__sys_pageId" value="" />
+								<input id="processId" type="hidden" name="processId" value="" />
+								<input id="mailTableName" type="hidden"  name="__main_tableName" value="" />
+								<input id="operateType" type="hidden"  name="operateType" value="1" />
+								<input id="__sys_formType" type="hidden" name="__sys_formType" value="ezform" />
+								<input type="hidden" id="save_subformname" name="save_subformname" value=""/>
+							</row>
+						</item>
+					</list>
+			   </form>
+			   <form id="saveSubForm">
+				<list id="subTabel_form_list" style="display:none;">
+				</list>
+			</form>
+           </content>
+		<footer id="footer" style="background:#F9F9F9">
+			<list type="toolbar" id="footer_list">
+			</list>
+			<list id="subTable_footer_list">
+			</list>
+        </footer>
+    </page>
+</imag>
