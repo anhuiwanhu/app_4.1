@@ -1,0 +1,440 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+<script>
+        <![CDATA[
+			var loadFlag = '0';  //函数执行置为1，提交之前进行判断，若为1，则禁止 提交，防重复提交
+			var pagerOffset=0;
+		    var channelId = '';
+		    var channelName = '';
+	        
+	         //页面家在完成后执行
+	        $page.onload = function() {
+	           //获取手机缓存中的数据
+	             var storage = $phone.localStorage();
+	             channelId = storage.getItem('information_channelId');
+	             var hasChildChannl = storage.getItem('information_hasChildChannl');
+	             channelName = storage.getItem('information_channelName');
+	             var channelNeedCheckup = storage.getItem('information_channelNeedCheckup');
+	             var isCanAdd = storage.getItem('information_isCanAdd');
+	           //  channelNeedCheckup = '0';
+	            // isCanAdd = '1';
+				 if(channelNeedCheckup=='0'&&isCanAdd == '1'){
+				 	 $('infoNew').css('display','');
+				 }	             
+	             $('titleName').text = channelName;   //从缓存获取标题，并为页面赋值
+	             initColumnList("update",channelId);
+	         }
+	         
+	         
+	        function loadList(loadType){     //加载更多
+	           var storage = $phone.localStorage();
+	           initInfoList(loadType,storage.getItem('information_channelId'));
+	        }
+	        
+	        
+	        function searchInfo(){          //检索列表查询方法
+	        	pagerOffset = '0';
+	        	var storage = $phone.localStorage();
+	        	initInfoList('update',storage.getItem('information_channelId'));
+	        }
+	        
+	        
+	        function initColumnList(loadType,channelId){
+	            if(loadFlag == '1'){
+		        	return false;
+		        }
+		        loadFlag = '1';
+		        $('bottom_hasmore').css('display','hidden');
+		        $('bottom_load').css('display','');
+		        $('indexContent').showBottom();
+		        var storage = $phone.localStorage();
+				var evoUrl = storage.getItem('evoUrl');
+	            $http.post(evoUrl+'/ezOffice/information/column.do',{'channelId':channelId}, function(data) {
+	                if(data){
+	                  //  alert(data);
+		                var obj = JSON.parse(data);
+		                if(obj.logonerror &&obj.logonerror=='1'){
+				            alert("该账号已在设备"+obj.deviceId+"上登录");
+			          		$page.open('../index.xml',{target:'_self'});
+			                return;
+			            }
+		                var result = obj.message.result;
+		                var listJson = {items:[]};   //存储返回数据列表信息
+			            var itemJson;
+					    if(result =="1"){
+					        var objArr = obj.data; //返回列表数组
+					        if(!objArr){
+				        	     return false;
+				        	}
+				        	if(objArr instanceof Array){    //返回多条数据
+					                for (var i = 0; i < objArr.length; i++) {
+					                    //每条记录图片显示标题第一个字
+					                    var channelName = objArr[i].channelName;
+					                    channelName = channelName.replace(/(&)/g,'');
+					                    var btn="";
+					                    if(channelName!=null&&channelName!=""){
+					                          btn = channelName.substring(0,1);
+					                    }
+					                    //是否有下级栏目
+					                    var hasChildChannl = objArr[i].hasChildChannl;
+					                    var childTip = "";
+					                    var childTipStyle="font-size:12;color:#B8B8B8;display:block;";   
+					                    if(hasChildChannl=="1"){
+					                        childTip = "下级栏目";
+					                    }else{
+					                        childTipStyle="font-size:12;color:#B8B8B8;display:none;";     //没有子栏目，隐藏一行，让标题居中显示 
+					                    }
+					                    
+					                    //不同行显示颜色不一样，分三行
+					                    var style = '';
+					                    if((i%6)==0){
+					                         style = 'width:120;background:#f98e75;width:40;height:40;align:left;font-size:16;color:#ffffff;';
+					                    }else if((i%6)==1){
+					                         style = 'width:120;background:#f6d75b;width:40;height:40;align:left;font-size:16;color:#ffffff;';
+					                    }else if((i%6)==2){
+					                         style = 'width:120;background:#6fd5ff;width:40;height:40;align:left;font-size:16;color:#ffffff;';
+					                    }else if((i%6)==3){
+					                         style = 'width:120;background:#9cc2ff;width:40;height:40;align:left;font-size:16;color:#ffffff;';
+					                    }else if((i%6)==4){
+					                         style = 'width:120;background:#93df88;width:40;height:40;align:left;font-size:16;color:#ffffff;';
+					                    }else if((i%6)==5){
+					                         style = 'width:120;background:#d795ea;width:40;height:40;align:left;font-size:16;color:#ffffff;';
+					                    }
+					                    
+					                    itemJson = {
+						                        template :0,
+						                        onclick : 'openChildChannel("'+objArr[i].channelId+'","'+objArr[i].hasChildChannl+'","'+channelName+'","'+objArr[i].channelNeedCheckup+'","'+objArr[i].isCanAdd+'")',
+						                        widgets : {
+						                            btn : {text :btn,style:style },
+						                            channelName : {text :channelName},
+						                            childTip    : {text :childTip,style:childTipStyle }
+						                        }
+						                 };
+						                 listJson.items.push(itemJson);
+					                }
+				        	}else if(objArr instanceof Object){   //返回一条数据
+				        	        //每条记录图片显示标题第一个字
+			                     var channelName = objArr.informationChannel.channelName;
+			                     channelName = channelName.replace(/(&)/g,'');
+			                     var btn="";
+			                     if(channelName!=null&&channelName!=""){
+			                          btn = channelName.substring(0,1);
+			                     }
+			                     //是否有下级栏目
+			                     var hasChildChannl = objArr.hasChildChannl;
+			                     var childTip = "";
+			                     var childTipStyle="font-size:12;color:#B8B8B8;display:block;";
+			                     if(hasChildChannl=="1"){
+			                         childTip = "下级栏目";
+			                     }else{
+			                         childTipStyle="font-size:12;color:#B8B8B8;display:none;";     //没有子栏目，隐藏一行，让标题居中显示 
+			                     }
+			                     itemJson = {
+						                        template :0,
+						                        onclick : 'openChildChannel("'+objArr.channelId+'","'+objArr.hasChildChannl+'","'+channelName+'","'+objArr.channelNeedCheckup+'","'+objArr.isCanAdd+'")',
+						                        widgets : {
+						                            btn : {text :btn },
+						                            channelName : {text :channelName},
+						                            childTip    : {text :childTip,style:childTipStyle }
+						                        }
+						                 };
+				                 listJson.items.push(itemJson);
+			               	}else{   //没有返回数据
+			               	   itemJson = {
+						                        template :2,
+						                        widgets : {
+						                            channelName : {text : '暂无相关记录'}
+						                        }
+						                 };
+				                //listJson.items.push(itemJson); 
+				            }
+		                }else{       //查询异常
+		                    itemJson = {
+						                        template :2,
+						                        widgets : {
+						                            channelName : {text : '暂无相关记录'}
+						                        }
+						                 };
+				           // listJson.items.push(itemJson); 
+		                }
+		        	    $('docList').update(listJson);
+		            }
+		            loadFlag = '0';
+		            initInfoList("add",channelId);
+		         },function(error) {
+					    if (error == 'timeout') {
+					        hint('连接服务器超时！');
+					    } else if (error == '404') {
+					        hint('链接超时重新登录！');
+					    } else if (error == '500') {
+					        hint('内部服务器错误！');
+					    } else {
+					        hint('访问网络错误！错误代码:' + error);
+					    }
+					    $page.open('../index.xml',{animation:'down-to-up'});
+				    }
+		         );
+	        }
+	        
+	        function containSpecial(s){
+				if(s!=''){
+					if(/[`~!@#\$%\^\&\*\(\)_\+<>《》？，。；、‘ “【】{}|（）=\?:"\{\},\.\-\\\/\\\/;'\[\]]/im.test(s)){
+						alert("搜索值不能为特殊字符，请重新输入！");
+						return true;
+					}
+				}
+				return false;
+			}
+	        
+	     function initInfoList(loadType,channelId){
+	         if(containSpecial($('search').value)){
+				$('search').value='';
+				return;
+			 }
+	         if(loadFlag == '1'){
+	        	return false;
+	         }
+	         loadFlag = '1';
+	         $('bottom_hasmore').css('display','hidden');
+	         $('bottom_load').css('display','');
+	         $('indexContent').showBottom();
+	         var storage = $phone.localStorage();
+			 var evoUrl = storage.getItem('evoUrl');
+	         $http.post(evoUrl+'/ezOffice/information/infoListColumn.do',{title : $('search').value,pagerOffset:pagerOffset,channelId:channelId },  function(data) {
+                if(data){
+                    //alert(data);
+	                var obj = JSON.parse(data);
+	                if(obj.logonerror &&obj.logonerror=='1'){
+			            alert("该账号已在设备"+obj.deviceId+"上登录");
+		          		$page.open('../index.xml',{target:'_self'});
+		                return;
+		            }
+	                var result = obj.message.result;
+	                pagerOffset = obj.data.pager_offset;
+	                var recordCount = obj.data.recordCount;
+	                var listJson = {items:[]};   //存储返回数据列表信息
+		            var itemJson;
+				    if(result =="1"){
+				        var objArr = obj.data.infoList; //返回列表数组
+			        	if(objArr instanceof Array){    //返回多条数据
+				                for (var i = 0; i < objArr.length; i++) {
+				                    //显示阅读数和评论数
+				                    var informationKits = objArr[i].informationKits;
+				                    var informationCommonNum = objArr[i].informationCommonNum;
+				                    
+				                    //时间显示，年月日时分秒
+				                    var informationIssueTime = objArr[i].informationIssueTime;
+				                    if(informationIssueTime!=null&&informationIssueTime.length>20){
+				                        informationIssueTime = informationIssueTime.substring(0,19);
+				                    }
+				                     //标题样式（普通的或者红色的）
+				                    var style = 'color:#555555;font-size:16;';
+				                    if(objArr[i].titleColor == '1'){
+				                    	style = 'color:red;font-size:16;' ;
+				                    }
+				                    var  itemJson_null = {   
+							                        template : 1,
+							                        onclick : '',
+							                        widgets : {
+							                        }
+							                  };
+							        listJson.items.push(itemJson_null);
+				                    itemJson = {
+					                        template :2,
+					                        onclick : 'openDetail("'+objArr[i].informationId+'","'+objArr[i].informationType+'","'+objArr[i].channelId+'")',
+					                        widgets : {
+				                            title : {text :objArr[i].informationTitle,style:style },
+				                            informationKits : {text :"阅读"+informationKits},
+			                                informationCommonNum : {text :"评论"+informationCommonNum},
+				                            date : {text :informationIssueTime}
+					                        }
+					                 };
+					                 listJson.items.push(itemJson);
+				                }
+			        	}else if(objArr instanceof Object){   //返回一条数据
+			        	       var informationKits = objArr.informationKits;
+		                       var informationCommonNum = objArr.informationCommonNum;
+		                       
+		                      //时间显示，年月日时分秒
+		                       var informationIssueTime = objArr.informationIssueTime;
+		                       if(informationIssueTime!=null&&informationIssueTime.length>20){
+		                         informationIssueTime = informationIssueTime.substring(0,19);
+		                       }
+		                       //标题样式（普通的或者红色的）
+			                   var style = 'color:#555555;font-size:16;';
+			                   if(objArr.titleColor == '1'){
+			                       style = 'color:red;font-size:16;';
+			                   }
+		                       var  itemJson_null = {   
+							                        template : 1,
+							                        onclick : '',
+							                        widgets : {
+							                        }
+							                  };
+							  listJson.items.push(itemJson_null); 
+							  
+		                      itemJson = {
+			                            template :2,
+				                        onclick : 'openDetail("'+objArr.informationId+'","'+objArr.informationType+'","'+objArr.channelId+'")',
+			                            widgets : {
+			                            title : {text :objArr.informationTitle,style:style },
+			                            informationKits : {text :"阅读"+informationKits},
+			                            informationCommonNum : {text :"评论"+informationCommonNum},
+			                            date : {text :informationIssueTime}
+			                            }
+			                  };
+			                 listJson.items.push(itemJson);
+			                 
+		               	}else{   //没有返回数据
+		               	   itemJson = {
+			                    template : 3,
+			                    onclick : '',
+                                widgets : {
+			                             channelName : {text : '暂无相关记录'}
+			                        }
+			                }
+			                listJson.items.push(itemJson); 
+			            }
+	                }else{       //查询异常
+	                    itemJson = {
+			                    template : 3,
+			                    onclick : '',
+			                    widgets : {
+			                    channelName : {text : '暂无相关记录'}
+                                }
+			                }
+			            listJson.items.push(itemJson); 
+	                }
+	                pagerOffset = parseInt(pagerOffset)+15;
+	                if(parseInt(recordCount) > parseInt(pagerOffset)){
+        				$('bottom_hasmore').css('display','');
+        			}else{
+        				$('bottom_hasmore').css('display','none');
+        				$('indexContent').hideBottom();
+        			}
+        			if(loadType == 'add'){
+	        			$('docList').addMore(listJson);
+        			}else if(loadType == 'update'){
+	        			$('docList').update(listJson);
+        			}
+	            }
+	            $('bottom_load').css('display','none');
+	        	loadFlag = '0';
+	         },function(error) {
+				    if (error == 'timeout') {
+				        hint('连接服务器超时！');
+				    } else if (error == '404') {
+				        hint('链接超时重新登录！');
+				    } else if (error == '500') {
+				        hint('内部服务器错误！');
+				    } else {
+				        hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+			    }
+	         );
+	     }
+	     
+	     function refreshPage(){
+           $('indexContent').hideTop();
+           //获取手机缓存中的数据
+             pagerOffset=0;
+             var storage = $phone.localStorage();
+        //     var channelId = storage.getItem('information_channelId');
+             initColumnList("update",channelId);
+        }    
+        ]]>
+</script>
+	<page >
+		<title style="background:#3daffe;tint-color:white;">
+		    <left>
+				<button role="back"/>
+			</left>
+            <center>
+                <label id="titleName"></label>
+            </center>
+            <right>
+                <button style="display:hidden;" id="infoNew" onclick="toNew();" icon="desk_personcenter_add.png"></button>
+            </right>
+	    </title>
+	    <header>
+			<row style="text-align:center; padding:0 0;">
+				<input type="search" id="search" name="title" placeholder="请输入信息标题查询" onclick="searchInfo();" style="height: 45;" value=""/>
+			</row>
+		</header>
+	    <content  id="indexContent" draggable="true" ondragdown="refreshPage();" >
+               <list  id="docList"  reuse="true" >
+					<item  accessory="indicator" style="col-width:50,*;">
+				            <col>
+							   <row><button style ="width:120;background:#f98e75;width:40;height:40;align:left;font-size:16;color:#ffffff;" onclick="" reusekey="btn"></button></row>
+						   </col>
+						    <col>
+							   <row><label reusekey="channelName"  style="color:#555555;font-size:16;"></label></row>
+							   <row><label reusekey="childTip" style=""></label></row>
+						   </col>
+	                </item>
+	                <item style="background:#f0eff5;padding:2;border:1 #f0eff5;" >
+					            <col>
+							    </col>
+			        </item>
+	                <item>
+					            <col>
+									  <row>
+									      <label reusekey="title" style="font-size:16;"></label>
+									  </row>
+									  <row>
+									      <label style="font-size:12;color:#b8b8b8;" reusekey="date"></label>
+										  <button style="corner-radius:6;font-size:10;width:50;height:18;align:right;margin-right:10;color:#b8b8b8;background:#ffffff;padding:0 0;border: 1 #b8b8b8;"  reusekey="informationKits"></button>
+										  <button style="corner-radius:6;font-size:10;width:40;height:18;align:right;color:#b8b8b8;background:#ffffff;padding:0 0;border: 1 #b8b8b8;"  reusekey="informationCommonNum"></button>
+									 </row>
+							   </col>
+		            </item>
+	                <item>
+	                    <col>
+	                    	<row>
+	                    		<label  style="align:center;" reusekey="channelName"></label>
+	                    	</row>
+	                    </col>
+	                </item>
+	        </list>
+	        <bottom id="content_bottom" style="border:hidden;">
+                <list>
+                    <item onclick="loadList('add')">
+                        <row id="bottom_load"><label style="align:center;">正在加载...</label><progress style="align:center"/></row>
+                      	<row style="display:hidden" id="bottom_hasmore">
+	                        <label style="align:center;">点击加载更多...</label>
+	                        <progress id="more_progress" style="display:none;align:center"/>
+	                    </row>
+	                </item>
+                </list>
+              </bottom>
+           </content>
+	</page>
+	<script>
+	<![CDATA[
+	function openChildChannel(channelId,hasChildChannl,channelName,channelNeedCheckup,isCanAdd){
+	     var storage = $phone.localStorage();
+         storage.setItem('information_channelId',channelId);
+         storage.setItem('information_hasChildChannl',hasChildChannl);
+         storage.setItem('information_channelName',channelName);
+         storage.setItem('information_channelNeedCheckup',channelNeedCheckup);
+         storage.setItem('information_isCanAdd',isCanAdd);
+         $page.open('childColumn.xml', {animation:'down-to-up'});  	  
+	  }
+	function openDetail(informationId,informationType,channelId){
+	    var storage = $phone.localStorage();
+        storage.setItem('information_informationId',informationId);
+        storage.setItem('information_informationType',informationType);
+        storage.setItem('information_channelId',channelId);
+        $page.open('info.xml', {animation:'down-to-up'});
+	}
+	
+	function toNew(){
+	    var storage = $phone.localStorage();
+        storage.setItem('information_childColumn_channelId',channelId);
+        storage.setItem('information_childColumn_channelName',channelName);
+		$page.open('new.xml', {animation:'down-to-up'});
+	}
+	]]>
+	</script>
+</imag>

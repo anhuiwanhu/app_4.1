@@ -42,6 +42,10 @@
         					alert('数据获取失败！');
         				}
         				var workInfo = jsonData.data_0.data.workInfo;
+        				var dealTipsContent = workInfo.dealTipsContent;
+        				if(dealTipsContent!=null&&dealTipsContent!=''&&dealTipsContent!='[]'){
+        				   alert(dealTipsContent.replace(/(<[^>]+>)|(&nbsp;)/g,""));
+        				}
 						var detailData = jsonData.data_1.data;
         				var fieldList = detailData.fieldList.field;
         				var showType;
@@ -50,7 +54,7 @@
         				var $contentFormList = $('content_form_list');
         				var selectContent = '';
         				//创建流程图
-       					createFlowImg(workInfo.flowgraphurl,jsonData.data_2.picRootPath);
+       					createFlowImg(workInfo.flowgraphurl,jsonData.data_2.picRootPath,workInfo.worktype);
        					$('headers').css('display','');
        					//初始化表单数据
         				if(fieldList instanceof Array){
@@ -67,6 +71,8 @@
        					createSubTableCon($contentFormList,workInfo,detailData);
 						// 创建批示意见、退回意见
 						createCommentCon($contentFormList,workInfo,detailData);
+						// 创建批示意见的附件
+						createCommentFile(jsonData.data_3.data);
 						// 创建工作流程信息隐藏域
 						createWorkInfoHiddenArea(workInfo,detailData);
 						//创建编辑正文附件名称
@@ -336,8 +342,8 @@
 	        }
 	        
 	        //创建流程图
-	        function createFlowImg(flowGraphUrl,picRootPath){
-	        	if(!(flowGraphUrl instanceof Array)){
+	         function createFlowImg(flowGraphUrl,picRootPath,workType){
+	        	if(!(flowGraphUrl instanceof Array)&&workType != '0'){
 	        	//	var imgPath = webServiceUrl + 'upload/workflow_acc/' + flowGraphUrl + '?rand=' + Math.random();
 	        		var imgPath = picRootPath+flowGraphUrl;
 		        	$('flowgraphurl').value = imgPath;
@@ -362,39 +368,133 @@
 			}
 
 			// 创建审批意见、退回意见
-			function createCommentCon(contentFormList,workInfo,detailData){
+			function createCommentCon(contentFormList,workInfo,detailData,officeList){
 				var itemContent = '';
+				var commentField = workInfo.commentField;
+				var actiCommFieldType = workInfo.actiCommFieldType;
 				var commentList = detailData.commentList;
+				var commentType = '';
+				var commentShouxie = '';
+				var commentYuyin = '';
+				if(actiCommFieldType != '-1' && (commentField == '-1' || commentField == 'nullCommentField' ||
+				   commentField == 'autoCommentField' || commentField == 'null' || commentField == null)){
+				    var commentFieldName = workInfo.commentFieldName;
+				    var commentViewName = '';
+				    var  workcurstep =  workInfo.workcurstep;
+				    if(commentFieldName == '' || commentFieldName == null){
+				    	commentViewName = workcurstep ;
+				    }else{
+				    	commentViewName = commentFieldName;
+				    }
+					itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="align:left;font-size:16;color:#555555">'+commentViewName+':</label></row></col><col style="padding:10;margin:10;"><row>'+
+								   '<textarea style="font-size:16;color:#555555" rows="5" name="comment_input" id="comment_input" maxrows="5"></textarea></row></col></item>'+
+								   '<item id="" style="col-width:*,40,40,50,40"><col><row></row></col>'+
+								   '<col><row><icon id="shouxie" onclick="doDraft();" src="workflow_sx.png" style="display:none;width:30;height:30;"/></row></col>'+
+								   '<col><row><icon id="yuyin" onclick="doRecordSound();" src="workflow_yy.png" style="display:none;width:30;height:30;"/></row></col>'+
+								   '<col><row>'+
+								   '<icon id="commentAdd" src="deskperson_add.png" style="width:30;height:30;align:right;" onclick="openCommentMenu();"/>'+
+								   '</row></col></item>'+
+								   '<item onclick="openUseComment(\'' + officeList + '\');" accessory="indicator"><row><label style="align:right;color:#C9C9C9;">选择常用语</label></row></item>'+
+								   '<item id="comment_input_sxyy" style="display:none;col-width:40,*,40"></item>';
+				}
 				if(commentList){
-					var content = '';
 					if(commentList instanceof Array){
 						for(var i=0,length=commentList.length;i<length;i++){
-							if(commentList[i].content && commentList[i].content != 'undefined'){
-								content = '<label style="align:left;font-size:16;color:#555555">'+commentList[i].content+'</label>'
+							commentType = commentList[i].type;
+							if(commentType == '4'){
+								// 手写
+								commentShouxieOaUrl = webServiceUrl + 'upload/workflow_acc/' + commentList[i].content.substring(0,6) + '/' + commentList[i].content;
+								commentShouxie = evoUrl+'/ezOffice/download/resizeHandSign.do?url='+commentShouxieOaUrl;
+								itemContent += '<item onclick="view_sxContent(\'' + commentShouxie + '\');" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="align:left;font-size:16;color:#555555">'+commentList[i].step+'</label></row></col><col><row>'+
+											   '<img src="'+commentShouxie+'"/></row>';
+							}else if(commentType == '5'){
+								// 语音
+								commentYuyin = webServiceUrl + 'upload/workflow_acc/' + commentList[i].content.substring(0,6) + '/' + commentList[i].content;
+								itemContent += '<item onclick="playSound(\'' + commentYuyin + '\',\''+ commentList[i].content+'\')" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="align:left;font-size:16;color:#555555">'+commentList[i].step+'</label></row></col><col><row>'+
+											   '<label style="color:#330000;text-decoration:underline;align:right">'+(commentList[i].content ? commentList[i].content : "")+'</label></row>';
+							}else{
+								itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="align:left;font-size:16;color:#555555">'+commentList[i].step+'</label></row></col><col><row>'+
+											   '<label style="align:left;font-size:16;color:#555555">'+(commentList[i].content ? commentList[i].content : "")+'</label></row>';
 							}
-							itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">'+commentList[i].step+'</label></row></col><col><row>'+
-							content+'</row>'+
-							'<row><label style="align:right;color:#555555">'+commentList[i].person+'('+commentList[i].date+')</label></row></col></item>';
+							itemContent += '<row><label style="align:right;font-size:16;color:#555555">'+commentList[i].person+'('+commentList[i].date+')</label></row></col></item>';
 						}
 					}else if(commentList instanceof Object){
-						if(commentList.comment.content && commentList.comment.content != 'undefined'){
-							content = '<label style="align:left;font-size:16;color:#555555">'+commentList.comment.content+'</label>'
+					
+						commentType = commentList.comment.type;
+						if(commentType == '4'){
+							// 手写
+							commentShouxieOaUrl = webServiceUrl + 'upload/workflow_acc/' + commentList.comment.content.substring(0,6) + '/' + commentList.comment.content;
+						    commentShouxie = evoUrl+'/ezOffice/download/resizeHandSign.do?url='+commentShouxieOaUrl;
+							itemContent += '<item onclick="view_sxContent(\'' + commentShouxie + '\');" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="align:left;font-size:16;color:#555555">'+commentList.comment.step+'</label></row></col><col><row>'+
+									   	   '<img src="'+commentShouxie+'"/></row>';
+						}else if(commentType == '5'){
+							// 语音
+							commentYuyin = webServiceUrl + 'upload/workflow_acc/' + commentList.comment.content.substring(0,6) + '/' + commentList.comment.content;
+							itemContent += '<item onclick="playSound(\'' + commentYuyin + '\',\''+commentList.comment.content+'\')" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="align:left;font-size:16;color:#555555">'+commentList.comment.step+'</label></row></col><col><row>'+
+										   '<label style="color:#330000;text-decoration:underline;align:right">'+(commentList.comment.content ? commentList.comment.content : "")+'</label></row>';
+						}else{
+							itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="align:left;font-size:16;color:#555555">'+commentList.comment.step+'</label></row></col><col><row>'+
+										   '<label style="align:left;font-size:16;color:#555555">'+(commentList.comment.content ? commentList.comment.content : "")+'</label></row>';
 						}
-						itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">'+commentList.comment.step+':</label></row></col><col><row>'+
-							content+'</row>'+
-							'<row><label style="align:right;color:#555555">'+commentList.comment.person+'('+commentList.comment.date+')</label></row></col></item>';
+						itemContent += '<row><label style="align:right;font-size:16;color:#555555">'+commentList.comment.person+'('+commentList.comment.date+')</label></row></col></item>';
 					}
 				}
-				// 退回意见填写未处理 
+				// 退回意见填写未处理 （不需要显示）
 				var commentMustNoNull = workInfo.commentmustnonull;
 				var backNoComment = workInfo.backnocomment;
 				var backComment = detailData.backComment;
-				if(backComment){
-					itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">退回意见:</label></row></col><col><row>'+
-								   '<label style="align:right;color:#555555;font-size:16;">'+backComment+'</label></row></col></item>';
-				}
+				itemContent += '<item id="fileItem" style="col-width:100,*;padding:0;margin:0;display:none;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">相关附件：</label></row></col><col id="commentFiles" style="margin:10;padding:10;"></col></item>';
 				contentFormList.addMore('<imag><list>' + itemContent + '</list></imag>');
 			}
+			
+			//自动增加批示意见的附件显示
+			function createCommentFile(fileInfo){
+				var accessoryNameseries="";
+		        var accessorySaveNameseries="";
+		        if((fileInfo+"")!=null && (fileInfo+"")!=""){
+                   	if(fileInfo instanceof Array){    //返回多条数据
+		        	    for (var i = 0; i < fileInfo.length; i++) {
+		        	        if(i<fileInfo.length-1){
+		        	            accessoryNameseries += fileInfo[i].accName+"|";
+		        	            accessorySaveNameseries += fileInfo[i].accSaveName+"|";
+		        	        }else if(i==fileInfo.length-1){
+		        	            accessoryNameseries += fileInfo[i].accName;
+		        	            accessorySaveNameseries += fileInfo[i].accSaveName;
+		        	        }
+		        	    }
+	        	    	viewFiles2(accessoryNameseries,accessorySaveNameseries);
+	        		}else if(fileInfo instanceof Object){   //返回一条数据
+	        	    	viewFiles2(fileInfo.acc.accName,fileInfo.acc.accSaveName);
+	        		}
+                }
+			}
+			
+			function viewFiles2(accessoryNameseries,accessorySaveNameseries){
+				$("fileItem").css('display','block');
+			    var path = 'workflow_acc';
+	            $http.post(evoUrl+'/ezOffice/doc/dealFiles.do',
+	              {accessoryNameseries:accessoryNameseries,accessorySaveNameseries:accessorySaveNameseries,path:path},
+	              function(data) {
+		               if(data){
+		                   var obj = JSON.parse(data);
+		                   if(obj.logonerror &&obj.logonerror=='1'){
+			         		    alert("该账号已在设备"+obj.deviceId+"上登录");
+			         		    $page.open('../index.xml',{target:'_self'});
+			                    return;
+			                }
+			               var attList = obj.attList;
+			               if(!attList==""){  //不为空，数据进行迭代,并为附件赋值
+			                  for(var k=0;k<attList.length;k++){
+			                      var files = $C('<row style="margin-bottom:5"><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath=workflow_acc'+'&amp;viewName='+attList[k].realname+'\')">'+attList[k].realname+'</label></row>')
+			                      $('commentFiles').add(files); 
+			                  }
+			               }else{     //无附件，或者后台处理异常
+			               }
+		               }
+		            },function(error) {
+						toErro(error);
+					});
+	        }
 
 	        //全屏查看
 	        function fullScreenBrowse(){
@@ -709,6 +809,19 @@
 				   }
 	            );
 	        }
+	        
+	        function toErro(error){
+				if (error == 'timeout') {
+					hint('连接服务器超时！');
+				} else if (error == '404') {
+					hint('链接超时重新登录！');
+				} else if (error == '500') {
+					hint('内部服务器错误！');
+				} else {
+					hint('访问网络错误！错误代码:' + error);
+				}
+				$page.open('../index.xml',{animation:'down-to-up'});
+			}
 			
         ]]>
     </script>

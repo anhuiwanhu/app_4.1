@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+    <script>
+        <![CDATA[
+            var storage = $phone.localStorage();
+			var curpage = '1';
+			var addMore='0';
+			var evoUrl = storage.getItem('evoUrl');
+			var userId = storage.getItem('sys_sys_userId');
+			$page.onload=function(){
+				refresh();
+            }
+            function openPopupMenu() {
+                $('popmenu').open();
+                $('arrow').src = 'mail_up.png';
+            }
+			
+			function toView(id,tile,classId){
+				storage.setItem('forum_id',id);
+				storage.setItem('forum_tile',tile);
+				storage.setItem('forum_classId',classId);
+				$page.open('forum_view.xml',{animation:'down-to-up'});
+			}
+			
+			function containSpecial(s){
+				if(s!=''){
+					if(/[`~!@#\$%\^\&\*\(\)_\+<>《》？，。；、‘ “【】{}|（）=\?:"\{\},\.\-\\\/\\\/;'\[\]]/im.test(s)){
+						alert("搜索值不能为特殊字符，请重新输入！");
+						return true;
+					}
+				}
+				return false;
+			}
+			
+			function refresh(){
+				if(containSpecial($('queryText').value)){
+					$('queryText').value='';
+					return;
+				}
+				
+				if(addMore=='1'){
+					return;
+				}
+				addMore='1';
+				if(curpage=="1"){
+					$('forumList').clear();
+				}
+				$http.progress('正在加载，请稍后...').post(evoUrl+'/ezOffice/forum/forumList.do', 
+					{curpage:curpage,queryText:$('queryText').value}, function(data){
+						var obj = JSON.parse(data);
+						if(obj.logonerror=="1"){
+		                    alert("该账号已在设备"+obj.deviceId+"上登录");
+		                    $page.open('../index.xml',{target:'_self'});
+		                    return;
+		                }
+						var result = obj.message.result;
+						var listJson = {items:[]};
+						if(result =="1"){
+							var recordCount = obj.data.recordCount;
+							if(parseInt(recordCount) <=0){
+								var itemJson = {
+				                    template : 1,
+				                    onclick : '',
+				                    widgets : {
+				                        title : {text :'暂无相关记录'}
+				                    }
+				                }
+				                listJson.items.push(itemJson);
+								$('forumList').update(listJson);	
+								$('indexContent').hideBottom();
+								$('indexContent').hideTop();
+								addMore='0';
+							}else{
+								var pageCount = obj.data.pageCount;
+								var picRootPath = obj.picRootPath;
+			                	var list = obj.data.list;
+			                	if(list instanceof Array){
+			                		for(var i=0;i<list.length;i++){
+			                			var forumid = list[i].id;
+				                		var classid = list[i].classid;
+				                		var title = list[i].forumTitle;
+			                			var empLivingPhoto="";
+			                			if(list[i].empLivingPhoto != "" && list[i].empLivingPhoto != null
+			                				&& list[i].empLivingPhoto != "null" && list[i].empLivingPhoto != " "
+			                				&& list[i].empLivingPhoto != "[]"){
+				        					empLivingPhoto = picRootPath+list[i].empLivingPhoto;
+				        				}
+					                    var forumIssueTime = list[i].forumIssueTime;
+					                    if(forumIssueTime!=null&&forumIssueTime.length>20){
+					                        forumIssueTime = forumIssueTime.substring(0,16);
+					                    }
+					                    var forumKits = list[i].forumKits;
+					                    var forumRevertNum = list[i].forumRevertNum;
+						                var itemJson = {
+						                    template : 0,
+						                    onclick : 'toView("'+forumid+'","'+title+'","'+classid+'")',
+						                    widgets : {
+						                        photo : {src:empLivingPhoto},
+						                        title : {text:title},
+						                        data : {text:forumIssueTime},
+						                        informationKits : {text :"阅读"+forumKits},
+			                                    informationCommonNum : {text :"回帖"+forumRevertNum}
+						                    }
+						                }
+						                listJson.items.push(itemJson);
+			                		}
+			                	}else if(list instanceof Object){
+		                			var forumid = list.id;
+			                		var classid = list.classid;
+			                		var title = list.forumTitle;
+		                			var empLivingPhoto=evoUrl+"/ezOffice/imges/forum_def.png";
+		                			if(list.empLivingPhoto != "" && list.empLivingPhoto != "null"
+		                				&& list.empLivingPhoto != null && list.empLivingPhoto != " "
+			                			&& list.empLivingPhoto != "[]"){
+			        					empLivingPhoto = picRootPath+list.empLivingPhoto;
+			        				}
+			        				var forumIssueTime = list.forumIssueTime;
+			                    	if(forumIssueTime!=null&&forumIssueTime.length>20){
+			                        	forumIssueTime = forumIssueTime.substring(0,16);
+				                    }
+				                    var forumKits = list.forumKits;
+					                var forumRevertNum = list.forumRevertNum;
+			                		var itemJson = {
+					                    template : 0,
+					                    onclick : 'toView("'+forumid+'","'+title+'","'+classid+'")',
+					                    widgets : {
+						                        photo : {src:empLivingPhoto},
+						                        title : {text:title},
+						                        data : {text:forumIssueTime},
+						                        informationKits : {text :"阅读"+forumKits},
+			                                    informationCommonNum : {text :"回帖"+forumRevertNum}
+						                    }
+					                }
+					                listJson.items.push(itemJson);
+			                	}
+			                	$('forumList').addMore(listJson);
+			                	if(parseInt(curpage) < parseInt(pageCount)){
+		                			$('bottom_more').css('display','block');
+			                	}else{
+			                		$('indexContent').hideBottom();
+			                	}
+			                	$('indexContent').hideTop();
+								addMore='0';
+							}
+						}else{
+							var recordCount = obj.data.recordCount;
+							var itemJson = {
+			                    template : 1,
+			                    onclick : '',
+			                    widgets : {
+			                        title : {text :'暂无相关记录'}
+			                    }
+			                }
+			                listJson.items.push(itemJson);
+							$('forumList').update(listJson);
+							$('indexContent').hideBottom();
+							$('indexContent').hideTop();
+							addMore='0';
+						}
+					},function(error) {
+						toErro(error);
+					});
+			}
+			
+			function downfrsh(){
+				curpage = parseInt(curpage)+1+"";
+				$('bottom_more').css('display','none');
+				refresh();
+			}
+			
+			function search(){
+				$('bottom_more').css('display','none');
+				curpage = '1';
+				refresh();
+			}
+			
+			function upfrsh(){
+		   		$('bottom_more').css('display','none');
+	            $('indexContent').showBottom();
+		   		curpage = '1';
+		   		refresh();
+		   }
+		   
+		   function toErro(error){
+				if (error == 'timeout') {
+					hint('连接服务器超时！');
+				} else if (error == '404') {
+					hint('链接超时重新登录！');
+				} else if (error == '500') {
+					hint('内部服务器错误！');
+				} else {
+					hint('访问网络错误！错误代码:' + error);
+				}
+				$page.open('../index.xml',{animation:'down-to-up'});
+			}
+        ]]>
+    </script>
+<script>
+    <![CDATA[
+		
+    ]]>
+ </script>
+    <page>
+        <popupmenu id="popmenu" position="topcenter" onclose="$('arrow').src = 'mail_down.png';" style="width:150">
+            <list>
+                <item onclick="$('popmenu').close();$page.open('forum_list.xml',{target:'_self'});" style="background:#3daffe,#474747">
+                    <row>
+                        <label style="margin-left:15;font-size:18;color:white;">论坛更新</label>
+                        <icon src="top_updown.png" style="align:right;width:15;"></icon>
+                    </row>
+                </item>
+                <item onclick="$('popmenu').close();$page.open('forum_column.xml',{target:'_self'});" style="background:#3daffe,#474747">
+                    <row>
+                        <label style="margin-left:15;font-size:18;color:white;">模块视图</label>
+                    </row>
+                </item>
+            </list>
+		</popupmenu> 
+        <title style="background:#38adff;tint-color:white">
+            <left>
+                <button role="back"></button>
+            </left>
+            <center>
+                <label onclick="openPopupMenu();">论坛更新</label>
+                <icon id="arrow" src="mail_down.png" style="width:15;margin-left:5;" onclick="openPopupMenu();"></icon>
+            </center>
+            <right>
+                <button onclick="$page.open('forum_new.xml',{animation:'down-to-up'});" icon="desk_personcenter_add.png"></button>
+            </right>
+        </title>
+        <header>
+            <row>
+                <input type="search" placeholder="请输入帖子标题查询" id="queryText" onclick="search();"/>
+            </row>
+		</header>
+		<content id="indexContent" draggable="true" ondragdown="upfrsh();">
+            <list id="forumList" reuse="true">
+                <item style="col-width:45,*">
+                    <col>
+                        <img reusekey="photo" style="height:35;width:35;" default="login_per.png" effect="round"/>
+                    </col>
+                    <col>
+                        <label reusekey="title" style="font-size:16;color:#555555;"></label>
+                        <row>
+                            <label reusekey="data" style="font-size:12;color:#b8b8b8;"></label>
+							<button style="corner-radius:6;font-size:10;width:50;height:18;align:right;margin-right:10;color:#b8b8b8;background:#ffffff;padding:0 0;border: 1 #b8b8b8;" reusekey="informationKits"></button>
+							<button style="corner-radius:6;font-size:10;width:40;height:18;align:right;color:#b8b8b8;background:#ffffff;padding:0 0;border: 1 #b8b8b8;" reusekey="informationCommonNum"></button>
+                        </row>
+                    </col>
+                </item>
+                <item>
+                   <col><row><label reusekey="title" style="align:center;"></label></row></col>
+                </item>
+            </list>
+            <bottom id="bottom" style="display:block">
+	            <list>
+	                <item onclick="downfrsh();" style="background:null,#DEE3E7">
+	                    <row id="bottom_more" style="display:none">
+	                        <label style="align:center;">点击加载更多...</label>
+	                        <progress id="globalProgress" style="display:hidden;align:center;"/>
+	                    </row>
+	                </item>
+	            </list>
+	        </bottom>
+        </content>
+    </page>
+</imag>

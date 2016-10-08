@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+    <script>
+        <![CDATA[
+            var storage = $phone.localStorage();
+			var arrId = new Array();
+            var deMailid = "";
+            var curpage = '1';
+            var itemState='0';
+            var disp='0';
+            var addMore='0';
+            var evoUrl = storage.getItem('evoUrl');
+            var userId = storage.getItem('sys_sys_userId');
+            $page.onload=function(){
+				refresh();
+            }
+            
+            function showDe(){
+            	$('indexContent').draggable='false';
+            	$('ovewshow').css('display', 'none');
+            	$('foot').css('display', 'block');
+            	$('editshow').css('display', 'block');
+            	itemState='1';
+                for(var i=0;i<arrId.length;i++){
+           			$('ite'+arrId[i]).update('chData', {style:'display:'+"block"});
+                }
+                if(disp=='1'){
+            		$('bottom_more').css('display','none');
+            	}
+            }
+            
+            function showLi(){
+            	$('indexContent').draggable='true';
+            	$('editshow').css('display', 'none');
+            	$('foot').css('display', 'none');
+            	$('ovewshow').css('display', 'block');
+            	itemState='0';
+                for(var i=0;i<arrId.length;i++){
+            		$('ite'+arrId[i]).update('chData', {style:'display:'+"none"});
+            		$('ite'+arrId[i]).update('chData', {src:'mail_uncheck.png'});
+            		deMailid="";
+                }
+                if(disp=='1'){
+            		$('bottom_more').css('display','block');
+            	}
+            }
+            
+            function addIds(mailid){
+               var sr = $('ite' + mailid).getWidgetAttribute('chData', 'src');
+               if(sr=="mail_uncheck.png"){
+                  deMailid = deMailid+"("+mailid+"),";
+                  $('ite'+mailid).update('chData', {src:'mail_check.png'});
+               }else{
+               	  deMailid = deMailid.replace("("+mailid+"),","");
+               	  $('ite'+mailid).update('chData', {src:'mail_uncheck.png'});
+               }
+            }
+            
+            function deMail(){
+                if(deMailid ==null|| deMailid==''){
+                	alert("请至少选择一封邮件进行删除！");
+                    return;
+                }else{
+                	$http.post(evoUrl+'/ezOffice/mail/deldrMail.do', 
+					{mailids:deMailid}, function(data){
+						var obj = JSON.parse(data);
+						var result = obj.message.result;
+						if(result =="1"){
+							alert("邮件删除成功!");
+							$page.open('mail_draft.xml',{target:'_self'}); 
+						}else{
+							alert("邮件删除失败!");
+							$page.open('mail_draft.xml',{target:'_self'}); 
+						}
+					},function(error) {
+						toErro(error);
+					});
+                }
+            }
+         
+         	function toView(mailId){
+				if(itemState=='0'){
+					storage.setItem('mail_drMailid',mailId);
+					$page.open('drmail_view.xml',{animation:'down-to-up'});
+				}else{
+					addIds(mailId);
+				}
+			}
+         
+         	function openPopupMenu() {
+                $('popmenu').open();
+                $('arrow').src = 'mail_up.png'; 
+            }
+			
+			function containSpecial(s){
+				if(s!=''){
+					if(/[`~!@#\$%\^\&\*\(\)_\+<>《》？，。；、‘ “【】{}|（）=\?:"\{\},\.\-\\\/\\\/;'\[\]]/im.test(s)){
+						alert("搜索值不能为特殊字符，请重新输入！");
+						return true;
+					}
+				}
+				return false;
+			}
+			
+			function refresh(){
+				if(containSpecial($('subject').value)){
+					$('subject').value='';
+					return;
+				}
+				if(addMore=='1'){
+					return;
+				}
+				addMore='1';
+				if(curpage=="1"){
+					$('mailList').clear();
+					arrId = new Array();
+				}
+				$http.progress('正在加载，请稍后...').post(evoUrl+'/ezOffice/mail/drListdate.do', 
+					{curpage:curpage,subject:$('subject').value}, function(data) {
+					var obj = JSON.parse(data);
+					if(obj.logonerror &&obj.logonerror=='1'){
+	         		    alert("该账号已在设备"+obj.deviceId+"上登录");
+	         		    $page.open('../index.xml',{target:'_self'});
+	                    return;
+	                }
+					var result = obj.message.result;
+					var listJson = {items:[]};
+					if(result =="1"){
+						var recordCount = obj.data.recordCount;
+						if(parseInt(recordCount) <=0){
+							var itemJson = {
+			                    template : 2,
+			                    onclick : '',
+			                    widgets : {
+			                        title : {text :'暂无相关记录'}
+			                    }
+			                }
+			                listJson.items.push(itemJson);
+							$('mailList').update(listJson);
+							$('indexContent').hideBottom();
+							$('indexContent').hideTop();
+							addMore='0';
+						}else{
+							var pageCount = obj.data.pageCount;
+			                var list = obj.data.list;
+			                if(list instanceof Array){
+		                		for(var i=0;i<list.length;i++){
+		                			arrId.push(list[i].mailid);
+		                			var mailposttime = list[i].mailposttime;
+				                    if(mailposttime!=null&&mailposttime.length>20){
+				                        mailposttime = mailposttime.substring(0,16);
+				                    }
+				                    var mailsubject = list[i].mailsubject+"";
+				                    if(mailsubject==null || mailsubject==''){
+				                       mailsubject="无主题";
+				                    }
+		                			if(list[i].accessorySize=="0"){
+		                				var itemJson = {
+						                    template : 0,
+						                    id : 'ite'+list[i].mailid,
+						                    onclick : 'toView("'+list[i].mailid+'")',
+						                    widgets : {
+						                        chData : {onclick:'addIds("'+list[i].mailid+'");',src:'mail_uncheck.png'},
+						                        cont : {text:mailsubject},
+						                        time : {text:mailposttime}
+						                    }
+						                }
+						                listJson.items.push(itemJson);
+		                			}else{
+		                				var itemJson = {
+						                    template : 1,
+						                    id : 'ite'+list[i].mailid,
+						                    onclick : 'toView("'+list[i].mailid+'")',
+						                    widgets : {
+						                        chData : {onclick:'addIds("'+list[i].mailid+'");',src:'mail_uncheck.png'},
+						                        cont : {text:mailsubject},
+						                        time : {text:mailposttime}
+						                    }
+						                }
+						                listJson.items.push(itemJson);
+		                			}
+		                		}
+		                	}else if(list instanceof Object){
+		                		arrId.push(list.mailid);
+		                		var mailposttime = list.mailposttime;
+			                    if(mailposttime!=null&&mailposttime.length>20){
+			                        mailposttime = mailposttime.substring(0,16);
+			                    }
+			                    var mailsubject = list.mailsubject+"";
+			                    if(mailsubject==null || mailsubject==''){
+			                       mailsubject="无主题";
+			                    }
+		                		if(list.accessorySize=="0"){
+	                				var itemJson = {
+					                    template : 0,
+					                    id : 'ite'+list.mailid,
+					                    onclick : 'toView("'+list.mailid+'")',
+					                    widgets : {
+					                        chData : {onclick:'addIds("'+list.mailid+'");',src:'mail_uncheck.png'},
+					                        cont : {text:mailsubject},
+					                        time : {text:mailposttime}
+					                    }
+					                }
+					                listJson.items.push(itemJson);
+	                			}else{
+	                				var itemJson = {
+					                    template : 1,
+					                    id : 'ite'+list.mailid,
+					                    onclick : 'toView("'+list.mailid+'");',
+					                    widgets : {
+					                        chData : {onclick:'addIds("'+list.mailid+'");',src:'mail_uncheck.png'},
+					                        cont : {text:mailsubject},
+					                        time : {text:mailposttime}
+					                    }
+					                }
+					                listJson.items.push(itemJson);
+	                			}
+		                	}
+			                $('mailList').addMore(listJson);
+		                	if(parseInt(curpage) < parseInt(pageCount)){
+	                			$('bottom_more').css('display','block');
+	                			disp='1';
+		                	}else{
+		                		$('indexContent').hideBottom();
+		                		disp='0';
+		                	}
+		                	$('indexContent').hideTop();
+							addMore='0';
+						}
+					}else{
+						var itemJson = {
+		                    template : 2,
+		                    onclick : '',
+		                    widgets : {
+		                        title : {text :'暂无相关记录'}
+		                    }
+		                }
+		                listJson.items.push(itemJson);
+						$('mailList').update(listJson);
+						$('indexContent').hideBottom();
+						$('indexContent').hideTop();
+						addMore='0';
+					}
+		   		},function(error) {
+					toErro(error);
+				});
+			}
+			
+			function downfrsh(){
+				curpage = parseInt(curpage)+1+"";
+				$('bottom_more').css('display','none');
+				refresh();
+			}
+			
+			function searchMail(){
+				$('bottom_more').css('display','none');
+				curpage = '1';
+				refresh();
+			}
+			function upfrsh(){
+		   		$('bottom_more').css('display','none');
+	            $('indexContent').showBottom();
+		   		curpage = '1';
+				refresh();
+		   }
+		   
+		   function toErro(error){
+				if (error == 'timeout') {
+					hint('连接服务器超时！');
+				} else if (error == '404') {
+					hint('链接超时重新登录！');
+				} else if (error == '500') {
+					hint('内部服务器错误！');
+				} else {
+					hint('访问网络错误！错误代码:' + error);
+				}
+				$page.open('../index.xml',{animation:'down-to-up'});
+			}
+        ]]>
+    </script>
+    <page>
+        <popupmenu id="popmenu" position="topcenter" onclose="$('arrow').src = 'mail_down.png';" style="width:130">
+            <list>
+                <item onclick="$('popmenu').close();$page.open('mail_receive.xml',{target:'_self'});" style="background:#3daffe,#474747">
+                    <row>
+                        <label style="margin-left:15;font-size:18;color:white;">收件箱</label>
+                    </row>
+                </item>
+                <item onclick="$('popmenu').close();$page.open('mail_send.xml',{target:'_self'});" style="background:#3daffe,#474747">
+                    <row>
+                        <label style="margin-left:15;font-size:18;color:white;">发件箱</label>
+                    </row>
+                </item>
+                <item onclick="$('popmenu').close();$page.open('mail_draft.xml',{target:'_self'});" style="background:#3daffe,#474747">
+                    <row>
+                        <label style="margin-left:15;font-size:18;color:white;">草稿箱</label>
+                        <icon src="top_updown.png" style="align:right;width:15;"></icon>
+                    </row>
+                </item>
+            </list>
+		</popupmenu> 
+        <title style="background:#38adff;tint-color:white">
+            <left>
+                <button role="back"></button>
+            </left>
+            <center>
+                <label onclick="openPopupMenu();">草稿箱</label>
+                <icon id="arrow" src="mail_down.png" style="width:15;margin-left:5;" onclick="openPopupMenu();"></icon>
+            </center>
+            <right>
+               <button onclick="$page.open('mail_write.xml',{animation:'down-to-up'});" icon="desk_personcenter_add.png"></button>
+            </right>
+        </title>
+        <header style="margin-top:0">
+          <row>
+              <input type="search" onclick="searchMail();" id="subject" placeholder="搜索邮件主题" style="height:40"/>
+              <button id="ovewshow" onclick="showDe();" style="background:#E7E7E7;height:35;color:#b8b8b8;margin-left:5;font-size:14;corner-radius:8;">编辑</button>
+              <button id="editshow" onclick="showLi();" style="background:#E7E7E7;height:35;color:#b8b8b8;font-size:14;margin-left:5;corner-radius:8;display:none">完成</button>
+          </row>
+		</header>
+        <content id="indexContent" draggable="true" ondragdown="upfrsh();">
+            <list id="mailList" reuse="true">
+                <item style="col-width:25,*">
+                    <col>
+                        <icon reusekey="chData" style="display:none;width:20;height:20"></icon>
+                    </col>
+                    <col>
+                        <label reusekey="cont" style="color:#555555;font-size:16"></label>
+                        <label reusekey="time" style="color:#b8b8b8;font-size:12"></label>
+                    </col>
+                </item>
+                <item style="col-width:25,20,*">
+                    <col>
+                        <icon reusekey="chData" style="display:none;width:20;height:20"></icon>
+                    </col>
+                    <col>
+                        <icon src="mail_fujian.png"></icon>
+                    </col>
+                    <col>
+                        <label reusekey="cont" style="color:#555555;font-size:16"></label>
+                        <label reusekey="time" style="color:#b8b8b8;font-size:12"></label>
+                    </col>
+                </item>
+                <item>
+                   <col><row><label reusekey="title" style="align:center;"></label></row></col>
+                </item>
+            </list>
+            <bottom id="bottom" style="display:block">
+	            <list>
+	                <item onclick="downfrsh();" style="background:null,#DEE3E7">
+	                    <row id="bottom_more" style="display:none">
+	                        <label style="align:center;">点击加载更多...</label>
+	                        <progress id="globalProgress" style="display:hidden;align:center;"/>
+	                    </row>
+	                </item>
+	            </list>
+	        </bottom>
+        </content>
+        <footer id="foot" style="display:none;background:#cac9ce">
+            <button icon="mail_dele.png" onclick="deMail();" style="align:center;color:#FF3300;font-size:16;height:50;border:0 white">  删除</button>
+        </footer>
+    </page>
+</imag>

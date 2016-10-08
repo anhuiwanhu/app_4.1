@@ -57,6 +57,8 @@
 							}
 							if(data.mailSign=="1"){
 								$("mailSign").checked=true;
+								$("mailSign_web").html=obj.gnome;
+								$('mailSign_web').css('display', 'block');
 							}
 							if(data.mailanonymous=="1"){
 								$("mailanonymous").checked=true;
@@ -247,6 +249,7 @@
                         <label style="margin-bottom:5;font-size:16;color:#555555;">正文：</label>
                         <label id="mailcontent" style="font-size:16;color:#555555;"></label>
                         <web id="mailweb" style="display:none"/>
+                        <web id="mailSign_web" style="display:none"/>
                     </item>
 
                 </list>

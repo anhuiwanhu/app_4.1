@@ -107,7 +107,7 @@
 					       var  content_label = $C('<row style="margin:12 12 0 12;padding: 0 20;"><label style="color:#555555;font-size:12;">'+informationContent+'</label></row>');
 					       $('info_content').add(content_label);
 				       }else if(data.informationType=="1"){   //返回html类型
-					       var  content_label = $C('<web id="content_web" include="forum.css" scalable="true" style="color:#555555;margin:10 10;"></web>');
+					       var  content_label = $C('<web id="content_web" scalable="true" style="color:#555555;margin:10 10;"></web>');
 					       $('info_content').add(content_label);
 					       $('content_web').html = '<article class="wh-article" ><div class="wh-article-fulltext">' +obj.content+ '</div></article>';
 				       }else if(data.informationType=="2"){   //地址链接

@@ -44,11 +44,12 @@
 								reDate="";
 							}
 							$("reDate").text=reDate;
-							var reCount = data.previousReport+"";
+							var reCount = obj.previousReport+"";
 							if(reCount==null || reCount==""){
 								reCount="";
 							}
-							$("reCount").text=reCount;
+							var sc = '$("#fileList").append(\''+reCount+'\');';
+							$('reCount_web').exec(sc);
 							var accessoryNameseries = data.accessoryName+"";
 							var accessorySaveNameseries = data.accessorySaveName;
 							if(accessoryNameseries !=null && accessoryNameseries!=""){
@@ -56,6 +57,42 @@
 							}
 						}
 				},function(error) {
+					    if (error == 'timeout') {
+						hint('连接服务器超时！');
+					    } else if (error == '404') {
+						hint('链接超时重新登录！');
+					    } else if (error == '500') {
+						hint('内部服务器错误！');
+					    } else {
+						hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+				  });
+            }
+             
+            function downFile(accessorySaveNameseries,accessoryNameseries){
+			    var path = 'html';
+	            $http.post(evoUrl+'/ezOffice/doc/dealFiles.do',
+	              {accessoryNameseries:accessoryNameseries,accessorySaveNameseries:accessorySaveNameseries,path:path},
+	              function(data) {
+		               if(data){
+		                   var obj = JSON.parse(data);
+		                   if(obj.logonerror &&obj.logonerror=='1'){
+				     		    alert("该账号已在设备"+obj.deviceId+"上登录");
+				     		    $page.open('../index.xml',{target:'_self'});
+				                return;
+				           }
+			               var attList = obj.attList;
+			               if(!attList==""){  //不为空，数据进行迭代,并为附件赋值
+			                  for(var k=0;k<attList.length;k++){
+			                 	$http.download(evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&filename='+attList[k].savename+'&uploadPath=html'+'&viewName='+attList[k].realname);
+			                  }
+			               }else{     //无附件，或者后台处理异常
+			               
+			               }
+		               }
+		               
+		            },function(error) {
 					    if (error == 'timeout') {
 						hint('连接服务器超时！');
 					    } else if (error == '404') {
@@ -169,7 +206,28 @@
                 </item>
                 <item style="col-width:100,*">
                      <label style="margin-bottom:8;font-size:16;color:#555555;">汇报正文：</label>
-                     <row><label id="reCount" style="font-size:16;color:#555555;"></label></row>
+                     <web id="reCount_web" include="jquery.js">
+                    			<![CDATA[
+				               		<html>
+				               			<script>
+				               				function fileDowload(savename,viewName){
+				               					$imag.exec('downFile(\''+savename+'\',\''+viewName+'\')');
+				               				}
+				               			</script>
+									</html>
+									<body>
+										<article>
+											<div> 
+												<table>
+													<tr>
+														<td id="fileList"></td>													
+													</tr>
+												</table>
+											</div>
+										</article>
+									</body>
+               					]]>
+                    	</web>
                 </item>
             </list>
         </content>

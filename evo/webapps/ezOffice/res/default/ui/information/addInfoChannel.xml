@@ -1,0 +1,775 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+<script>
+        <![CDATA[
+			var loadFlag = '0';  //函数执行置为1，提交之前进行判断，若为1，则禁止 提交，防重复提交
+			var selectChannels="";
+	        var pagerOffset=0;
+	        var cunrrentContentIdIndex = '';   //当前从contentList 的id序号。加载下一个tabbar时，清楚前一个content中的模板内容
+	        var commChannelKind = '0';           //加载更多时传递到后台的
+	        var commChannelType = '0';          //加载更多时传递到后台的
+	        var channelIdArr = new Array();
+	        var elements = new Array();   
+	        var channelIdArr = new Array();      //临时存放id、name等数据，点击多选框时true，将数据写入，false时剔除
+            var channelNameArr = new Array();
+            var isCanAddArr = new Array();
+            var channelNeedCheckupArr = new Array();
+	        
+	         //页面家在完成后执行
+	        $page.onload = function() {
+	            loadMychannel();
+	            initHeader('info');    //tabbar 页签不需要建立缓存机制
+	        }
+	        
+	        function loadList(loadType){   //加载更多
+	           initList(loadType,cunrrentContentIdIndex,commChannelKind,commChannelType);
+	        }
+	        
+	         //检索列表查询方法
+	        function searchInfo(){
+	        	pagerOffset = '0';
+	        	var title = $('search').value;
+	        	if(containSpecial(title)){
+					$('search').value='';
+					return;
+				}
+	        	$('list'+cunrrentContentIdIndex).clear();   //清理当前content内容
+	        	if(title == null ||title== ''){   //只刷新
+	        		initList('update',cunrrentContentIdIndex,commChannelKind,commChannelType);
+	        	}else{
+	        		getSearch(title);
+	        	}
+	        }
+	        
+	        function channelList(contentIdIndex,channelKind,channelType){   //信息管理（channelKind：0，channelType：'0'）,单位主页（1,0），分频道（2,channelId）；
+	            $('list'+cunrrentContentIdIndex).clear();   //清理上一个content内容
+	            commChannelKind = channelKind;
+	            commChannelType = channelType;
+	            pagerOffset = 0;
+	            $('search').value = "";
+	            initList("update",contentIdIndex,channelKind,channelType);  //加载 所选频道列表
+	        }
+	        
+
+            function initHeader(contentIdIndex){
+	            if(loadFlag == '1'){
+		        	return false;
+		        }
+		        loadFlag = '1';
+		        var storage = $phone.localStorage();
+				var evoUrl = storage.getItem('evoUrl');
+	            $http.progress('正在加载，请稍后...').post(evoUrl+'/ezOffice/information/index.do',function(data) {
+	                if(data){
+		                var obj = JSON.parse(data);
+		                if(obj.logonerror &&obj.logonerror=='1'){
+				            alert("该账号已在设备"+obj.deviceId+"上登录");
+			          		$page.open('../index.xml',{target:'_self'});
+			                return;
+			            }
+		                var result = obj.message.result;
+			        	var channelInfoItem =$C('<tabbar-item><item label="信息管理"   onchange="channelList(\'info\',\'0\',\'0\')" ></item></tabbar-item>');
+			        	var channelPortalItem =$C('<tabbar-item><item label="单位主页"  onchange="channelList(\'portal\',\'1\',\'0\')" ></item></tabbar-item>');
+			        	$('tabbar').clear();
+			        	$('tabbar').add(channelInfoItem);
+			        	$('tabbar').add(channelPortalItem);
+					    if(result =="1"){
+					        var objArr = obj.data.userChannel; //返回列表数组
+					        if(!objArr){
+				                return false;
+				        	}
+				        	if(objArr instanceof Array){    //返回多条数据
+					                for (var i = 0; i < objArr.length; i++) {
+					                  //加载标题
+					                   var item = $C('<tabbar-item><item label="'+objArr[i].userChannelName+'" onchange="channelList(\''+i+'\',\'2\',\''+objArr[i].userChannelId+'\')" ></item></tabbar-item>');
+							           $('tabbar').add(item);
+							           var contentItem = $C('<content draggable="true" id="indexContent'+i+'" ondragdown="refreshPage(\''+i+'\');" >'+
+											        '<list id="list'+i+'" style="background:#ffffff">'+
+	                								'</list>'+
+											        '<bottom id="content_bottom'+i+'">'+
+										                '<list>'+
+										                    '<item onclick="loadList(\'add\')">'+
+										                      	'<row style="display:hidden" id="bottom_hasmore'+i+'">'+
+											                        '<label style="align:center;">点击加载更多...</label>'+
+											                        '<progress id="more_progress" style="display:none;align:center"/>'+
+											                    '</row>'+
+											                '</item>'+
+										                '</list>'+
+									                '</bottom>'+
+									            '</content>');
+							           $('contents').add(contentItem);
+					                }
+				        	}else if(objArr instanceof Object){   //返回一条数据
+				        	         var item = $C('<tabbar-item><item onchange="channelList(\'0\',\'2\',\''+objArr.userChannelId+'\')" ><label>'+objArr.userChannelName+'</label></item></tabbar-item>');
+							         $('tabbar').add(item);
+							          var contentItem = $C('<content  draggable="true" id="indexContent0" ondragdown="refreshPage(\'0\');" >'+
+											        '<list id="list0" style="background:#ffffff">'+
+	                								'</list>'+
+											        '<bottom id="content_bottom0">'+
+										                '<list>'+
+										                    '<item onclick="loadList(\'add\')">'+
+										                      	'<row style="display:hidden" id="bottom_hasmore0">'+
+											                        '<label style="align:center;">点击加载更多...</label>'+
+											                        '<progress id="more_progress" style="display:none;align:center"/>'+
+											                    '</row>'+
+											                '</item>'+
+										                '</list>'+
+									                '</bottom>'+
+									            '</content>');
+							           $('contents').add(contentItem);
+			               	}
+		                }
+		            }
+		        	loadFlag = '0';
+		         	initList("update",contentIdIndex,"0","0");  //加载信息列表
+		         },function(error) {
+					    if (error == 'timeout') {
+					        hint('连接服务器超时！');
+					    } else if (error == '404') {
+					        hint('链接超时重新登录！');
+					    } else if (error == '500') {
+					        hint('内部服务器错误！');
+					    } else {
+					        hint('访问网络错误！错误代码:' + error);
+					    }
+					    $page.open('../index.xml',{animation:'down-to-up'});
+				    }
+		         );
+         }
+        	
+        function initList(loadType,contentIdIndex,channelKind,channelType){
+            if(containSpecial($('search').value)){
+				$('search').value='';
+				return;
+			}
+            
+            if(loadFlag == '1'){
+	        	return false;
+	        }
+	     //   $('list'+contentIdIndex).clear();   //清理上一个content内容
+	        cunrrentContentIdIndex = contentIdIndex;       //公共序列赋值
+	        loadFlag = '1';
+	        $('content_bottom'+cunrrentContentIdIndex).css('display','');
+	    //    $('indexContent'+cunrrentContentIdIndex).showBottom();
+	        var storage = $phone.localStorage();
+			var evoUrl = storage.getItem('evoUrl');
+            $http.progress('正在加载，请稍后...').post(evoUrl+'/ezOffice/information/getInfoChannel.do',{title : $('search').value,pagerOffset:pagerOffset,channelKind:channelKind,channelType:channelType},function(data){
+                if(data){
+	                var obj = JSON.parse(data);
+	                if(obj.logonerror &&obj.logonerror=='1'){
+			            alert("该账号已在设备"+obj.deviceId+"上登录");
+		          		$page.open('../index.xml',{target:'_self'});
+		                return;
+		            }
+	                var result = obj.message.result;
+		            var recordCount = '';
+				    if(result =="1"){
+				        recordCount = obj.data.recordCount;
+				        var groups = obj.data.informationChannel; //返回列表数组
+			        	if(groups instanceof Array){    //返回多条数据
+					        for(var i=0;i<groups.length;i++){
+					          var channelId = groups[i].channelId;
+					          var channelName = groups[i].channelName;
+					          channelName = channelName.replace(/(&)/g,'');
+		                      var isCanAdd = groups[i].isCanAdd;
+		                      var channelNeedCheckup = groups[i].channelNeedCheckup;
+		                      if(isCanAdd==null||isCanAdd==''){
+		                      		isCanAdd = '';
+		                      }
+		                      if(channelNeedCheckup==null||channelNeedCheckup==''){
+		                      		channelNeedCheckup = '';
+		                      }
+		                      var channelType = groups[i].channelType;
+					          var btncolor = "#f98e75";
+					          if((i%6)==0){
+					            btncolor = "#f98e75";
+					          }else if((i%6)==1){
+					            btncolor = "#f6d75b";
+					          }else if((i%6)==2){
+					            btncolor = "#6fd5ff";
+					          }else if((i%6)==3){
+					            btncolor = "#9cc2ff";
+					          }else if((i%6)==4){
+					            btncolor = "#93df88";
+					          }else if((i%6)==5){
+					            btncolor = "#d795ea";
+					          }
+					          var firstname = channelName.substring(0,1);
+					          var acc = "forum_opendown.png";
+					          var hasacc="opencloseMenu(this,'icon_"+channelId+"','"+channelId+"','"+channelType+"')";
+		                      var hasChek = "";
+		                      
+		                      if(selectChannels.indexOf("|"+channelId+"|")>-1){
+		                          hasChek = " checked=\"true\" ";
+		                       }
+		                       if(groups[i].isView == '1'){
+			                       $('list'+contentIdIndex).add($C('<list-item>'+
+										'<item id="'+channelId+'" collapsed="true" indent="30" onclick="'+hasacc+';">'+
+											'<row>'+
+												'<checkbox  style="align:left;font-size:18;" id="id_'+channelId+'" '+hasChek+' onclick="getCheckedInfo(\''+channelId+'\',\''+channelName+'\',\''+isCanAdd+'\',\''+channelNeedCheckup+'\')" />'+
+												'<button style="width:40;height:40;align:left;font-size:16;color:#ffffff;background:'+btncolor+'" onclick=";">'+firstname+'</button>'+
+												'<label style="align:left;margin:10;color:#555555;font-size:16;">'+channelName+'</label>'+
+												'<icon id="icon_'+channelId+'" role="accessory" src="'+acc+'" style="align:right;margin:2 5%;"/>'+
+											'</row>'+
+										'</item>'+
+									'</list-item>'));
+		                       }else{
+		                       		$('list'+contentIdIndex).add($C('<list-item>'+
+										'<item id="'+channelId+'" collapsed="true" indent="30" onclick="'+hasacc+';">'+
+											'<row>'+
+												'<checkbox style="align:left;font-size:18;display:hidden;" />'+
+												'<button style="width:40;height:40;align:left;font-size:16;color:#ffffff;background:'+btncolor+'" onclick=";">'+firstname+'</button>'+
+												'<label style="align:left;margin:10;color:#555555;font-size:16;">'+channelName+'</label>'+
+												'<icon id="icon_'+channelId+'" role="accessory" src="'+acc+'" style="align:right;margin:2 5%;"/>'+
+											'</row>'+
+										'</item>'+
+									'</list-item>'));
+		                       }
+					        }
+			        }else if(groups instanceof Object){
+			        	      var channelId = groups.channelId;
+					          var channelName = groups.channelName;
+					          channelName = channelName.replace(/(&)/g,'');
+		                      var isCanAdd = groups.isCanAdd;
+		                      var channelNeedCheckup = groups.channelNeedCheckup;
+		                      if(isCanAdd==null||isCanAdd==''){
+		                      		isCanAdd = '';
+		                      }
+		                      if(channelNeedCheckup==null||channelNeedCheckup==''){
+		                      		channelNeedCheckup = '';
+		                      }
+		                      var channelType = groups.channelType;
+		                      var  isAddBtn = isCanAdd+','+channelNeedCheckup;   //拼接isCanAdd，channelNeedCheckup，下级栏目和栏目列表时使用
+					          var btncolor = "#f98e75";
+					          if((i%6)==0){
+					            btncolor = "#f98e75";
+					          }else if((i%6)==1){
+					            btncolor = "#f6d75b";
+					          }else if((i%6)==2){
+					            btncolor = "#6fd5ff";
+					          }else if((i%6)==3){
+					            btncolor = "#9cc2ff";
+					          }else if((i%6)==4){
+					            btncolor = "#93df88";
+					          }else if((i%6)==5){
+					            btncolor = "#d795ea";
+					          }
+					          var firstname = channelName.substring(0,1);
+					          var acc = "forum_opendown.png";
+					          var hasacc="opencloseMenu(this,'icon_"+channelId+"','"+channelId+"','"+channelType+"')";
+		                      var hasChek = "";
+		                      if(selectChannels.indexOf("|"+channelId+"|")>-1){
+		                          hasChek = " checked=\"true\" ";
+		                       } 
+		                       if(groups.isView == '1'){
+			                       $('list'+contentIdIndex).add($C('<list-item>'+
+										'<item id="'+channelId+'" collapsed="true" indent="30" onclick="'+hasacc+';">'+
+											'<row>'+
+												'<checkbox  style="align:left;font-size:18;" id="id_'+channelId+'" '+hasChek+' onclick="getCheckedInfo(\''+channelId+'\',\''+channelName+'\',\''+isCanAdd+'\',\''+channelNeedCheckup+'\')" />'+
+												'<button style="width:40;height:40;align:left;font-size:16;color:#ffffff;background:'+btncolor+'" onclick=";">'+firstname+'</button>'+
+												'<label style="align:left;margin:10;color:#555555;font-size:16;">'+channelName+'</label>'+
+												'<icon id="icon_'+channelId+'" role="accessory" src="'+acc+'" style="align:right;margin:2 5%;"/>'+
+											'</row>'+
+										'</item>'+
+									'</list-item>'));
+		                       }else{
+		                       		$('list'+contentIdIndex).add($C('<list-item>'+
+										'<item id="'+channelId+'" collapsed="true" indent="30" onclick="'+hasacc+';">'+
+											'<row>'+
+											    '<checkbox style="align:left;font-size:18;display:hidden;" />'+
+												'<button style="width:40;height:40;align:left;font-size:16;color:#ffffff;background:'+btncolor+'" onclick=";">'+firstname+'</button>'+
+												'<label style="align:left;margin:10;color:#555555;font-size:16;">'+channelName+'</label>'+
+												'<icon id="icon_'+channelId+'" role="accessory" src="'+acc+'" style="align:right;margin:2 5%;"/>'+
+											'</row>'+
+										'</item>'+
+									'</list-item>'));
+		                       }
+			            }
+	                }
+	                pagerOffset = parseInt(pagerOffset)+15;
+	                if(parseInt(recordCount) > parseInt(pagerOffset)){
+        				$('bottom_hasmore'+cunrrentContentIdIndex).css('display','');
+        			}else{
+        				$('bottom_hasmore'+cunrrentContentIdIndex).css('display','none');
+        			  //  $('indexContent'+cunrrentContentIdIndex).hideBottom();
+        			    $('content_bottom'+cunrrentContentIdIndex).css('display','none');
+        			}
+	            }
+	        	loadFlag = '0';
+	         },function(error) {
+				    if (error == 'timeout') {
+				        hint('连接服务器超时！');
+				    } else if (error == '404') {
+				        hint('链接超时重新登录！');
+				    } else if (error == '500') {
+				        hint('内部服务器错误！');
+				    } else {
+				        hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+			    }
+	         );
+        }
+        
+        function opencloseMenu(obj,ic,gchannelId,channelType){
+           if(loadFlag == '1'){
+	        	return false;
+	       }
+	       loadFlag = '1';
+           if(obj.subItems().length>0){
+		        return;
+		   }
+	       if(obj.collapsed){
+	            $(ic).src="forum_opendown.png";
+	       }else{
+	            var storage = $phone.localStorage();
+				var evoUrl = storage.getItem('evoUrl');
+	            $http.post(evoUrl+'/ezOffice/information/column.do',{channelId:gchannelId,channelType:channelType}, function(data) {
+	                if(data){
+	                    var obj = JSON.parse(data);
+	                    if(obj.logonerror &&obj.logonerror=='1'){
+				            alert("该账号已在设备"+obj.deviceId+"上登录");
+			          		$page.open('../index.xml',{target:'_self'});
+			                return;
+			            }
+	                    var result = obj.message.result;
+				        if(result == '1'){
+				            var groups = obj.data;
+				            if(groups instanceof Array){    //返回多条数据
+								for(var i =0;i<groups.length;i++){
+								      var itemStr = '';
+								      var channelId = groups[i].channelId;
+							          var channelName = groups[i].channelName;
+							          channelName = channelName.replace(/(&)/g,'');
+							          var isCanAdd = groups[i].isCanAdd;
+				                      var channelNeedCheckup = groups[i].channelNeedCheckup;
+				                      if(isCanAdd==null||isCanAdd==''){
+				                      		isCanAdd = '';
+				                      }
+				                      if(channelNeedCheckup==null||channelNeedCheckup==''){
+				                      		channelNeedCheckup = '';
+				                      }
+				                      var channelType = groups[i].channelType;
+				                      var isAddBtn = isCanAdd+','+channelNeedCheckup;   //拼接isCanAdd，channelNeedCheckup，下级栏目和栏目列表时使用
+				                      var btncolor = "#f98e75";
+							          if((i%6)==0){
+							            btncolor = "#f98e75";
+							          }else if((i%6)==1){
+							            btncolor = "#f6d75b";
+							          }else if((i%6)==2){
+							            btncolor = "#6fd5ff";
+							          }else if((i%6)==3){
+							            btncolor = "#9cc2ff";
+							          }else if((i%6)==4){
+							            btncolor = "#93df88";
+							          }else if((i%6)==5){
+							            btncolor = "#d795ea";
+							          }
+							          var firstname = channelName.substring(0,1);
+							          var acc = "forum_opendown.png";
+							          var hasacc= "opencloseMenu(this,'icon_"+channelId+"','"+channelId+"','"+channelType+"')";
+				                       
+				                      var hasChek = "";
+				                      if(selectChannels.indexOf("|"+channelId+"|")>-1){
+				                          hasChek = " checked=\"true\" ";
+				                      }
+							          
+									itemStr += '<item id="'+channelId+'" collapsed="true" indent="30" onclick="'+hasacc+';" >';
+									if(groups[i].isView == '1'){
+										itemStr += '<row>'+
+													'<checkbox  style="align:left;font-size:18;" id="id_'+channelId+'"  '+hasChek+' onclick="getCheckedInfo(\''+channelId+'\',\''+channelName+'\',\''+isCanAdd+'\',\''+channelNeedCheckup+'\')" />'+
+													'<button style="width:120;width:40;height:40;align:left;color:#ffffff;font-size:16;background:'+btncolor+'" onclick=";">'+firstname+'</button>'+
+													'<label style="align:left;margin:10 10;color:#555555;font-size:16;">'+channelName+'</label>'+
+													'<icon id="icon_'+channelId+'" role="accessory" src="'+acc+'" style="align:right;margin:2 5%;"/>'+
+												'</row>'+
+					                    '</item>';
+					                 }else{
+					                 	itemStr += '<row>'+
+					                 	            '<checkbox style="align:left;font-size:18;display:hidden;" />'+
+													'<button style="width:120;width:40;height:40;align:left;color:#ffffff;font-size:16;background:'+btncolor+'" onclick=";">'+firstname+'</button>'+
+													'<label style="align:left;margin:10 10;color:#555555;font-size:16;">'+channelName+'</label>'+
+													'<icon id="icon_'+channelId+'" role="accessory" src="'+acc+'" style="align:right;margin:2 5%;"/>'+
+												'</row>'+
+					                    '</item>';
+					                 }
+					                 $(gchannelId).add($C('<list-item>'+itemStr+'</list-item>'));
+								}
+							}else if(groups.informationChannel instanceof Object){
+							    groups = groups.informationChannel;
+								var channelId = groups.channelId;     
+								var itemStr = '';
+					            var channelName = groups.channelName;
+					            channelName = channelName.replace(/(&)/g,'');
+					            var isCanAdd = groups.isCanAdd;
+		                        var channelNeedCheckup = groups.channelNeedCheckup;
+		                        if(isCanAdd==null||isCanAdd==''){
+		                      	    	isCanAdd = '';
+		                        }
+		                        if(channelNeedCheckup==null||channelNeedCheckup==''){
+		                      		 channelNeedCheckup = '';
+		                        }
+		                        var  channelType = groups.channelType;
+		                        var  isAddBtn = isCanAdd+','+channelNeedCheckup;   //拼接isCanAdd，channelNeedCheckup，下级栏目和栏目列表时使用
+		                        var  btncolor = "#f98e75";
+					            if((i%6)==0){
+					            	btncolor = "#f98e75";
+					         	 }else if((i%6)==1){
+					           		 btncolor = "#f6d75b";
+					          	}else if((i%6)==2){
+					           		 btncolor = "#6fd5ff";
+					            }else if((i%6)==3){
+					            	btncolor = "#9cc2ff";
+					          	}else if((i%6)==4){
+					           		btncolor = "#93df88";
+					          	}else if((i%6)==5){
+					            	btncolor = "#d795ea";
+					         	}
+					          	var firstname = channelName.substring(0,1);
+					          	var acc = "forum_opendown.png";
+					          	var hasacc="opencloseMenu(this,'icon_"+channelId+"','"+channelId+"','"+channelType+"')";
+		                       
+		                      	var hasChek = "";
+		                      	if(selectChannels.indexOf("|"+channelId+"|")>-1){
+		                           hasChek = " checked=\"true\" ";
+		                       	} 
+					          
+							   itemStr += '<item id="'+channelId+'" collapsed="true" indent="30" onclick="'+hasacc+';" >';
+							   if(groups.isView == '1'){
+								   itemStr += '<row>'+
+											'<checkbox  style="align:left;font-size:18;" id="id_'+channelId+'" '+hasChek+' onclick="getCheckedInfo(\''+channelId+'\',\''+channelName+'\',\''+isCanAdd+'\',\''+channelNeedCheckup+'\')" />'+
+											'<button style="width:120;width:40;height:40;align:left;color:#ffffff;font-size:16;background:'+btncolor+'" onclick=";">'+firstname+'</button>'+
+											'<label style="align:left;margin:10 10;color:#555555;font-size:16;">'+channelName+'</label>'+
+											'<icon id="icon_'+channelId+'" role="accessory" src="'+acc+'" style="align:right;margin:2 5%;"/>'+
+										'</row>'+
+			                    '</item>';
+			                  }else{
+			                 	 itemStr += '<row>'+
+			                 				'<checkbox style="align:left;font-size:18;display:hidden;" />'+
+											'<button style="width:120;width:40;height:40;align:left;color:#ffffff;font-size:16;background:'+btncolor+'" onclick=";">'+firstname+'</button>'+
+											'<label style="align:left;margin:10 10;color:#555555;font-size:16;">'+channelName+'</label>'+
+											'<icon id="icon_'+channelId+'" role="accessory" src="'+acc+'" style="align:right;margin:2 5%;"/>'+
+										'</row>'+
+			                    '</item>';
+			                   }
+			                 $(gchannelId).add($C('<list-item>'+itemStr+'</list-item>'));
+							}
+						}else{
+							alert('没有下级栏目');
+						}
+					}
+					loadFlag = '0';
+		         },function(error) {
+					    if (error == 'timeout') {
+					        hint('连接服务器超时！');
+					    } else if (error == '404') {
+					        hint('链接超时重新登录！');
+					    } else if (error == '500') {
+					        hint('内部服务器错误！');
+					    } else {
+					        hint('访问网络错误！错误代码:' + error);
+					    }
+					    $page.open('../index.xml',{animation:'down-to-up'});
+				    }
+		         );
+	         $(ic).src="forum_openup.png";
+	       }
+	    }
+        
+        function containSpecial(s){
+			if(s!=''){
+				if(/[`~!@#\$%\^\&\*\(\)_\+<>《》？，。；、‘ “【】{}|（）=\?:"\{\},\.\-\\\/\\\/;'\[\]]/im.test(s)){
+					alert("搜索值不能为特殊字符，请重新输入！");
+					return true;
+				}
+			}
+			return false;
+		}
+        
+        function refreshPage(contentIdIndex){
+            $('indexContent'+contentIdIndex).hideTop();
+            $('list'+cunrrentContentIdIndex).clear();   //清理上一个content内容
+	        pagerOffset = 0;
+	        var title = $('search').value;
+	        if(containSpecial(title)){
+				$('search').value='';
+				return;
+			}
+        	if(title == null ||title== ''){   //只刷新
+        		initList('update',cunrrentContentIdIndex,commChannelKind,commChannelType);
+        	}else{
+        		getSearch(title);
+        	}
+        }
+        
+         function loadMychannel(){
+            var storage = $phone.localStorage();
+            var dbName = storage.getItem('ezMobile_dbName');
+            var db = $phone.openDatabase(dbName);
+		    db.transaction(queryDB, function(err){alert(err);}, function(){});
+		    function queryDB(tx) {
+		        tx.executeSql('select channelId,channelName,isCanAdd,channelNeedCheckup from myInfoChannel ',[],
+						function(results){
+						  if(results.rows!=null && results.rows.length>0){
+							    for(var i=0; i<results.rows.length; i++){
+							      var _channelId = results.rows.item(i).channelId;
+							      var _channelName = results.rows.item(i).channelName;
+							      var _isCanAdd = results.rows.item(i).isCanAdd;
+							      var _channelNeedCheckup = results.rows.item(i).channelNeedCheckup;
+							      selectChannels += "|"+_channelId+"|";
+							      channelIdArr.push(_channelId);
+							      channelNameArr.push(_channelName);
+							      isCanAddArr.push(_isCanAdd);
+							      channelNeedCheckupArr.push(_channelNeedCheckup);
+							    }
+						   }
+						} , function(err){alert(err);});  
+		    }
+        }
+        
+         function getCheckedInfo(channelId,channelName,isCanAdd,channelNeedCheckup){
+             if(loadFlag == '1'){
+		        return false;
+		     }
+		     loadFlag = '1';
+		     $page.setTimeout(function() {
+			     getCheckedInfoTimeOut(channelId,channelName,isCanAdd,channelNeedCheckup);
+			 }, 0);
+			 loadFlag = '0';
+         }
+        
+        
+         function getCheckedInfoTimeOut(channelId,channelName,isCanAdd,channelNeedCheckup){
+		    var  flag = '1';
+		    var  Arr_index = -1;
+		    for (var i = 0; i < channelIdArr.length; i++) {  //删除数据
+                    if (channelIdArr[i] == channelId){
+                    	Arr_index = i;
+                    	flag = '2';
+                    	break;
+                    } 
+               }
+            if($("id_"+channelId).checked==true){
+               var flag = '1';  //channelIdArr中无数据，2表示有数据
+	           if(flag == '1'){
+	           		 channelIdArr.push(channelId);   //选中插入数组
+			   		 channelNameArr.push(channelName);
+			   		 isCanAddArr.push(isCanAdd);
+			   		 channelNeedCheckupArr.push(channelNeedCheckup);
+	           }
+            }else{
+               if(Arr_index>-1){
+               		channelIdArr.splice(parseInt(Arr_index), '1');
+               		channelNameArr.splice(parseInt(Arr_index), '1');
+               		isCanAddArr.splice(parseInt(Arr_index), '1');
+               		channelNeedCheckupArr.splice(parseInt(Arr_index), '1');
+               }
+            }
+        }
+        
+         function saveMychannel(){    //完成
+	        if(loadFlag == '1'){
+	        	return false;
+	        }
+	       loadFlag = '1';
+	       var storage = $phone.localStorage();
+           var dbName = storage.getItem('ezMobile_dbName');
+           var db = $phone.openDatabase(dbName);
+		   db.transaction(populateDB, function(err){alert(err);}, function(){});
+		   function populateDB(tx) {
+		        tx.executeSql('delete from myInfoChannel');
+		        for (var i = 0; i < channelIdArr.length; i++) {
+	                    var channelId = channelIdArr[i];
+	                    var channelName = channelNameArr[i];
+	                    channelName = channelName.replace(/(&)/g,'');
+	                    var isCanAdd = isCanAddArr[i];
+	                    var channelNeedCheckup = channelNeedCheckupArr[i];
+	                    var sql='INSERT INTO myInfoChannel (channelId,channelName,isCanAdd,channelNeedCheckup) VALUES ("'+channelId+'","'+channelName+'","'+isCanAdd+'","'+channelNeedCheckup+'")';
+	                   // alert(sql);
+	                    tx.executeSql(sql);
+	            }
+		    }
+		    loadFlag = '0';
+		    $page.close(-1);
+		    $page.open('../desktop.xml?showTab=pubtab', {animation:'down-to-up',target:'_self'});
+        }
+        
+        function getSearch(title){
+         //    $('indexContent'+cunrrentContentIdIndex).showBottom();
+             $('content_bottom'+cunrrentContentIdIndex).css('display','');
+             var storage = $phone.localStorage();
+			 var evoUrl = storage.getItem('evoUrl');
+			 $http.post(evoUrl+'/ezOffice/information/searchChannel.do',{pagerOffset:pagerOffset,title:title,channelKind:commChannelKind,channelType:commChannelType}, function(data) {
+			     var obj = JSON.parse(data);
+			     if(obj.logonerror &&obj.logonerror=='1'){
+		            alert("该账号已在设备"+obj.deviceId+"上登录");
+	          		$page.open('../index.xml',{target:'_self'});
+	                return;
+	             }
+			     var result = obj.message.result;
+			     if(result =="1"){
+			     	var objArr = obj.data.informationChannel; //返回列表数组
+			     	var recordCount = obj.data.recordCount;
+			     	if(objArr instanceof Array){
+			     		for(var i=0;i<objArr.length;i++){
+			     			var channelId = objArr[i].channelId;
+				     	    var channelName =  objArr[i].channelName;
+				     	    channelName = channelName.replace(/(&)/g,'');
+				     	    var hasChek = " checked=\"false\" ";
+		                    var channelId = objArr[i].channelId;
+		                    if(selectChannels.indexOf("|"+channelId+"|")>-1){
+		                          hasChek = " checked=\"true\" ";
+		                    }
+		                    var isCanAdd = objArr[i].isCanAdd;
+	                        var channelNeedCheckup = objArr[i].channelNeedCheckup;
+	                        if(isCanAdd==null||isCanAdd==''){
+	                      		isCanAdd = '';
+	                        }
+	                        if(channelNeedCheckup==null||channelNeedCheckup==''){
+	                      		channelNeedCheckup = '';
+	                        }
+	                        var firstname = channelName.substring(0,1);
+	                        var style = '';
+		                    if((i%6)==0){
+		                         style = 'width:120;background:#f98e75;width:40;height:40;align:left;font-size:16;color:#ffffff;';
+		                    }else if((i%6)==1){
+		                         style = 'width:120;background:#f6d75b;width:40;height:40;align:left;font-size:16;color:#ffffff;';
+		                    }else if((i%6)==2){
+		                         style = 'width:120;background:#6fd5ff;width:40;height:40;align:left;font-size:16;color:#ffffff;';
+		                    }else if((i%6)==3){
+		                         style = 'width:120;background:#9cc2ff;width:40;height:40;align:left;font-size:16;color:#ffffff;';
+		                    }else if((i%6)==4){
+		                         style = 'width:120;background:#93df88;width:40;height:40;align:left;font-size:16;color:#ffffff;';
+		                    }else if((i%6)==5){
+		                         style = 'width:120;background:#d795ea;width:40;height:40;align:left;font-size:16;color:#ffffff;';
+		                    }
+		                    if(objArr[i].isView == '1'){
+		                    	 $('list'+cunrrentContentIdIndex).add($C('<list-item>'+
+										'<item id="'+channelId+'" collapsed="true" indent="30">'+
+											'<row>'+
+		                                        '<checkbox  style="align:left;font-size:18;" id="id_'+channelId+'" '+hasChek+' onclick="getCheckedInfo(\''+channelId+'\',\''+channelName+'\',\''+isCanAdd+'\',\''+channelNeedCheckup+'\')" />'+
+												'<button style="'+style+'" onclick=";">'+firstname+'</button>'+
+												'<label style="align:left;margin:5;font-size:16;color:#555555;">'+channelName+'</label>'+
+											'</row>'+
+										'</item>'+
+									'</list-item>'));
+		                    }
+			     		}
+			     	}else if(objArr instanceof Object){
+			     	    var channelId = objArr.channelId;
+			     	    var channelName =  objArr.channelName;
+			     	    channelName = channelName.replace(/(&)/g,'');
+			     	    var hasChek = " checked=\"false\" ";
+	                    var channelId = objArr.channelId;
+	                    if(selectChannels.indexOf("|"+channelId+"|")>-1){
+	                          hasChek = "true";
+	                    }
+	                    var isCanAdd = objArr.isCanAdd;
+                        var channelNeedCheckup = objArr.channelNeedCheckup;
+                        if(isCanAdd==null||isCanAdd==''){
+                      		isCanAdd = '';
+                        }
+                        if(channelNeedCheckup==null||channelNeedCheckup==''){
+                      		channelNeedCheckup = '';
+                        }
+                        var  isAddBtn = isCanAdd+','+channelNeedCheckup;   //拼接isCanAdd，channelNeedCheckup，下级栏目和栏目列表时使用
+                        var firstname = channelName.substring(0,1);
+                        var style = 'width:120;background:#f98e75;width:40;height:40;align:left;font-size:16;color:#ffffff;';
+                        if(objArr.isView == '1'){
+                        	 $('list'+cunrrentContentIdIndex).add($C('<list-item>'+
+								'<item id="'+channelId+'" collapsed="true" indent="30">'+
+									'<row>'+
+                                        '<checkbox  style="align:left;font-size:18;" id="id_'+channelId+'" value="'+channelName+'" name="'+isAddBtn+'" '+hasChek+' onclick="getCheckedInfo(\''+channelId+'\',\''+channelName+'\',\''+isCanAdd+'\',\''+channelNeedCheckup+'\')" />'+
+									    '<button style="'+style+'" onclick=";">'+firstname+'</button>'+
+										'<label style="align:left;margin:5;font-size:16;color:#555555;">'+channelName+'</label>'+
+									'</row>'+
+								'</item>'+
+							'</list-item>'));
+                        }
+			     	}else{
+			     		$('list'+cunrrentContentIdIndex).add($C('<list-item>'+
+							'<item>'+
+								'<col><row><label style="align:center;">暂无相关记录</label></row></col>'+
+							'</item>'+
+						'</list-item>'));
+			     	}
+			     }else{
+			     	$('list'+cunrrentContentIdIndex).add($C('<list-item>'+
+						'<item>'+
+							'<col><row><label style="align:center;">暂无相关记录</label></row></col>'+
+						'</item>'+
+					'</list-item>'));
+			     }
+			      pagerOffset = parseInt(pagerOffset)+15;
+		          if(parseInt(recordCount) > parseInt(pagerOffset)){
+	        				$('bottom_hasmore'+cunrrentContentIdIndex).css('display','');
+	        	  }else{
+	        				$('bottom_hasmore'+cunrrentContentIdIndex).css('display','none');
+	        				$('content_bottom'+cunrrentContentIdIndex).css('display','none');
+	        			//	$('indexContent'+cunrrentContentIdIndex).hideBottom();
+	        	  }
+			},function(error) {
+			    if (error == 'timeout') {
+			        hint('连接服务器超时！');
+			    } else if (error == '404') {
+			        hint('链接超时重新登录！');
+			    } else if (error == '500') {
+			        hint('内部服务器错误！');
+			    } else {
+			        hint('访问网络错误！错误代码:' + error);
+			    }
+			    $page.open('../index.xml',{animation:'down-to-up'});
+		    });
+		}
+        
+        ]]>
+</script>
+	<page style="background:white;">
+	    <title style="background:#3daffe;tint-color:white;">
+            <left>
+                <button role="back"/>
+            </left>
+            <center>
+                <label style="color:#ffffff">订阅信息栏目</label>
+            </center>
+            <right>
+                <button id="lab_saveMychannel" onclick="saveMychannel()" style="font-size:18;color:#FFFFFF;">完成</button>
+            </right>
+        </title>
+	    <header>
+	        <tabbar id="tabbar" controlContents="true" style="label-color:#b8b8b8,#008eef;indicator-color:#008eef;background:#f9f9f9;" >
+            </tabbar>
+			<row style="text-align:center; padding:0 0;">
+				<input type="search" id="search" name="title" placeholder="请输入栏目标题查询" onclick="searchInfo();" style="height:45;" value=""/>
+			</row>
+		</header>
+		<contents id="contents" scrollable="true">
+	            <content draggable="true" id="indexContentinfo"  ondragdown="refreshPage('info');" >
+	                <list id="listinfo" style="background:#ffffff">
+	                </list>
+			        <bottom id="content_bottominfo">
+		                <list>
+		                    <item onclick="loadList('add')">
+		                      	<row id="bottom_hasmoreinfo" style="display:hidden;">
+			                        <label style="align:center;">点击加载更多...</label>
+			                        <progress id="more_progressinfo" style="display:none;align:center"/>
+			                    </row>
+			                </item>
+		                </list>
+	                </bottom>
+	            </content>
+	            <content draggable="true" id="indexContentportal"  ondragdown="refreshPage('portal');" >
+	            	<list id="listportal" style="background:#ffffff">
+	                </list>
+			        <bottom id="content_bottomportal">
+		                <list>
+		                    <item onclick="loadList('add')">
+		                      	<row style="display:hidden" id="bottom_hasmoreportal">
+			                        <label style="align:center;">点击加载更多...</label>
+			                        <progress id="more_progressportal" style="display:none;align:center"/>
+			                    </row>
+			                </item>
+		                </list>
+	                </bottom>
+	            </content>
+          </contents>
+	</page>
+</imag>

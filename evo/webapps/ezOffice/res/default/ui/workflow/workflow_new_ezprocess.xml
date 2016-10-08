@@ -11,7 +11,6 @@
 	        var fileindex =0;    //附件最多能上传5个
             var fileAddressArr = new Array();
             var fileTypeArr = new Array();   //附件上传时，存储对应数组fileAddressArr中的类型。pic:图片类型，sound：声音类型，file：其他附件类型
-	        
 	        function getAttanchNum(){
 				if(fileTotle>=5){
 					hint('上传附件不能超过5个！');
@@ -48,100 +47,95 @@
 				        }
 					  });
 		     }
-		 function doFileCamera(file,appendId,sysname) {  //拍照
-			if(!getAttanchNum()){
-				return;
-			}
-		    $phone.camera({
-		        success: function(path) {
-		        	var showpath = path.substring(path.lastIndexOf('/')+1,path.length);
-		        	
-		        	var row = $C('<row id="row' + fileindex + '"><icon style="padding-left:20;width:20;height:25;" src="mail_fujian.png"/>'+
-						    '<label id="attachmentId' + fileindex + '" style="color:blue;'+fujianwidth+'">' + showpath + '</label>'+
-						    '<icon id="imageId" src="mail_del.png" style="width:12;height:12;" onclick="delrow(\'' + fileindex + '\',\'' + appendId + '\');"/></row>');
-						    $(appendId).add(row);
-						    $('content_form_list').addMore('<imag><list><item><row><input type="file" style="display:none;" value="' + path + '" name="attachment_main_' + sysname + '"  id="input_file' + fileindex + '"/></row></item></list></imag>');
-				      
-		        	fileindex++;
-		        	fileTotle++;
-		        },
-		        error: function() {
-		            hint('拍照失败！');
-		        }
-		    });
-		}
-		
-		 function doFileRecordSound(file,appendId,sysname) {
-			if(!getAttanchNum()){
-				return;
-			}
-		    $phone.recordSound({
-		        success: function(path) {
-		        	var showpath = path.substring(path.lastIndexOf('/')+1,path.length);
-		        	
-		        	var row = $C('<row id="row' + fileindex + '"><icon style="padding-left:20;width:20;height:25;" src="mail_fujian.png"/>'+
-						    '<label id="attachmentId' + fileindex + '" style="color:blue;'+fujianwidth+'">' + showpath + '</label>'+
-						    '<icon id="imageId" src="mail_del.png" style="width:12;height:12;" onclick="delrow(\'' + fileindex + '\',\'' + appendId + '\');"/></row>');
-						    $(appendId).add(row);
-						    $('content_form_list').addMore('<imag><list><item><row><input type="file" style="display:none;" value="' + path + '" name="attachment_main_' + sysname + '"  id="input_file' + fileindex + '"/></row></item></list></imag>');
-				      
-		        	fileindex++;
-		        	fileTotle++;
-		        },
-		        error: function() {
-		            hint('录音失败！');
-		        }
-		    });
-		}
-		function doFileBrowse(file,appendId,sysname) { //附件上传
-				if (!getAttanchNum()) {
+			 function doFileCamera(file,appendId,sysname) {  //拍照
+				if(!getAttanchNum()){
 					return;
 				}
-				$page.browse({
-					complete: function(path) {
-						var showpath = path.substring(path.lastIndexOf('/') + 1, path.length);
-						if (showpath.indexOf(".") == -1) {
-							hint("无后缀名的附件不允许上传，请重新选择");
-							return false;
-						}
-						var filenameExt = path.substring(path.lastIndexOf('\.')+1,path.length);
-			        	if(filenameExt == 'exe'){
-			        	    hint("后缀名为exe的附件不允许上传，请重新选择");
-			        		return false;
-			        	}
-			        	if(filenameExt == 'cmd'){
-			        	    hint("后缀名为cmd的附件不允许上传，请重新选择");
-			        		return false;
-			        	}
-			        	if(filenameExt == 'jsp'){
-			        	    hint("后缀名为jsp的附件不允许上传，请重新选择");
-			        		return false;
-			        	}
-						var row = $C('<row id="row' + fileindex + '"><icon style="padding-left:20;width:20;height:25;" src="mail_fujian.png"/>'+
-						'<label id="attachmentId' + fileindex + '" style="color:blue;'+fujianwidth+'">' + showpath + '</label>'+
-						'<icon id="imageId" src="mail_del.png" style="width:12;height:12;" onclick="delrow(\'' + fileindex + '\',\'' + appendId + '\');"/></row>');
-						$(appendId).add(row);
-						//$('input_file'+fileindex).value = path;
-						$('content_form_list').addMore('<imag><list><item><row><input type="file" style="display:none;" value="' + path + '" name="attachment_main_' + sysname + '"  id="input_file' + fileindex + '"/></row></item></list></imag>');
-						fileindex++;
-						fileTotle++;
-					}
-				});
-			}
-			
-			function delrow(index,appendId) { //删除附件
-				if (confirm('确认删除附件吗？')) {
-					$('input_file' + index).value = "";
-					$(appendId).remove($('row' + index));
-					fileTotle--;
+			    $phone.camera({
+			        success: function(path) {
+			        	var showpath = path.substring(path.lastIndexOf('/')+1,path.length);
+			        	
+			        	var row = $C('<row id="row' + fileindex + '"><icon style="padding-left:20;width:20;height:25;" src="mail_fujian.png"/>'+
+							    '<label id="attachmentId' + fileindex + '" style="color:blue;'+fujianwidth+'">' + showpath + '</label>'+
+							    '<icon id="imageId" src="mail_del.png" style="width:12;height:12;" onclick="delrow(\'' + fileindex + '\',\'' + appendId + '\');"/></row>');
+							    $(appendId).add(row);
+							    $('content_form_list').addMore('<imag><list><item><row><input type="file" style="display:none;" value="' + path + '" name="attachment_main_' + sysname + '"  id="input_file' + fileindex + '"/></row></item></list></imag>');
+					      
+			        	fileindex++;
+			        	fileTotle++;
+			        },
+			        error: function() {
+			            hint('拍照失败！');
+			        }
+			    });
+			 }
+			 function doFileRecordSound(file,appendId,sysname) {
+				if(!getAttanchNum()){
+					return;
 				}
+			    $phone.recordSound({
+			        success: function(path) {
+			        	var showpath = path.substring(path.lastIndexOf('/')+1,path.length);
+			        	
+			        	var row = $C('<row id="row' + fileindex + '"><icon style="padding-left:20;width:20;height:25;" src="mail_fujian.png"/>'+
+							    '<label id="attachmentId' + fileindex + '" style="color:blue;'+fujianwidth+'">' + showpath + '</label>'+
+							    '<icon id="imageId" src="mail_del.png" style="width:12;height:12;" onclick="delrow(\'' + fileindex + '\',\'' + appendId + '\');"/></row>');
+							    $(appendId).add(row);
+							    $('content_form_list').addMore('<imag><list><item><row><input type="file" style="display:none;" value="' + path + '" name="attachment_main_' + sysname + '"  id="input_file' + fileindex + '"/></row></item></list></imag>');
+					      
+			        	fileindex++;
+			        	fileTotle++;
+			        },
+			        error: function() {
+			            hint('录音失败！');
+			        }
+			    });
 			}
-		
+			function doFileBrowse(file,appendId,sysname) { //附件上传
+					if (!getAttanchNum()) {
+						return;
+					}
+					$page.browse({
+						complete: function(path) {
+							var showpath = path.substring(path.lastIndexOf('/') + 1, path.length);
+							if (showpath.indexOf(".") == -1) {
+								hint("无后缀名的附件不允许上传，请重新选择");
+								return false;
+							}
+							var filenameExt = path.substring(path.lastIndexOf('\.')+1,path.length);
+				        	if(filenameExt == 'exe'){
+				        	    hint("后缀名为exe的附件不允许上传，请重新选择");
+				        		return false;
+				        	}
+				        	if(filenameExt == 'cmd'){
+				        	    hint("后缀名为cmd的附件不允许上传，请重新选择");
+				        		return false;
+				        	}
+				        	if(filenameExt == 'jsp'){
+				        	    hint("后缀名为jsp的附件不允许上传，请重新选择");
+				        		return false;
+				        	}
+							var row = $C('<row id="row' + fileindex + '"><icon style="padding-left:20;width:20;height:25;" src="mail_fujian.png"/>'+
+							'<label id="attachmentId' + fileindex + '" style="color:blue;'+fujianwidth+'">' + showpath + '</label>'+
+							'<icon id="imageId" src="mail_del.png" style="width:12;height:12;" onclick="delrow(\'' + fileindex + '\',\'' + appendId + '\');"/></row>');
+							$(appendId).add(row);
+							//$('input_file'+fileindex).value = path;
+							$('content_form_list').addMore('<imag><list><item><row><input type="file" style="display:none;" value="' + path + '" name="attachment_main_' + sysname + '"  id="input_file' + fileindex + '"/></row></item></list></imag>');
+							fileindex++;
+							fileTotle++;
+						}
+					});
+				}
+				function delrow(index,appendId) { //删除附件
+					if (confirm('确认删除附件吗？')) {
+						$('input_file' + index).value = "";
+						$(appendId).remove($('row' + index));
+						fileTotle--;
+					}
+				}
     ]]>
     </script> 
-
 <script>
-
         <![CDATA[
         	//流程id---在打开流程表单页时设置的数据 保存在客户端本地
         	var storage;
@@ -157,6 +151,14 @@
         	var itemContent = '';
         	var model = $param['model'];
         	var fromXml = $param['fromXml'];
+        	var totalItemExpre = new Array();  //合计项表达式数据
+        	var totalItemId = new Array();   //合计项标签id
+        	var canComputeField = new Array();  //可进行计算的数据表字段名
+        	var sub_totalItemExpre = new Array();  //子表合计项表达式数据
+        	var sub_totalItemId = new Array();   //子表合计项标签id
+        	var sub_canComputeField = new Array();  //子表可进行计算的数据表字段名
+        	var main_totalComputeFieldExpre = new Array();  //子表字段值赋值到主表字段；
+        	var main_totalComputeFieldId = new Array();  //子表字段值赋值到主表字段id；
         	$page.onload = function(){
         		centerTitle_str =  decodeURIComponent($param['processName']);
         	    if(centerTitle_str.length>15){
@@ -175,9 +177,7 @@
 		          			$page.open('../index.xml',{target:'_self'});
 		                    return;
 		                }
-        				//var workInfoResult = jsonData.data_0.message.result;
         				var detailResult = jsonData.data_0.message.result;
-        				//var personResult = jsonData.data_2.message.result;  || personResult != '1'
         				if(detailResult != '1'){
         					alert('数据获取失败！');
         				}
@@ -198,8 +198,6 @@
         					}
         				}else if(fieldList instanceof Object){
        						createFormData(fieldList,showType,readWrite,fieldType,selectContent);
-        				}else{
-        					
         				}
        					$contentFormList.addMore('<imag><list>' + itemContent + '</list></imag>');
        					// 创建子表节点
@@ -243,7 +241,7 @@
 					    }
 						subFieldList = subTableList[i].subFieldList;
 						itemContent = '<item id="item_' + tableName + '" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="align:left;font-size:16;color:#555555">'+subTableList[i].name+':</label></row></col><col style="padding:10;margin:10;"><row>'+
-										   '<input type="hidden" id="'+tableName+'" name="'+tableName+'" style="display:none;" value=""/><input type="hidden" id="json_'+tableName+'" name="json_'+tableName+'" style="display:none;" value=""/><input id="'+tableName+'_count" name="'+tableName+'_count" readonly="true" style="border:0 white;font-size:16;text-align:right;color:#555555" type="text" placeholder="" value="'+fieldCount+'条子表数据>"/></row></col></item>';
+										   '<input type="hidden" id="'+tableName+'" name="'+tableName+'" style="display:none;" value=""/><input type="hidden" id="json_'+tableName+'" name="json_'+tableName+'" style="display:none;" value=""/><input id="'+tableName+'_count" name="'+tableName+'_count" readonly="true" style="border:0 white;font-size:16;text-align:right;color:#555555" type="text" placeholder="" value="'+fieldCount+'条子表数据>" /></row></col></item>';
 						contentFormList.addMore('<imag><list>' + itemContent + '</list></imag>');
 						$('item_' + tableName).onclick = "openSubTableCon('" + JSON.stringify(subFieldList) + "','"+tableName+"','"+subTableList[i].name+"')";
 						tableNames += tableName+',';
@@ -282,7 +280,6 @@
 			var global_subDelIndex='';
 			//当前子表数据总数（不包括已添加的数据）
 			var global_subDatalen_cur=1;
-			
 			function openAllSubTabel(contentFormList,detailData){
 				var subTableList = detailData.subTableList;
 				if(!subTableList){
@@ -335,7 +332,7 @@
 					createSubTableField(subFieldList.field,0);
 					global_subDatalen = 1;
 				}
-				$('subTabel_form_list').update('<imag><list>' + subTabelItemContent + '</list></imag>');
+				$('subTabel_form_list').addMore('<imag><list>' + subTabelItemContent + '</list></imag>');
 				default_goBackSaveSubForm();
 			}
 			
@@ -353,17 +350,13 @@
 				      if(global_subDelIndex.indexOf('|'+k+'|')==-1){
 					        subFormxml += '<fields>';
 	                        subFormxml += '<dataId>'+$('sub_dataId'+k).value+'</dataId>';
-	                        
 	                        _subfieldjson += '{"dataId":"'+$('sub_dataId'+k).value+'",';
-	                        
 							if(subFieldList instanceof Array){
 								subFormxml += getSubTableFieldValue(subFieldList[0].field,k);
 							}else if(subFieldList instanceof Object){
 								subFormxml += getSubTableFieldValue(subFieldList.field,k);
 							}
-							
 							_subfieldjson += '},';
-							
 							subFormxml += '</fields>';
 							subDataCount = subDataCount+1;
 						}
@@ -374,7 +367,6 @@
 						_subfieldjson = _subfieldjson.substr(0,_subfieldjson.length-1);
 					}
 					_subfieldjson += ']';
-					//alert(_subfieldjson);
 					subFormxml += '</table>';
 				}
 				//设置显示数据条数
@@ -409,10 +401,10 @@
 				global_subDelIndex = '';
 				var subFieldList = JSON.parse(subFieldList);
 				if(subFieldList instanceof Array){
+					global_subDatalen_cur = subFieldList.length;  //子表全局数量赋值。删除时没有保存返回后再次进入无法删除。
 					for(var i=0,length=subFieldList.length;i<length;i++){
 					    var subdataId = subFieldList[i].dataId;
 					    subTabelItemContent += '<item id="item_subbutton_'+global_subTableName+i+'" onclick="deleteIteminList(\''+i+'\');"><col><row><label style="align:left;font-size:14;">表'+eval(i+1)+'</label></row></col><col><row><label style="align:right;font-size:14;color:red">删除</label><input type="hidden" id="sub_dataId'+i+'" name="sub_dataId'+i+'" style="display:none;" value=""/></row></col></item>';
-				
 						createSubTableField(subFieldList[i].field,i);
 						global_subDatalen = length;
 					}
@@ -422,7 +414,6 @@
 					createSubTableField(subFieldList.field,0);
 					global_subDatalen = 1;
 				}
-
 				$('subTabel_form_list').update('<imag><list>' + subTabelItemContent + '</list></imag>');
 				$('subTabel_form_list').css('display','');
 				$('content_form_list').css('display','none');
@@ -438,10 +429,8 @@
 			}
 			//合计字段
 	        var totalFieldcon = '';
-	        
 	        //添加合计字段
 	        function pushTotalFieldcon(conId,fieldname){
-
 	        	if(totalFieldcon.indexOf(conId+',')==-1){
 	        	   totalFieldcon += conId+','+fieldname+';';
 	        	}
@@ -474,19 +463,18 @@
 
 			//删除子表数据 x：数据下标
 			function deleteIteminList(x){
-              if(global_subDatalen_cur==1){
-                return;
-              }
-              for(var i=0;i<global_subTableFieldlen;i++){
-			    $('subTabel_form_list').remove($('item_subfield_'+global_subTableName+x+i));
-			  }
-			  $('subTabel_form_list').remove($('item_subbutton_'+global_subTableName+x));
-			  global_subDelIndex += '|'+x+'|';
-			  
-			  global_subDatalen_cur=global_subDatalen_cur-1;
-			  $('sub_overbutton').text="完成("+global_subDatalen_cur+")";
-
+               if(global_subDatalen_cur==1){
+                  return;
+               }
+               for(var i=0;i<global_subTableFieldlen;i++){
+			      $('subTabel_form_list').remove($('item_subfield_'+global_subTableName+x+i));
+			   }
+			   $('subTabel_form_list').remove($('item_subbutton_'+global_subTableName+x));
+			   global_subDelIndex += '|'+x+'|';
+			   global_subDatalen_cur=global_subDatalen_cur-1;
+			   $('sub_overbutton').text="完成("+global_subDatalen_cur+")";
 			}
+			
 			//新增子表数据
 			function addIteminList(subFieldList){
                 var subFieldList = JSON.parse(subFieldList);
@@ -521,12 +509,10 @@
 			}
 			//子表新增数据  i：数据条数 j：字段条数
 			function getFieldCon(field,i,j){
-
-			   var showType = field.showtype;
-			   var fieldType = field.fieldtype;
-			   var readWrite = field.readwrite;
-			   var mustfilled = field.mustfilled;
-
+			    var showType = field.showtype;
+			    var fieldType = field.fieldtype;
+			    var readWrite = field.readwrite;
+			    var mustfilled = field.mustfilled;
 	        	var mustfilled_view = '';
         	    if(mustfilled && mustfilled=='1'){
         	       mustfilled_view = '<label style="align:left;font-size:12;color:#FF4617">*</label>';
@@ -536,9 +522,9 @@
         			itemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555;">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
 	        		//单行文本
 	        		if(fieldType == '1000000'){
-	        			itemContent += '<row><input style="font-size:16;color:#555555" id="_sub_' + field.sysname +i+ '" type="number" name="_sub_' + field.sysname +i+ '" value="" maxlength="9"/></row>';
+	        			itemContent += '<row><input style="font-size:16;color:#555555" id="_sub_' + field.sysname +i+ '" type="number" name="_sub_' + field.sysname +i+ '" value="" maxlength="9" onchange="sub_computeExpress(this,\''+i+'\')"/></row>';
 	        		}else if(fieldType == '1000001'){
-	        			itemContent += '<row><input style="font-size:16;color:#555555" id="_sub_' + field.sysname +i+ '" type="number" name="_sub_' + field.sysname +i+ '" value="" maxlength="18"/></row>';
+	        			itemContent += '<row><input style="font-size:16;color:#555555" id="_sub_' + field.sysname +i+ '" type="number" name="_sub_' + field.sysname +i+ '" value="" maxlength="18" onchange="sub_computeExpress(this,\''+i+'\')"/></row>';
 	        		}else{
 	        			itemContent += '<row><input style="font-size:16;color:#555555" id="_sub_' + field.sysname +i+ '" type="text" name="_sub_' + field.sysname +i+ '" value=""/></row>';
 	        		}
@@ -626,22 +612,22 @@
 	        		itemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
 	        		//金额
 	        		if(fieldType == '1000000' || fieldType == '1000001'){
-	        			itemContent += '<row><input style="color:#555555;font-size:16;" type="number" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value="" maxlength="9"/></row>';
+	        			itemContent += '<row><input style="color:#555555;font-size:16;" type="number" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value="" maxlength="9" onchange="sub_computeExpress(this,\''+i+'\')"/></row>';
 	        		}else{
-	        			itemContent += '<row><input style="color:#555555;font-size:16;" type="text" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value="" maxlength="9"/></row>';
+	        			itemContent += '<row><input style="color:#555555;font-size:16;" type="text" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value="" maxlength="9" onchange="sub_computeExpress(this,\''+i+'\')"/></row>';
 	        		}
 	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
 	        	}else if(showType == '302' && readWrite == '1'){
 	        		itemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
 	        		//金额
-        			itemContent += '<row><input style="color:#555555;font-size:16;" type="text" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value="" maxlength="18"/></row>';
+        			itemContent += '<row><input style="color:#555555;font-size:16;" type="text" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value="" maxlength="18" onchange="sub_computeExpress(this,\''+i+'\')"/></row>';
         			pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
 	        	}else if(showType == '210' && readWrite == '1'){
 	        		itemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*0*\',\'0\')" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
 	        		//单选人 全部
 	        		itemContent += '<row>'+
 	        					   '<input onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*0*\',\'0\')" style="color:#555555;font-size:16;" readonly="true" type="text" name="_subShow_' + field.sysname +i+ 
-	        					   '" value="" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '" value="" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" />'+
 	        					   '<input type="hidden" id="_sub_' + field.sysname +i+'"   name="_sub_' + field.sysname +i+'" value=""/></row>';
 	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
 	        	}else if(showType == '211' && readWrite == '1'){
@@ -649,14 +635,14 @@
 	        		//多选人 全部
 	        		itemContent += '<row>'+
 	        					   '<input onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*0*\',\'1\')" style="color:#555555;font-size:16;" readonly="true" type="text" name="_subShow_' + field.sysname +i+ 
-	        					   '" value="" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '" value="" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" />'+
 	        					   '<input type="hidden" id="_sub_' + field.sysname +i+'" name="_sub_' + field.sysname +i+'" value=""/></row>';
 	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
 	        	}else if(showType == '212' && readWrite == '1'){
 	        		itemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*0*\',\'2\')" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
 	        		//单选组织
 	        		itemContent += '<row>'+
-	        					   '<input onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*0*\',\'2\')" style="color:#555555;font-size:16;" readonly="true" type="text" name="_subShow_' + field.sysname +i+ '" value="" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '<input onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*0*\',\'2\')" style="color:#555555;font-size:16;" readonly="true" type="text" name="_subShow_' + field.sysname +i+ '" value="" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" />'+
 	        					   '<input type="hidden" id="_sub_' + field.sysname +i+'" name="_sub_' + field.sysname +i+'" value=""/></row>';
 	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
 	        	}else if(showType == '214' && readWrite == '1'){
@@ -664,7 +650,7 @@
 	        		//多选组织
 	        		itemContent += '<row>'+
 	        					   '<input onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*0*\',\'3\')" style="color:#555555;font-size:16;" readonly="true" type="text" name="_subShow_' + field.sysname +i+ 
-	        					   '" value="" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '" value="" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" />'+
 	        					   '<input type="hidden" id="_sub_' + field.sysname +i+'" name="_sub_' + field.sysname +i+'" value=""/></row>';
 	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
 	        	
@@ -673,7 +659,7 @@
 	        		//单选人 本组织
 	        		itemContent += '<row>'+
 	        					   '<input onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*'+orgId+'*\',\'0\')" readonly="true" style="color:#555555;font-size:16;" type="text" name="_subShow_' + field.sysname + 
-	        					   '" value="" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '" value="" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" />'+
 	        					   '<input type="hidden" id="_sub_' + field.sysname +i+'" name="_sub_' + field.sysname +i+'" value=""/></row>';
 	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
 	        	}else if(showType == '705' && readWrite == '1'){
@@ -681,7 +667,7 @@
 	        		//多选人 本组织
 	        		itemContent += '<row>'+
 	        					   '<input onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*'+orgId+'*\',\'1\')" readonly="true" style="color:#555555;font-size:16;" type="text" name="_subShow_' + field.sysname +i+ 
-	        					   '" value="" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '" value="" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" />'+
 	        					   '<input type="hidden" id="_sub_' + field.sysname +i+'" name="_sub_' + field.sysname +i+'" value=""/></row>';
 	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
 	        	}else if(showType == '708' && readWrite == '1'){
@@ -692,6 +678,11 @@
 	        		itemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
 	        		itemContent += '<row><label style="align:left;font-size:12;color:#FF4617">该字段暂不支持手机办理，请于电脑端操作...</label><input type="hidden" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value=""/></row>';
 	        	    pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	        	}else if(showType == '203'){   //合计计算
+	        		itemContent += '<item id="item_subfield_'+global_subTableName+i+j+'"  style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		itemContent += '<row><input type="text" id="_sub_' + field.sysname +i+'" readonly="true" name="_sub_' + field.sysname +i+'" value=""/></row>';
+	        		sub_totalItemExpre.push(field.expressionval);   //表达式存入数组
+	        		sub_totalItemId.push('_sub_' + field.sysname);  //id存入数组
 	        	}else{            // 只读数据
 	        		itemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555;">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
 	        		itemContent += '<row><label style="align:right;color:#555555;font-size:16;"></label><input type="hidden" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value=""/></row>';
@@ -716,12 +707,11 @@
 			}
 			// 具体子表字段展示函数  i：数据条数 j：字段条数
 			function getFieldCon2(field,i,j){
-			   var showType = field.showtype;
-			   var fieldType = field.fieldtype;
-			   var readWrite = field.readwrite;
-			   var mustfilled = field.mustfilled;
-
-	        	var mustfilled_view = '';
+			    var showType = field.showtype;
+			    var fieldType = field.fieldtype;
+			    var readWrite = field.readwrite;
+			    var mustfilled = field.mustfilled;
+	        	var mustfilled_view = '';   //是否是必填项
         	    if(mustfilled && mustfilled=='1'){
         	       mustfilled_view = '<label style="align:left;font-size:12;color:#FF4617">*</label>';
         	    }
@@ -730,17 +720,17 @@
 		        if(totfield=='0'){
         	       pushTotalFieldcon('_sub_' + field.sysname,field.name);
         	    }
-
 			   if(showType == '101' && readWrite == '1'){
         			subTabelItemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555;">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
 	        		//单行文本
 	        		if(fieldType == '1000000'){
-	        			subTabelItemContent += '<row><input style="font-size:16;color:#555555" id="_sub_' + field.sysname +i+ '" type="number" name="_sub_' + field.sysname +i+ '" value="' + field.value + '" maxlength="9"/></row>';
+	        			subTabelItemContent += '<row><input style="font-size:16;color:#555555" id="_sub_' + field.sysname +i+ '" type="number" name="_sub_' + field.sysname +i+ '" value="' + field.value + '" maxlength="9" onchange="sub_computeExpress(this,\''+i+'\')"/></row>';
 	        		}else if(fieldType == '1000001'){
-	        			subTabelItemContent += '<row><input style="font-size:16;color:#555555" id="_sub_' + field.sysname +i+ '" type="number" name="_sub_' + field.sysname +i+ '" value="' + field.value + '" maxlength="18"/></row>';
+	        			subTabelItemContent += '<row><input style="font-size:16;color:#555555" id="_sub_' + field.sysname +i+ '" type="number" name="_sub_' + field.sysname +i+ '" value="' + field.value + '" maxlength="18" onchange="sub_computeExpress(this,\''+i+'\')"/></row>';
 	        		}else{
 	        			subTabelItemContent += '<row><input style="font-size:16;color:#555555" id="_sub_' + field.sysname +i+ '" type="text" name="_sub_' + field.sysname +i+ '" value="' + field.value + '"/></row>';
 	        		}
+	        		sub_canComputeField.push(field.sysname);
 	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
 	        	}else if(showType == '102' && readWrite == '1'){
 	        		subTabelItemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
@@ -841,22 +831,24 @@
 	        		subTabelItemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
 	        		//金额
 	        		if(fieldType == '1000000' || fieldType == '1000001'){
-	        			subTabelItemContent += '<row><input style="color:#555555;font-size:16;" type="number" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value="' + field.value + '" maxlength="9"/></row>';
+	        			subTabelItemContent += '<row><input style="color:#555555;font-size:16;" type="number" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value="' + field.value + '" maxlength="9" onchange="sub_computeExpress(this,\''+i+'\')"/></row>';
 	        		}else{
-	        			subTabelItemContent += '<row><input style="color:#555555;font-size:16;" type="text" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value="' + field.value + '" maxlength="9"/></row>';
+	        			subTabelItemContent += '<row><input style="color:#555555;font-size:16;" type="text" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value="' + field.value + '" maxlength="9" onchange="sub_computeExpress(this,\''+i+'\')"/></row>';
 	        		}
+	        		sub_canComputeField.push(field.sysname);
 	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
 	        	}else if(showType == '302' && readWrite == '1'){
 	        		subTabelItemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
 	        		//金额
-        			subTabelItemContent += '<row><input style="color:#555555;font-size:16;" type="text" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value="' + field.value + '" maxlength="18"/></row>';
+        			subTabelItemContent += '<row><input style="color:#555555;font-size:16;" type="text" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value="' + field.value + '" maxlength="18" onchange="sub_computeExpress(this,\''+i+'\')"/></row>';
+        			sub_canComputeField.push(field.sysname);
         			pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
 	        	}else if(showType == '210' && readWrite == '1'){
 	        		subTabelItemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*0*\',\'0\')" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
 	        		//单选人 全部
 	        		subTabelItemContent += '<row>'+
 	        					   '<input onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*0*\',\'0\')" style="color:#555555;font-size:16;" readonly="true" type="text" name="_subShow_' + field.sysname +i+ 
-	        					   '" value="' + field.value + '" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '" value="' + field.value + '" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" />'+
 	        					   '<input type="hidden" id="_sub_' + field.sysname +i+'"   name="_sub_' + field.sysname +i+'" value="' + field.hiddenval + '"/></row>';
 	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
 	        	}else if(showType == '211' && readWrite == '1'){
@@ -864,14 +856,14 @@
 	        		//多选人 全部
 	        		subTabelItemContent += '<row>'+
 	        					   '<input onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*0*\',\'1\')" style="color:#555555;font-size:16;" readonly="true" type="text" name="_subShow_' + field.sysname +i+ 
-	        					   '" value="' + field.value + '" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '" value="' + field.value + '" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" />'+
 	        					   '<input type="hidden" id="_sub_' + field.sysname +i+'" name="_sub_' + field.sysname +i+'" value="' + field.hiddenval + '"/></row>';
 	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
 	        	}else if(showType == '212' && readWrite == '1'){
 	        		subTabelItemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*0*\',\'2\')" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
 	        		//单选组织
 	        		subTabelItemContent += '<row>'+
-	        					   '<input onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*0*\',\'2\')" style="color:#555555;font-size:16;" readonly="true" type="text" name="_subShow_' + field.sysname +i+ '" value="' + field.value + '" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '<input onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*0*\',\'2\')" style="color:#555555;font-size:16;" readonly="true" type="text" name="_subShow_' + field.sysname +i+ '" value="' + field.value + '" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" />'+
 	        					   '<input type="hidden" id="_sub_' + field.sysname +i+'" name="_sub_' + field.sysname +i+'" value="' + field.hiddenval + '"/></row>';
 	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
 	        	}else if(showType == '214' && readWrite == '1'){
@@ -879,7 +871,7 @@
 	        		//多选组织
 	        		subTabelItemContent += '<row>'+
 	        					   '<input onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*0*\',\'3\')" style="color:#555555;font-size:16;" readonly="true" type="text" name="_subShow_' + field.sysname +i+ 
-	        					   '" value="' + field.value + '" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '" value="' + field.value + '" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" />'+
 	        					   '<input type="hidden" id="_sub_' + field.sysname +i+'" name="_sub_' + field.sysname +i+'" value="' + field.hiddenval + '"/></row>';
 	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
 	        	
@@ -888,7 +880,7 @@
 	        		//单选人 本组织
 	        		subTabelItemContent += '<row>'+
 	        					   '<input onclick="selectUser(\'_sub_' + field.sysname +i+'\',\'_subShow_' + field.sysname +i+'\',\'*'+orgId+'*\',\'0\')" readonly="true" style="color:#555555;font-size:16;" type="text" name="_subShow_' + field.sysname + 
-	        					   '" value="' + field.value + '" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '" value="' + field.value + '" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" />'+
 	        					   '<input type="hidden" id="_sub_' + field.sysname +i+'" name="_sub_' + field.sysname +i+'" value="' + field.hiddenval + '"/></row>';
 	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
 	        	}else if(showType == '705' && readWrite == '1'){
@@ -896,13 +888,18 @@
 	        		//多选人 本组织
 	        		subTabelItemContent += '<row>'+
 	        					   '<input onclick="selectUser(\'_sub_' + field.sysname +'\',\'_subShow_' + field.sysname +'\',\'*'+orgId+'*\',\'1\')" readonly="true" style="color:#555555;font-size:16;" type="text" name="_subShow_' + field.sysname +i+ 
-	        					   '" value="' + field.value + '" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '" value="' + field.value + '" id="_subShow_' + field.sysname +i+'" placeholder="请选择>" />'+
 	        					   '<input type="hidden" id="_sub_' + field.sysname +i+'" name="_sub_' + field.sysname +i+'" value="' + field.hiddenval + '"/></row>';
 	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
 	        	}else if(showType == '708' && readWrite == '1'){
 	        		subTabelItemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
 	        		//流程发起人
 	        		subTabelItemContent += '<row><label style="align:right;color:#555555;font-size:16;">' + field.value + '</label><input type="hidden" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value="' + field.value + '"/></row>';
+	        	}else if(showType == '203'){   //合计计算
+	        		subTabelItemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		subTabelItemContent += '<row><input type="text" id="_sub_' + field.sysname +i+'" readonly="true" name="_sub_' + field.sysname +i+'" value="' + field.value + '"/></row>';
+	        		sub_totalItemExpre.push(field.expressionval);   //表达式存入数组
+	        		sub_totalItemId.push('_sub_' + field.sysname);  //id存入数组
 	        	}else if(showType == '113' || showType == '115' || showType == '116' || showType == '117' || showType == '118'){
 	        		subTabelItemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
 	        		subTabelItemContent += '<row><label style="align:left;font-size:12;color:#FF4617">该字段暂不支持手机办理，请于电脑端操作...</label><input type="hidden" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '" value="' + field.value + '"/></row>';
@@ -957,25 +954,19 @@
 			    if(global_subDatalen>0){
 				    subFormxml += '<table>';
 				    subFormxml += '<tableName>'+global_subTableName+'</tableName>';
-				    
 				    _subfieldjson += '[';
-	                        
 				    for(var k=0;k<global_subDatalen;k++){
 				      //没有被删除的数据
 				      if(global_subDelIndex.indexOf('|'+k+'|')==-1){
 					        subFormxml += '<fields>';
 	                        subFormxml += '<dataId>'+$('sub_dataId'+k).value+'</dataId>';
-	                        
 	                        _subfieldjson += '{"dataId":"'+$('sub_dataId'+k).value+'",';
-	                        
 							if(subFieldList instanceof Array){
 								subFormxml += getSubTableFieldValue(subFieldList[0].field,k);
 							}else if(subFieldList instanceof Object){
 								subFormxml += getSubTableFieldValue(subFieldList.field,k);
 							}
-							
 							_subfieldjson += '},';
-							
 							subFormxml += '</fields>';
 							subDataCount = subDataCount+1;
 						}
@@ -986,10 +977,10 @@
 						_subfieldjson = _subfieldjson.substr(0,_subfieldjson.length-1);
 					}
 					_subfieldjson += ']';
-					//alert(_subfieldjson);
 					subFormxml += '</table>';
+					
 				}
-
+				subToMainTotal();  //子表值赋值到主表中去。
 				//设置显示数据条数
                 $(global_subTableName+'_count').value = subDataCount+'条子表数据';
                 if(_subfieldjson==''||_subfieldjson=='[]'){
@@ -1012,9 +1003,39 @@
 				  $('topright').onclick=";";
 				}
 			}
+			
+			function subToMainTotal(){
+				//子表值复制到主表合计字段中去
+	        	if(main_totalComputeFieldExpre.length>0){
+	        		for(var m=0;m<main_totalComputeFieldExpre.length;m++){
+	        		   // alert(main_totalComputeFieldExpre[m]);alert(global_subTableName);
+	        		    var expreVal = main_totalComputeFieldExpre[m];
+	        			if(expreVal&&expreVal!=null&&main_totalComputeFieldExpre[m].indexOf(global_subTableName)>-1){  //主表合计字段在是否 子表中。
+	        				var index = main_totalComputeFieldExpre[m].lastIndexOf(".");
+							var corresSubField = main_totalComputeFieldExpre[m].substring(index+1,main_totalComputeFieldExpre[m].length-1);  //对应子表字段，获取子表是哪个字段。
+							var corresSubFieldValue= 0; //对应字段值
+							for(var n=0;n<global_subDatalen_cur;n++){  //所有子表数量，包括重复的
+							    if($('_sub_'+corresSubField+n)){
+							        var everyVal = $('_sub_'+corresSubField+n).value;
+							        if(everyVal==null || everyVal==''||everyVal == '0'||everyVal == undefined){
+							        	everyVal = 0;
+							        }else{
+							        	corresSubFieldValue =eval(parseFloat(everyVal) +corresSubFieldValue);
+							        }
+							    }
+							}
+							if($(main_totalComputeFieldId[m])&&!isNaN(corresSubFieldValue)){
+								$(main_totalComputeFieldId[m]).value = corresSubFieldValue+'';
+							}else{
+								$(main_totalComputeFieldId[m]).value = '0';
+							}
+	        			}
+	        		}
+	        	}
+			}
+			
 			function getSubTableFieldValue(fields,k){
                 var _subfieldxml='';
-                
                 _subfieldjson += '"field":[';
 				if(fields instanceof Array){
 					for(var i=0;i<fields.length;i++){
@@ -1044,12 +1065,10 @@
 					      }
 					      var hidevalue = $('_sub_'+fields[i].sysname+k).value;
 					      var showvalue = $('_subShow_'+fields[i].sysname+k).value;
-					      
 					       _subfieldxml += '<field>';
 						   _subfieldxml += '<fieldName>'+fields[i].sysname+'</fieldName>';
 						   _subfieldxml += '<value>'+hidevalue+'</value>';
 						   _subfieldxml += '</field>';
-						   
 						   _subfieldjson += '{"id":"'+fields[i].id+'","sysname":"'+fields[i].sysname+'","name":"'+fields[i].name+'","showtype":"'+fields[i].showtype+'","value":"'+showvalue+'","hiddenval":"'+hidevalue+'","expressionval":"'+fields[i].expressionval+'","readwrite":"'+fields[i].readwrite+'","fieldtype":"'+fields[i].fieldtype+'","mustfilled":"'+fields[i].mustfilled+'"'+dataListJson+'},';
 						   
 					   }else{
@@ -1193,10 +1212,8 @@
 			
 	        //必填标识
 	        var mustfilled;
-	        
 	        //必填项数组
 	        var mustFillCon = new Array();
-	        
 	        //添加数组元素 
 	        function pushMustFillArray(mustfilled,fieldName,conId){
 	        	if(mustfilled == '0'){
@@ -1204,10 +1221,8 @@
 	        	}
 	        	mustFillCon.push(fieldName + ';' + conId);
 	        }
-	        
 	        //必填checkbox
 	        var mustFillCheckbox = new Array();
-	        
 	        //添加数组元素 
 	        function pushMustFillCheckboxArray(mustfilled,fieldName,conId,len){
 	        	if(mustfilled == '0'){
@@ -1215,10 +1230,8 @@
 	        	}
 	        	mustFillCheckbox.push(fieldName + ';' + conId+ ';' +len);
 	        }
-	        
 	        //不能编辑的必填字段
 	        var mustFillWord = new Array();
-	        
 	        //添加数组元素 
 	        function pushMustFillWord(mustfilled,fieldName,conId){
 	        	if(mustfilled == '0'){
@@ -1236,7 +1249,7 @@
 	        			return false;
 	        		}
 	        		fieldInfoArray = mustFillCon[i].split(';');
-	        		if(!($(fieldInfoArray[1]).value)){
+	        		if($(fieldInfoArray[1])&&!($(fieldInfoArray[1]).value)){
 	        			alert(fieldInfoArray[0] + ' 不能为空！');
 			        	return false;
 	        		}
@@ -1280,23 +1293,21 @@
 	        	readWrite = field.readwrite;
 	        	fieldType = field.fieldtype;
 	        	mustfilled = field.mustfilled;
-	        	
 	        	var mustfilled_view = '';
         	    if(mustfilled && mustfilled=='1'){
         	       mustfilled_view = '<label style="align:left;font-size:12;color:#FF4617">*</label>';
         	    }
-
 	        	if(showType == '101' && readWrite == '1'){
-	        	    
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
 	        		//单行文本
 	        		if(fieldType == '1000000'){
-	        			itemContent += '<row><input style="color:#555555;font-size:16;" type="number" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '" value="' + field.value + '" maxlength="9"/></row>';
+	        			itemContent += '<row><input style="color:#555555;font-size:16;" type="number" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '" value="' + field.value + '" maxlength="9" onchange="computeExpress(this);"/></row>';
 	        		}else if(fieldType == '1000001'){
-	        			itemContent += '<row><input style="color:#555555;font-size:16;" type="number" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '" value="' + field.value + '" maxlength="18"/></row>';
+	        			itemContent += '<row><input style="color:#555555;font-size:16;" type="number" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '" value="' + field.value + '" maxlength="18"  /></row>';
 	        		}else{
 	        			itemContent += '<row><input style="color:#555555;font-size:16;" type="text" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '" value="' + field.value + '"/></row>';
 	        		}
+	        		canComputeField.push(field.sysname);
 	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
 	        	}else if(showType == '102' && readWrite == '1'){
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
@@ -1393,7 +1404,7 @@
 	        	}else if(showType == '111' && readWrite == '1'){
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
 	        		//自动编号
-	        		itemContent += '<row><label style="align:right;color:#555555;font-size:16;">' + field.value + '</label></row>';
+	        		itemContent += '<row><input type="hidden" name="_mainfile_' + field.sysname + '" value="'+field.value+'"/><label style="align:right;color:#555555;font-size:16;">' + field.value + '</label></row>';
 	        	}else if(showType == '113' && readWrite == '1'){
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
 	        		//html编辑
@@ -1449,22 +1460,24 @@
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
 	        		//金额
 	        		if(fieldType == '1000000' || fieldType == '1000001'){
-	        			itemContent += '<row><input style="color:#555555;font-size:16;" type="number" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '" value="' + field.value + '" maxlength="9"/></row>';
+	        			itemContent += '<row><input style="color:#555555;font-size:16;" type="number" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '" value="' + field.value + '" maxlength="9" onchange="computeExpress(this);" onchange="computeExpress(this);"/></row>';
 	        		}else{
-	        			itemContent += '<row><input style="color:#555555;font-size:16;" type="text" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '" value="' + field.value + '" maxlength="9"/></row>';
+	        			itemContent += '<row><input style="color:#555555;font-size:16;" type="text" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '" value="' + field.value + '" maxlength="9" onchange="computeExpress(this);" onchange="computeExpress(this);"/></row>';
 	        		}
+	        		canComputeField.push(field.sysname);
 	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
 	        	}else if(showType == '302' && readWrite == '1'){
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
 	        		//金额
-        			itemContent += '<row><input style="color:#555555;font-size:16;" type="text" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '" value="' + field.value + '" maxlength="18"/></row>';
+        			itemContent += '<row><input style="color:#555555;font-size:16;" type="text" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '" value="' + field.value + '" maxlength="18" onchange="computeExpress(this);" onchange="computeExpress(this);"/></row>';
+	        		canComputeField.push(field.sysname);    //可以进行计算的字段
 	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
 	        	}else if(showType == '210' && readWrite == '1'){
 	        		itemContent += '<item onclick="selectUser(\'_main_' + field.sysname +'\',\'_mainShow_' + field.sysname +'\',\'*0*\',\'0\')" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
 	        		//单选人 全部
 	        		itemContent += '<row>'+
 	        					   '<input onclick="selectUser(\'_main_' + field.sysname +'\',\'_mainShow_' + field.sysname +'\',\'*0*\',\'0\')" style="color:#555555;font-size:16;" readonly="true" type="text" name="_mainShow_' + field.sysname + 
-	        					   '" value="' + field.value + '" id="_mainShow_' + field.sysname +'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '" value="' + field.value + '" id="_mainShow_' + field.sysname +'" placeholder="请选择>" />'+
 	        					   '<input type="hidden" id="_main_' + field.sysname +'" name="_main_' + field.sysname +'" value="' + field.hiddenval + '"/></row>';
 	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
 	        	}else if(showType == '211' && readWrite == '1'){
@@ -1472,7 +1485,7 @@
 	        		//多选人 全部
 	        		itemContent += '<row >'+
 	        					   '<input onclick="selectUser(\'_main_' + field.sysname +'\',\'_mainShow_' + field.sysname +'\',\'*0*\',\'1\')" style="color:#555555;font-size:16;" readonly="true" type="text" name="_mainShow_' + field.sysname + 
-	        					   '" value="' + field.value + '" id="_mainShow_' + field.sysname +'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '" value="' + field.value + '" id="_mainShow_' + field.sysname +'" placeholder="请选择>"/>'+
 	        					   '<input type="hidden" id="_main_' + field.sysname +'" name="_main_' + field.sysname +'" value="' + field.hiddenval + '"/></row>';
 	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
 	        	}else if(showType == '212' && readWrite == '1'){
@@ -1480,7 +1493,7 @@
 	        		//单选组织
 	        		itemContent += '<row >'+
 	        					   '<input onclick="selectUser(\'_main_' + field.sysname +'\',\'_mainShow_' + field.sysname +'\',\'*0*\',\'2\')" style="color:#555555;font-size:16;" readonly="true" type="text" name="_mainShow_' + field.sysname + 
-	        					   '" value="' + field.value + '" id="_mainShow_' + field.sysname +'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '" value="' + field.value + '" id="_mainShow_' + field.sysname +'" placeholder="请选择>" />'+
 	        					   '<input type="hidden" id="_main_' + field.sysname +'" name="_main_' + field.sysname +'" value="' + field.hiddenval + '"/></row>';
 	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
 	        	}else if(showType == '214' && readWrite == '1'){
@@ -1488,7 +1501,7 @@
 	        		//多选组织
 	        		itemContent += '<row >'+
 	        					   '<input onclick="selectUser(\'_main_' + field.sysname +'\',\'_mainShow_' + field.sysname +'\',\'*0*\',\'3\')" style="color:#555555;font-size:16;" readonly="true" type="text" name="_mainShow_' + field.sysname + 
-	        					   '" value="' + field.value + '" id="_mainShow_' + field.sysname +'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '" value="' + field.value + '" id="_mainShow_' + field.sysname +'" placeholder="请选择>" />'+
 	        					   '<input type="hidden" id="_main_' + field.sysname +'" name="_main_' + field.sysname +'" value="' + field.hiddenval + '"/></row>';
 	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
 	        	}else if(showType == '401'){
@@ -1508,7 +1521,7 @@
 	        		//单选人 本组织
 	        		itemContent += '<row >'+
 	        					   '<input onclick="selectUser(\'_main_' + field.sysname +'\',\'_mainShow_' + field.sysname +'\',\'*'+orgId+'*\',\'0\')" style="color:#555555;font-size:16;" readonly="true" type="text" name="_mainShow_' + field.sysname + 
-	        					   '" value="' + field.value + '" id="_mainShow_' + field.sysname +'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '" value="' + field.value + '" id="_mainShow_' + field.sysname +'" placeholder="请选择>" />'+
 	        					   '<input type="hidden" id="_main_' + field.sysname +'" name="_main_' + field.sysname +'" value="' + field.hiddenval + '"/></row>';
 	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
 	        	}else if(showType == '705' && readWrite == '1'){
@@ -1516,13 +1529,23 @@
 	        		//多选人 本组织
 	        		itemContent += '<row >'+
 	        					   '<input onclick="selectUser(\'_main_' + field.sysname +'\',\'_mainShow_' + field.sysname +'\',\'*'+orgId+'*\',\'1\')" style="color:#555555;font-size:16;" readonly="true" type="text" name="_mainShow_' + field.sysname + 
-	        					   '" value="' + field.value + '" id="_mainShow_' + field.sysname +'" placeholder="请选择>" maxlength="9"/>'+
+	        					   '" value="' + field.value + '" id="_mainShow_' + field.sysname +'" placeholder="请选择>" />'+
 	        					   '<input type="hidden" id="_main_' + field.sysname +'" name="_main_' + field.sysname +'" value="' + field.hiddenval + '"/></row>';
 	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
 	        	}else if(showType == '708' && readWrite == '1'){
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
 	        		//流程发起人
 	        		itemContent += '<row><label style="align:right;color:#555555;font-size:16;">' + field.value + '</label><input type="hidden" name="_main_' + field.sysname + '" value="' + field.value + '"/></row>';
+	        	}else if(showType == '606'){   //子表字段值赋值到主表字段
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		itemContent += '<row><input type="text" id="_main_' + field.sysname +'" readonly="true" name="_main_' + field.sysname + '" value="' + field.value + '"/></row>';
+	        		main_totalComputeFieldExpre.push(field.expressionval);   //表达式存入数组
+	        		main_totalComputeFieldId.push('_main_' + field.sysname);  //id存入数组
+	        	}else if(showType == '203'){   //合计计算
+	        		itemContent += '<item  style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		itemContent += '<row><input type="text" id="_main_' + field.sysname +'" readonly="true" name="_main_' + field.sysname + '" value="' + field.value + '"/></row>';
+	        		totalItemExpre.push(field.expressionval);   //表达式存入数组
+	        		totalItemId.push('_main_' + field.sysname);  //id存入数组
 	        	}else if(showType == '808' && readWrite == '1'){
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
 	        		itemContent += '<row><label style="align:left;font-size:12;color:#FF4617">该字段暂不支持手机办理，请于电脑端操作...</label></row>';
@@ -1533,12 +1556,56 @@
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
 	        		itemContent += '<row><label style="align:left;font-size:12;color:#FF4617">该字段暂不支持手机办理，请于电脑端操作...</label></row>';
 	        	}
-	        	// 只读数据
-	        	else{
+	        	else{    // 只读数据
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
 	        		itemContent += '<row><label style="align:right;color:#555555;font-size:16;">' + field.value + '</label></row>';
 	        	}
 	        	itemContent += '</col></item>';
+	        }
+	        
+	        function computeExpress(obj){   //主表计算合计项值
+	        	var sysName = '';
+	            if(obj.id!=null&&obj.id.length>6){
+	            	sysName = obj.id.substring(6);
+	            }
+	        	if(totalItemExpre.length>0){  //有合计项
+	        		for(var i=0;i<totalItemExpre.length;i++){    //循环所有的合计项，并对合计项赋值
+	        			if(totalItemExpre[i].indexOf(sysName)>-1){  //表达式包含当前输入框，则对此合计项进行重新计算。
+	        			    var canComputeTotalExpre = totalItemExpre[i];  //对表达式字段进行更换成具体数字。
+	        				for(var j=0;j<canComputeField.length;j++){
+	        				    var curValue = $('_main_'+canComputeField[j]).value;
+	        				    curValue = curValue == '' ? '0' : curValue;
+	        				    var reg=new RegExp("("+canComputeField[j].replace("$","\\$")+")","g");  
+	        					canComputeTotalExpre = canComputeTotalExpre.replace(reg,curValue+"");
+	        				}
+	        				var computeResult = eval(canComputeTotalExpre);  //使用eval计算
+	        				$(totalItemId[i]).value = computeResult;
+	        			}
+	        		}
+	        	}
+	        }
+	        
+	        function sub_computeExpress(obj,k){   //子表计算合计项值
+	        	var sysName = '';
+	            if(obj.id!=null&&obj.id.length>6){
+	            	sysName = obj.id.substring(6);
+	            	sysName = sysName.substring(0,sysName.length-1);
+	            }
+	        	if(sub_totalItemExpre.length>0){  //有合计项
+	        		for(var i=0;i<sub_totalItemExpre.length;i++){    //循环所有的合计项，并对合计项赋值
+	        			if(sub_totalItemExpre[i].indexOf(sysName)>-1){  //表达式包含当前输入框，则对此合计项进行重新计算。
+	        			    var sub_canComputeTotalExpre = sub_totalItemExpre[i];  //对表达式字段进行更换成具体数字。
+	        				for(var j=0;j<sub_canComputeField.length;j++){
+	        				    var curValue = $('_sub_'+sub_canComputeField[j]+k).value;
+	        				    curValue = curValue == '' ? '0' : curValue;
+	        				    var reg=new RegExp("("+sub_canComputeField[j].replace("$","\\$")+")","g");  
+	        					sub_canComputeTotalExpre = sub_canComputeTotalExpre.replace(reg,curValue+"");
+	        				}
+	        				var computeResult = eval(sub_canComputeTotalExpre);  //使用eval计算
+	        				$(sub_totalItemId[i]+k).value = computeResult;
+	        			}
+	        		}
+	        	}
 	        }
 	        
 	        // 选择用户
@@ -1564,7 +1631,11 @@
 	        
 	        // 设置选人值
 	        function setUserInfo(id,name){
-	        	$(userIdConIdVal).value = name + ';' + id;
+	         	var idVal = id;
+	            if(idVal.indexOf("$$")==-1){   //单人，需要单独处理。
+	            	idVal = idVal.replace(/(\$)/g,'')+',';
+			    }
+	        	$(userIdConIdVal).value = name + ';' + idVal;
 	        	$(userNameConIdVal).value = name;
 	        }
 	        
@@ -1689,9 +1760,7 @@
 	            }, function(error) {
 	                alert('提交失败！');
 	            });
-			}
-			
-			
+			 }
 			
 			function goToback(){
 			  $page.close(0);   //关闭当前页面

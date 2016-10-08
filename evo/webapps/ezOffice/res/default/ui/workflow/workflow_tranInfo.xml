@@ -36,7 +36,7 @@
 	        			// 创建节点选择及办理人选择
 	        			createTranInfoContent($contentList,tranInfo);
 	        			// 创建固定ITEM
-	        			//createOtherItem($contentList);
+	        			createOtherItem($contentList,tranInfo.isMustBack);
 	        		},function(error) {
 				    if (error == 'timeout') {
 						hint('连接服务器超时！');
@@ -106,14 +106,21 @@
 	        }
 	        
         	// 创建固定ITEM内容
-        	function createOtherItem(contentList){
+        	function createOtherItem(contentList,isMustBack){
+        	    var isDefaultTrue = 'false';
+        	    if(isMustBack == '0'){
+        	    	isDefaultTrue = 'false';
+        	    }else{
+        	    	isDefaultTrue = 'true';
+        	    }
         		var itemContent =  
-        		'<item style="col-width: 90,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>办理期限：</label></row></col><col style="padding:10;margin:10;"><row><label style="align:right"></label></row></col></item>'+
-                '<item style="col-width: 90,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>缓急程度：</label></row></col><col style="padding:10;margin:10;"><row><label style="align:right"></label></row></col></item>'+
-                '<item style="col-width: 90,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>办理提示：</label></row></col><col style="padding:10;margin:10;"><row><label style="align:right"></label></row></col> </item>'+
+        		'<item style="col-width: 90,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>返回设置：</label>'+
+	            '</row></col><col style="padding:10;margin:10;"><row><checkbox type="switch" style="align:right" name="selfRecovery" value="1"  checked="'+isDefaultTrue+'">自动返回</checkbox></row></col></item>'+
+                '<item style="col-width: 90,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>办理提示：</label></row></col><col style="padding:10;margin:10;">'+
+                '<row><textarea rows="5" name="smsContent" id="tips" maxrows="5"></textarea></row></col></item>'+
                 '<item style="col-width: 90,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>办理提醒：</label>'+
 	            '</row></col><col style="padding:10;margin:10;"><row><checkbox type="switch" style="align:right" name="needMailRemind" value="1" id="msRemind_mail" checked="false">内部邮件</checkbox>'+
-                '<checkbox type="switch" style="display:none;align:right" name="needMailRemind" value="0" id="msRemind_mail" checked="false">短信</checkbox></row></col></item>';
+                '<checkbox type="switch" style="display:none;align:right" name="needSmsRemind" value="1" id="msRemind_message" checked="false">短信</checkbox></row></col></item>';
         		contentList.addMore('<imag><list>' + itemContent + '</list></imag>');
         	}
         	

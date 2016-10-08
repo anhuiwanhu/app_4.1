@@ -1,0 +1,630 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag mode="develop">
+    <script>
+    <![CDATA[
+        var offset = "0";
+        var selectUserIds="";
+        var selectUserNames="";
+        var flag='0';
+        var storage = $phone.localStorage();
+        var userAccount = storage.getItem('userAccount');
+        var evoUrl = storage.getItem('evoUrl');
+        var selectuser_range = storage.getItem('sys_selectuser_range');
+        var selectUserIds = storage.getItem('sys_selectuser_userids');
+        var selectUserNames = storage.getItem('sys_selectuser_usernames');
+        var selectuser_returnfuc = storage.getItem('sys_selectuser_returnfuc');
+          
+		$page.onload = function() {
+			addUsOr();
+            loadpersonList('');
+		}
+		
+		function addUsOr(){
+			var newStr1 = selectUserIds.replace(/(\$\$)/g,'$,$');
+			var newStr2 = newStr1.replace(/(\*\$)/g,'*,$');
+			var newStr3 = newStr2.replace(/(\*\*)/g,'*,*');
+			var newStr4 = newStr3.replace(/(\$\*)/g,'$,*');
+			var str11 = newStr4.split(",");
+			var str22 = selectUserNames.split(",");
+			for(var i=0;i<str11.length;i++){
+				if(str11[i].indexOf("$")>-1){
+					addMult("user",str11[i],str22[i]);
+				}else if(str11[i].indexOf("*")>-1){
+					addMult("org",str11[i],str22[i]);
+				}
+			}
+		}
+		
+		function setSelected(type,obj,id,name){
+		    if(obj.checked){
+		       addMult(type,id,name);
+		       if(type=="user"){
+		          if(selectUserIds.indexOf("$"+id+"$")==-1){
+		              selectUserIds += "$"+id+"$";
+                      selectUserNames += name+",";
+                  }
+               }else if(type=="org"){
+                  if(selectUserIds.indexOf("*"+id+"*")==-1){
+		              selectUserIds += "*"+id+"*";
+                      selectUserNames += name+",";
+                  }
+               }
+	        }else{
+	           delMult(type,id,name);
+	           if(type=="user"){
+		          if($('chek_user'+id)!=null){
+	                $('chek_user'+id).checked=false;
+	              }
+	              if($('orgusercheck'+id)!=null){
+	                $('orgusercheck'+id).checked=false;
+	              }
+	              selectUserIds = selectUserIds.replace("$"+id+"$","");
+                  selectUserNames = selectUserNames.replace(name+",","");
+               }else if(type=="org"){
+                  if($('orgcheck'+id)!=null){
+	                $('orgcheck'+id).checked=false;
+	              }
+                  selectUserIds = selectUserIds.replace("*"+id+"*","");
+                  selectUserNames = selectUserNames.replace(name+",","");
+               }
+	           
+	        }
+		}
+		function delSelected(type,id,name){
+		   delMult(type,id,name);
+		   if(type=="user"){
+              if($('orgusercheck'+id)!=null){
+               $('orgusercheck'+id).checked=false;
+              }
+              if($('chek_user'+id)!=null){
+               $('chek_user'+id).checked=false;
+              }
+              selectUserIds = selectUserIds.replace("$"+id+"$","");
+              selectUserNames = selectUserNames.replace(name+",","");
+           }else if(type=="org"){
+              if($('orgcheck'+id)!=null){
+                $('orgcheck'+id).checked=false;
+              }
+              selectUserIds = selectUserIds.replace("*"+id+"*","");
+              selectUserNames = selectUserNames.replace(name+",","");
+           }
+		}
+		function addMult(type,id,name){
+           if(type=="user"){
+              if($("mulView_user"+id)==null){
+		             $('multipleview').add($C('<multipleviewitem onclick="delSelected(\''+type+'\',\''+id+'\',\''+name+'\')" id="mulView_user'+id+'" style="margin-left:8;margin-right:8">' +
+		        			  '<icon src="login_user.png" style="width:30;height:30;"/>' +
+		        			  '<label style="color:#38adff;font-size:8">'+name+'</label>' +
+		        		      '</multipleviewitem>'));
+               }
+           }else if(type=="org"){
+              if($("mulView_org"+id)==null){
+		              $('multipleview').add($C('<multipleviewitem onclick="delSelected(\''+type+'\',\''+id+'\',\''+name+'\')" id="mulView_org'+id+'" style="margin-left:8;margin-right:8">' +
+		        			  '<icon src="login_user.png" style="width:30;height:30;"/>' +
+		        			  '<label style="color:#38adff;font-size:8">'+name+'</label>' +
+		        		      '</multipleviewitem>'));
+        	   }
+           }
+           $('multipleview').badge=$('multipleview').widgets().length;
+		}
+		
+		function delMult(type,id,name){
+          if(type=="user"){
+	        //移除下方multipleview人员
+        	if($("mulView_user"+id)!=null){
+        		$('multipleview').remove($("mulView_user"+id));
+            }
+          }else if(type=="org"){
+        	if($("mulView_org"+id)!=null){
+        		$('multipleview').remove($("mulView_org"+id));
+            }
+          }
+          $('multipleview').badge=$('multipleview').widgets().length;
+		}
+		
+		function loadorgList(){
+			if(flag=='1'){
+			   return;
+			}
+			flag='1';
+		   if($('list_org').items.length>0){
+		     return;
+		   }
+		   $('list_org').clear();
+		   $http.post(evoUrl+'/ezOffice/person/getTopOrgList.do','', 
+		   function(data) {
+			     var obj = JSON.parse(data);
+			     if(obj.logonerror &&obj.logonerror=='1'){
+	     		     alert("该账号已在设备"+obj.deviceId+"上登录");
+	     		     $page.open('../index.xml',{target:'_self'});
+	                 return;
+	             }
+			     var result = obj.message.result;
+			     if(result=="1"){
+			        var persondata = obj.data.list;
+			        if(persondata instanceof Array){
+						for(var i=0;i<persondata.length;i++){
+						   var orgId = persondata[i].orgId;
+						   var orgName = persondata[i].orgName;
+						   var firstname = orgName.substring(0,1);
+						   var hasjunior = persondata[i].orgHasJunior;
+						   var acc = "";
+						   var hasacc="";
+						   if(hasjunior=='1'){
+							  acc = "forum_opendown.png";
+							  hasacc= "opencloseMenu(this,'icon_"+orgId+"')";
+						   }
+						   if((i%3)==0){
+							var btncolor = "#ee6241";
+						   }else if((i%3)==1){
+							var btncolor = "#ecbf0e";
+						   }else{
+							var btncolor = "#40c5fd";
+						   }
+						   var sel = "";
+						   if(selectUserIds.indexOf("*"+orgId+"*")>-1){
+							sel = ' checked=\'true\' ';
+							//addMult("org",orgId,orgName);
+						  }
+						   $('list_org').add($C('<list-item>'+
+								'<item id="org'+orgId+'" collapsed="true" indent="20" onclick="createItem(this,\''+orgId+'\');'+hasacc+'" >'+
+									'<row>'+
+										'<checkbox id="orgcheck'+orgId+'" style="align:left;font-size:18" '+sel+' onclick="setSelected(\'org\',this,\''+orgId+'\',\''+orgName+'\');"/>'+
+										'<button style="width:120;width:40;height:40;align:left;background:'+btncolor+';font-size:16;color:#ffffff;margin-left:10;margin-right:5;" onclick=";">'+firstname+'</button>'+
+										'<label style="align:left;margin:10;font-size:16;color:#555555;">'+orgName+'</label>'+
+										'<icon id="icon_'+orgId+'" role="accessory" src="'+acc+'" style="align:right;margin:2"/>'+
+									'</row>'+
+								'</item>'+
+							'</list-item>'));
+						}
+				     }else if(persondata instanceof Object){
+						   var orgId = persondata.orgId;
+						   var orgName = persondata.orgName;
+						   var firstname = orgName.substring(0,1);
+						   var hasjunior = persondata.orgHasJunior;
+						   var acc = "";
+						   var hasacc="";
+						   if(hasjunior=='1'){
+							  acc = "forum_opendown.png";
+							  hasacc= "opencloseMenu(this,'icon_"+orgId+"')";
+						   }
+						   var btncolor = "#ee6241";
+						   var sel = "";
+						   
+						   if(selectUserIds.indexOf("*"+orgId+"*")>-1){
+							sel = ' checked=\'true\' ';
+	
+							//addMult("org",orgId,orgName);
+						  }
+	
+						   $('list_org').add($C('<list-item>'+
+								'<item id="org'+orgId+'" collapsed="true" indent="20" onclick="createItem(this,\''+orgId+'\');'+hasacc+'" >'+
+									'<row>'+
+										'<checkbox id="orgcheck'+orgId+'" style="align:left;font-size:18" '+sel+' onclick="setSelected(\'org\',this,\''+orgId+'\',\''+orgName+'\');"/>'+
+										'<button style="width:120;width:40;height:40;align:left;background:'+btncolor+';font-size:16;color:#ffffff;margin-left:10;margin-right:5;" onclick=";">'+firstname+'</button>'+
+										'<label style="align:left;margin:10;font-size:16;color:#555555;">'+orgName+'</label>'+
+										'<icon id="icon_'+orgId+'" role="accessory" src="'+acc+'" style="align:right;margin:2"/>'+
+									'</row>'+
+								'</item>'+
+							'</list-item>'));
+	       			}
+	       		} 
+			     flag='0';
+			},function(error) {
+			    if (error == 'timeout') {
+			        hint('连接服务器超时！');
+			    } else if (error == '404') {
+			        hint('链接超时重新登录！');
+			    } else if (error == '500') {
+			        hint('内部服务器错误！');
+			    } else {
+			        hint('访问网络错误！错误代码:' + error);
+			    }
+			    $page.open('../index.xml',{animation:'down-to-up'});
+		    });
+
+		}
+		function createItem(parentObj,orgId){
+            if(parentObj.subItems().length>0){
+		      return;
+		    }
+		    if(flag=='1'){
+            	return;
+            }
+            flag='1';
+		    $http.post(evoUrl+'/ezOffice/person/getOrgUserListByParent.do','range='+selectuser_range+'&offset=0&orgId='+orgId, 
+		    function(data) {
+		         var obj = JSON.parse(data);
+		         if(obj.logonerror &&obj.logonerror=='1'){
+	     		     alert("该账号已在设备"+obj.deviceId+"上登录");
+	     		     $page.open('../index.xml',{target:'_self'});
+	                 return;
+	             }
+			     var result = obj.orgList.message.result;
+			     if(result=="1"){
+			        var orgdata = obj.orgList.data;
+			        if(orgdata.list){
+			           var orgId = orgdata.list.id;
+			           var orgName = orgdata.list.name;
+			           var firstname = orgName.substring(0,1);
+			           var hasjunior = orgdata.list.hasjunior;
+                       var acc = "";
+                       var hasacc="";
+                       if(hasjunior=='1'){
+                          acc = "forum_opendown.png";
+                          hasacc= "opencloseMenu(this,'icon_"+orgId+"')";
+                       }
+                       var sel = "";
+			           if(selectUserIds.indexOf("*"+orgId+"*")>-1){
+			            sel = ' checked=\'true\' ';
+			            //addMult("org",orgId,orgName);
+			          }
+			           parentObj.add($C('<list-item>'+
+							'<item id="org'+orgId+'" collapsed="true" indent="20" onclick="createItem(this,\''+orgId+'\');'+hasacc+';"  >'+
+								'<row>'+
+									'<checkbox '+sel+' id="orgcheck'+orgId+'" style="align:left;font-size:18" onclick="setSelected(\'org\',this,\''+orgId+'\',\''+orgName+'\');" />'+
+									'<button style="width:120;width:40;height:40;align:left;background:#ee6241;font-size:16;color:#ffffff;margin-left:10;margin-right:5;" onclick=";">'+firstname+'</button>'+
+									'<label style="align:left;margin:10;font-size:16;color:#555555;">'+orgName+'</label>'+
+									'<icon id="icon_'+orgId+'" role="accessory" src="'+acc+'" style="align:right;margin:2"/>'+
+								'</row>'+
+							'</item>'+
+						'</list-item>'));
+
+			        }else{
+			            
+				        for(var i=0;i<orgdata.length;i++){
+				           var orgId = orgdata[i].id;
+				           var orgName = orgdata[i].name;
+				           var firstname = orgName.substring(0,1);
+				           var hasjunior = orgdata[i].hasjunior;
+	                       var acc = "";
+	                       var hasacc="";
+	                       if(hasjunior=='1'){
+	                          acc = "forum_opendown.png";
+                              hasacc= "opencloseMenu(this,'icon_"+orgId+"')";
+	                       }
+	                       if((i%3)==0){
+				            var btncolor = "#ee6241";
+				           }else if((i%3)==1){
+				            var btncolor = "#ecbf0e";
+				           }else{
+				            var btncolor = "#40c5fd";
+				           }
+				           var sel = "";
+				           if(selectUserIds.indexOf("*"+orgId+"*")>-1){
+				            sel = ' checked=\'true\' ';
+				            //addMult("org",orgId,orgName);
+				          }
+                       
+				           parentObj.add($C('<list-item>'+
+								'<item id="org'+orgId+'" collapsed="true" indent="20" onclick="createItem(this,\''+orgId+'\');'+hasacc+';" >'+
+									'<row>'+
+										'<checkbox '+sel+' id="orgcheck'+orgId+'" style="align:left;font-size:18" onclick="setSelected(\'org\',this,\''+orgId+'\',\''+orgName+'\');" />'+
+										'<button style="width:120;width:40;height:40;align:left;background:'+btncolor+';font-size:16;color:#ffffff;margin-left:10;margin-right:5;" onclick=";">'+firstname+'</button>'+
+										'<label style="align:left;margin:10;font-size:16;color:#555555;">'+orgName+'</label>'+
+										'<icon id="icon_'+orgId+'" role="accessory" src="'+acc+'" style="align:right;margin:2"/>'+
+									'</row>'+
+								'</item>'+
+							'</list-item>'));
+				
+				        }
+			        }
+			        
+			     }
+			     
+			     var result1 = obj.userList.message.result;
+			     if(result1=="1"){
+			            var userdata = obj.userList.data.list;
+				        for(var i=0;i<userdata.length;i++){
+				           var userId = userdata[i].userId;
+				           var userName = userdata[i].userName;
+				           var sel = "";
+				           if(selectUserIds.indexOf("$"+userId+"$")>-1){
+				            	sel = ' checked=\'true\' ';
+				           }
+				           parentObj.add($C('<list-item>'+
+								'<item id="user'+userId+'" collapsed="true" indent="20" >'+
+									'<row>'+
+										'<checkbox '+sel+' id="orgusercheck'+userId+'" style="align:left;font-size:18" onclick="setSelected(\'user\',this,\''+userId+'\',\''+userName+'\');" />'+
+										'<img default="login_user.png" src="" style="width:35;height:35;margin-left:5;" effect="round"/>'+
+										'<label style="align:left;margin:10;font-size:16;color:#555555;">'+userName+'</label>'+
+									'</row>'+
+								'</item>'+
+							'</list-item>'));
+				        }
+			     }
+			     flag='0';
+			},function(error) {
+			    if (error == 'timeout') {
+			        hint('连接服务器超时！');
+			    } else if (error == '404') {
+			        hint('链接超时重新登录！');
+			    } else if (error == '500') {
+			        hint('内部服务器错误！');
+			    } else {
+			        hint('访问网络错误！错误代码:' + error);
+			    }
+			    $page.open('../index.xml',{animation:'down-to-up'});
+		    });
+			
+		}
+		
+		function opencloseMenu(obj,ic){
+	       if(obj.collapsed){
+	         $(ic).src="forum_opendown.png";
+	       }else{
+	         $(ic).src="forum_openup.png";
+	       }
+	    }
+		
+		function containSpecial(s){
+			if(s!=''){
+				if(/[`~!@#\$%\^\&\*\(\)_\+<>《》？，。；、‘ “【】{}|（）=\?:"\{\},\.\-\\\/\\\/;'\[\]]/im.test(s)){
+					alert("搜索值不能为特殊字符，请重新输入！");
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		function loadpersonList(val){
+			if(containSpecial(val)){
+				$('searchuser').value='';
+				return;
+			}
+		  $http.post(evoUrl+'/ezOffice/person/getSearchUserList.do',
+		  'range='+selectuser_range+'&offset=0&searchuser='+val, 
+		  function(data) {
+                 var listJson = {items:[]};
+			     var obj = JSON.parse(data);
+			     if(obj.logonerror &&obj.logonerror=='1'){
+	     		     alert("该账号已在设备"+obj.deviceId+"上登录");
+	     		     $page.open('../index.xml',{target:'_self'});
+	                 return;
+	             }
+			     var result = obj.person.message.result;
+			     
+			     if(result=="1"){
+			        var persondata = obj.person.data.list;
+			        var currentPage = obj.person.data.currentPage;
+			        var pageCount = obj.person.data.pageCount;
+			        if(eval(currentPage)==eval(pageCount)){
+			          $('content_per').hideBottom();
+			        }else{
+			          $('content_per').showBottom();
+			        }
+			        offset  = obj.offset;
+			        if(persondata instanceof Array){
+                       for(var i=0;i<persondata.length;i++){
+				          var userId = persondata[i].userId;
+				          var userName = persondata[i].userName;
+				          var orgNameString = persondata[i].orgNameString;
+				          var sel = false;
+				          if(selectUserIds.indexOf("$"+userId+"$")>-1){
+				            sel = true;
+				            //addMult("user",userId,userName);
+				          }
+				          var itemJson = {
+		                    template:0,
+		                    id: 'item',
+		                    onclick:'',
+		                    widgets:{
+		                        chek:{onclick:'setSelected(\'user\',this,"'+userId+'","'+userName+'");',
+		                        id:"chek_user"+userId,value:userName,checked:sel},
+		                        img1:{},
+		                        lab1:{text:userName},
+		                        lab2:{text:orgNameString}
+		                    }
+		                  }
+		                  listJson.items.push(itemJson);
+				        }
+        			}else if(persondata instanceof Object){
+        			      var userId = persondata.userId;
+				          var userName = persondata.userName;
+				          var orgNameString = persondata.orgNameString;
+				          var sel = false;
+				          if(selectUserIds.indexOf("$"+userId+"$")>-1){
+				            sel = true;
+				            //addMult("user",userId,userName);
+				          }
+				          var itemJson = {
+		                    template:0,
+		                    id: 'item',
+		                    onclick:'',
+		                    widgets:{
+		                        chek:{onclick:'setSelected(\'user\',this,"'+userId+'","'+userName+'");',
+		                        id:"chek_user"+userId,value:userName,checked:sel},
+		                        img1:{},
+		                        lab1:{text:userName},
+		                        lab2:{text:orgNameString}
+		                    }
+		                  }
+		                  listJson.items.push(itemJson);
+		                  
+        			}
+			        
+			     }else{
+			       $('content_per').hideBottom();
+			     }
+			     $('resuelist').update(listJson);
+			 
+			},function(error) {
+			    if (error == 'timeout') {
+			        hint('连接服务器超时！');
+			    } else if (error == '404') {
+			        hint('页面不存在！');
+			    } else if (error == '500') {
+			        hint('内部服务器错误！');
+			    } else {
+			        hint('访问网络错误！错误代码:' + error);
+			    }
+			    $page.open('../index.xml',{animation:'down-to-up'});
+		    });
+		}
+		
+		function addpersonList(){
+          if(containSpecial($('searchuser').value)){
+			  $('searchuser').value='';
+			  return;
+		  }
+          $('bottom_hasmore').css('display','hidden');
+		  $('bottom_load').css('display','');
+		  $http.post(evoUrl+'/ezOffice/person/getSearchUserList.do',
+		  'range='+selectuser_range+'&offset='+offset+'&searchuser='+$('searchuser').value, 
+		  function(data) {
+                 var listJson = {items:[]};
+			     var obj = JSON.parse(data);
+			     if(obj.logonerror &&obj.logonerror=='1'){
+	     		     alert("该账号已在设备"+obj.deviceId+"上登录");
+	     		     $page.open('../index.xml',{target:'_self'});
+	                 return;
+	             }
+			     var result = obj.person.message.result;
+			     if(result=="1"){
+			        var persondata = obj.person.data.list;
+			        var currentPage = obj.person.data.currentPage;
+			        var pageCount = obj.person.data.pageCount;
+			        if(eval(currentPage)==eval(pageCount)){
+			          $('content_per').hideBottom();
+			        }else{
+			          $('content_per').showBottom();
+			        }
+			        offset  = obj.offset;
+			        
+			        if(persondata instanceof Array){
+                       for(var i=0;i<persondata.length;i++){
+				          var userId = persondata[i].userId;
+				          var userName = persondata[i].userName;
+				          var orgNameString = persondata[i].orgNameString;
+				          var sel = false;
+				          if(selectUserIds.indexOf("$"+userId+"$")>-1){
+				            sel = true;
+				            //addMult("user",userId,userName);
+				          }
+				          var itemJson = {
+		                    template:0,
+		                    id: 'item',
+		                    onclick:'',
+		                    widgets:{
+		                        chek:{onclick:'setSelected(\'user\',this,"'+userId+'","'+userName+'");',
+		                        id:"chek_user"+userId,value:userName,checked:sel},
+		                        img1:{},
+		                        lab1:{text:userName},
+		                        lab2:{text:orgNameString}
+		                    }
+		                  }
+		                  listJson.items.push(itemJson);
+				        }
+        			}else if(persondata instanceof Object){
+        			      var userId = persondata.userId;
+				          var userName = persondata.userName;
+				          var orgNameString = persondata.orgNameString;
+				          var sel = false;
+				          if(selectUserIds.indexOf("$"+userId+"$")>-1){
+				            sel = true;
+				            //addMult("user",userId,userName);
+				          }
+				          var itemJson = {
+		                    template:0,
+		                    id: 'item',
+		                    onclick:'',
+		                    widgets:{
+		                        chek:{onclick:'setSelected(\'user\',this,"'+userId+'","'+userName+'");',
+		                        id:"chek_user"+userId,value:userName,checked:sel},
+		                        img1:{},
+		                        lab1:{text:userName},
+		                        lab2:{text:orgNameString}
+		                    }
+		                  }
+		                  listJson.items.push(itemJson);
+		                  
+        			}
+			     }
+			     $('resuelist').addMore(listJson);
+			 
+			},function(error) {
+			    if (error == 'timeout') {
+			        hint('连接服务器超时！');
+			    } else if (error == '404') {
+			        hint('页面不存在！');
+			    } else if (error == '500') {
+			        hint('内部服务器错误！');
+			    } else {
+			        hint('访问网络错误！错误代码:' + error);
+			    }
+			    $page.open('../index.xml',{animation:'down-to-up'});
+		    });
+			$('bottom_hasmore').css('display','');
+		    $('bottom_load').css('display','hidden');
+		}
+		
+		
+
+		 //完成选择
+        function completeseleted(){
+            var returnfuc = selectuser_returnfuc+'(\"'+selectUserIds+'\",\"'+selectUserNames+'\")' ;
+            //alert(selectUserIds+"  "+selectUserNames);
+        	$page.close(0, returnfuc);
+       	} 
+		
+    ]]>
+    </script> 
+	<page>
+		<title style="background:#3daffe;tint-color:white">
+            <left>
+                <button role="back"></button>
+            </left>
+            <center>
+                <label style="color:#ffffff">人员选择</label>
+            </center>
+        </title>
+	    <header>
+            <tabbar style="background:#f9f9f9;label-color:#b8b8b8,#38adff;indicator-color:#38adff;">
+                <item label="用户"></item>
+                <item label="组织" onchange="loadorgList();"></item>
+            </tabbar>
+            <row style="text-align:center;">
+			   <input type="search" id="searchuser" name="searchuser" placeholder="请输入用户查询" onclick="$('contents').showContent(0);loadpersonList(this.value);" value=""/>
+		    </row>
+        </header>
+        <contents id="contents">
+            <content id="content_per">
+                
+	            <list id="resuelist" reuse="true">
+              
+	                <item style="background:#ffffff;margin:1;col-width:40,55,*;">
+	                    <col><checkbox reusekey="chek" style="align:left;font-size:18" id="" value="" disabled="false" onclick=""/></col>
+	                    <col>
+	                      <img reusekey="img1" default="login_user.png" src="" style="width:35;height:35;margin-left:5;" effect="round"/>
+	                    </col>
+	                    <col>
+	                      <row><label reusekey="lab1" style="align:left;font-size:16;color:#555555;"></label></row>
+	                      <row><label reusekey="lab2" style="align:left;font-size:12;color:#b8b8b8;"></label></row>
+	                    </col>
+	                </item>
+	            </list>
+                <bottom id="content_bottom">
+	                <list>
+	                    <item id="bottom_list" onclick="addpersonList()">
+	                        <row style="display:hidden" id="bottom_load"><label style="align:center;">正在加载...</label><progress style="align:center"/></row>
+	                      	<row id="bottom_hasmore">
+		                        <label style="align:center;">点击加载更多...</label>
+		                        <progress id="more_progress" style="display:none;align:center"/>
+		                    </row>
+		                </item>
+	                </list>
+                </bottom>
+
+	        </content>
+            <content id="content_org" >
+	            <list id="list_org" style="background:#ffffff">
+	            </list>
+            </content>
+        </contents>
+        <footer style="background:#e0e0e0;">
+			<multipleview id="multipleview" style="tint-color:#ffffff;margin-right:2;confirm-titlesize:16;height:50;" confirmBackground="#0000ff,#0000ff" onclick="completeseleted();"></multipleview>
+		</footer>
+		
+	</page>
+	
+</imag>

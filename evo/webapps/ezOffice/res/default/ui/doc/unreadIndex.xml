@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+ <script>
+    <![CDATA[
+        var loadFlag = '0';  //函数执行置为1，提交之前进行判断，若为1，则禁止 提交，防重复提交
+        var pagerOffset=0;
+        var hasMore;
+        
+         //页面家在完成后执行
+        $page.onload = function() {
+            initList('update');
+        }
+        
+        function loadList(loadType){
+           initList(loadType);
+        }
+        
+         //检索列表查询方法
+        function searchDoc(){
+           // alert("开始检索了");
+        	pagerOffset = '0';
+        	hasMore = '';
+        	$('docList').clear();
+        	loadList('update');
+        }
+        
+        function containSpecial(s){
+			if(s!=''){
+				if(/[`~!@#\$%\^\&\*\(\)_\+<>《》？，。；、‘ “【】{}|（）=\?:"\{\},\.\-\\\/\\\/;'\[\]]/im.test(s)){
+					alert("搜索值不能为特殊字符，请重新输入！");
+					return true;
+				}
+			}
+			return false;
+		}
+        
+        function initList(loadType){
+            if(containSpecial($('search').value)){
+				$('search').value='';
+				return;
+			}
+            
+            if(loadFlag == '1'){
+	        	return false;
+	        }
+	        if(loadType == "update"){
+	           $('docList').clear();
+	        }
+	        loadFlag == '1';
+	        $('bottom_hasmore').css('display','hidden');
+	        $('bottom_load').css('display','');
+	        $('indexContent').showBottom();
+	        var storage = $phone.localStorage();
+		    var evoUrl = storage.getItem('evoUrl');	
+            $http.post(evoUrl+'/ezOffice/doc/unreadsearchlist.do',{title : $('search').value,pagerOffset:pagerOffset},  function(data) {
+                if(data){
+	                var obj = JSON.parse(data);
+	                if(obj.logonerror &&obj.logonerror=='1'){
+			            alert("该账号已在设备"+obj.deviceId+"上登录");
+		          		$page.open('../index.xml',{target:'_self'});
+		                return;
+		            }
+	                var result = obj.message.result;
+	                pagerOffset = obj.data.pagerOffset;
+	                var recordCount = obj.data.recordCount;
+	                var listJson = {items:[]};   //存储返回数据列表信息
+		            var itemJson;
+				    if(result =="1"){
+				        var objArr = obj.data.result; //返回列表
+			        	if(objArr instanceof Array){    //返回多条数据
+				                for (var i = 0; i < objArr.length; i++) {
+				                    var userIsReaded = objArr.userIsReaded;   //判断是否是未读公文
+			                        var picAddress = "mail_unread.png"; 
+				                    if(userIsReaded==1){
+				                       picAddress = " ";
+				                    }
+				                    var handOutTime = objArr[i].handOutTime;     //日期显示
+				                    if(handOutTime!=null&&handOutTime!=""){
+				                        handOutTime = handOutTime.substring(0,10);
+				                    }else{
+				                        handOutTime = "";
+				                    }
+				                    
+				                    var localTitle = objArr[i].title;   //字数超过18位，使用省略号（...）代替
+				                    if(localTitle!=""&&localTitle!=null&&localTitle.length>18){
+				                        localTitle = localTitle.substring(0,18)+"...";
+				                    }
+				                    
+				                    var localWriteOrg = objArr[i].writeOrg;   //字数超过18位，使用省略号（...）代替
+				                    if(localWriteOrg!=""&&localWriteOrg!=null&&localWriteOrg.lastIndexOf('.')>-1){
+			                            localWriteOrg = localWriteOrg.substring(localWriteOrg.lastIndexOf('.')+1,localWriteOrg.length);
+			                        }
+				                    
+				                    itemJson = {
+					                        template : 1,
+					                        onclick : 'openDetail("'+objArr[i].goldGridId+'","'+objArr[i].title+'","'+objArr[i].wordType+'","'+objArr[i].id+'","'+
+					                         objArr[i].accessoryName+'","'+objArr[i].handOutTime+'","'+objArr[i].writeOrg+'","'+objArr[i].byteNumber+'","'+objArr[i].userIsReaded+'")',
+					                        widgets : {
+					                            userIsReaded : {src : picAddress},
+					                            title : {text :localTitle },
+					                            handOutTime : {text :handOutTime},
+					                            writeOrg : {text :localWriteOrg}
+					                        }
+					                 };
+					                 listJson.items.push(itemJson);
+					                 var    itemJson_null = {   
+									                        template : 0,
+									                        onclick : '',
+									                        widgets : {
+									                        }
+									                  };
+									 listJson.items.push(itemJson_null);
+				                }
+			        	}else if(objArr instanceof Object){   //返回一条数据
+			        	      var userIsReaded = objArr.userIsReaded;   //判断是否是未读公文
+		                      var picAddress = "mail_unread.png"; 
+			                  if(userIsReaded==1){
+			                      picAddress = " ";
+			                  }
+		                      var handOutTime = objArr.handOutTime;     //日期显示
+		                      if(handOutTime!=null&&handOutTime!=""){
+		                          handOutTime = handOutTime.substring(0,10);
+		                      }else{
+		                          handOutTime = "";
+		                      }
+		                      var localTitle = objArr.title;
+		                      if(localTitle!=""&&localTitle!=null&&localTitle.length>18){
+		                          localTitle = localTitle.substring(0,18)+"...";
+		                      }
+		                      
+	                          var localWriteOrg = objArr.writeOrg;   
+		                      if(localWriteOrg!=""&&localWriteOrg!=null&&localWriteOrg.lastIndexOf('.')>-1){
+		                           localWriteOrg = localWriteOrg.substring(localWriteOrg.lastIndexOf('.')+1,localWriteOrg.length);
+		                      }
+		                      itemJson = {
+					                        template : 1,
+					                        onclick : 'openDetail("'+objArr.goldGridId+'","'+objArr.title+'","'+objArr.wordType+'","'+objArr.id+'","'+
+			                                  objArr.accessoryName+'","'+objArr.handOutTime+'","'+objArr.writeOrg+'","'+objArr.byteNumber+'","'+objArr.userIsReaded+'")',
+					                        widgets : {
+					                            userIsReaded : {src : picAddress},
+					                            title : {text :localTitle },
+					                            handOutTime : {text :handOutTime},
+					                            writeOrg : {text :localWriteOrg}
+					                        }
+					                 };
+			                 listJson.items.push(itemJson);
+			                 var    itemJson_null = {   
+									                        template : 0,
+									                        onclick : '',
+									                        widgets : {
+									                        }
+									                  };
+						     listJson.items.push(itemJson_null);
+		               	}else{   //没有返回数据
+		               	   itemJson = {
+			                    template : 2,
+			                    onclick : '',
+                                widgets : {
+			                             userIsReaded : {src : ""},
+			                             title : {text :'暂无相关记录' },
+			                             handOutTime : {text :""},
+			                             writeOrg : {text :""}
+			                         }
+			                }
+			                listJson.items.push(itemJson); 
+			            }
+	                }else{       //查询异常
+	                    itemJson = {
+			                    template : 2,
+			                    onclick : '',
+			                    widgets : {
+			                    title : {text : '暂无相关记录'}
+                                }
+			                }
+			            listJson.items.push(itemJson); 
+	                }
+	                pagerOffset = parseInt(pagerOffset)+15;
+	                if(parseInt(recordCount) > parseInt(pagerOffset)){
+        				$('bottom_hasmore').css('display','');
+        			}else{
+        				$('bottom_hasmore').css('display','none');
+        				$('indexContent').hideBottom();
+        			}
+        			
+        			if(loadType == 'add'){
+	        			$('docList').addMore(listJson);
+        			}else if(loadType == 'update'){
+	        			$('docList').update(listJson);
+        			}
+	            }
+	            $('bottom_load').css('display','none');
+	        	loadFlag == '0';
+	         },function(error) {
+				    if (error == 'timeout') {
+				        hint('连接服务器超时！');
+				    } else if (error == '404') {
+				        hint('链接超时重新登录！');
+				    } else if (error == '500') {
+				        hint('内部服务器错误！');
+				    } else {
+				        hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+			    }
+	         );
+        }
+        
+        
+        function refreshPage(){
+           $('indexContent').hideTop();
+           pagerOffset = '0';
+           initList('update');
+        }
+    ]]>
+</script>
+	<page >
+		<title style="background:#3daffe;tint-color:white;">
+		    <left>
+				<button  role="back" />
+			</left>
+            <center>
+                <label id="title_center_label">公文</label>
+            </center>
+            <right>
+                <button style="font-size:18;color:#ffffff;" onclick="$page.open('indexList.xml',{target:'_self'});">全部公文</button>
+            </right>
+	    </title>
+	    <header >
+			<row style="text-align:center; padding:0 0;">
+				<input type="search" id="search" name="title" placeholder="请输入公文标题查询" onclick="searchDoc();" style="height:45;" value=""/>
+			</row>
+		</header>
+		<content style="background:white" id="indexContent" draggable="true" ondragdown="refreshPage()" >
+			<list id="docList" reuse="true">
+			    <item style="background:#f0eff5;padding:2;border:1 #f0eff5;" >
+			           <col>
+					   </col>
+	            </item>
+			    <item style="col-width:25,*;" >
+			            <col>
+							  <row><icon src="" reusekey="userIsReaded"/></row>
+						</col>
+						<col style="margin-left:5;">
+							  <row><label  style="align:left;color:#555555;font-size:16;" reusekey="title"></label></row>
+							  <row><label  style="align:left;font-size:12;font-weight:normal;color:#b8b8b8;" reusekey="handOutTime"></label><label style="margin-left:15;font-size:12;font-weight:normal;color:#b8b8b8;" reusekey="writeOrg"></label></row>'+
+						</col>
+	            </item>
+	            <item>
+	                    <col>
+	                    	<row>
+	                    		<label reusekey="title" style="align:center;"></label>
+	                    	</row>
+	                    </col>
+	             </item>
+			</list>
+			<bottom>
+                <list>
+                    <item onclick="loadList('add');">
+                        <row id="bottom_load"><label style="align:center;">正在加载...</label><progress style="align:center"/></row>
+                      	<row style="display:hidden" id="bottom_hasmore">
+	                        <label style="align:center;">点击加载更多...</label>
+	                        <progress id="more_progress" style="display:none;align:center"/>
+	                    </row>
+	                </item>
+                </list>
+             </bottom>
+		</content>
+	</page>
+	<script>
+	<![CDATA[
+	//打开流程表单详情页面
+        function openDetail(filename,realname,wordType,id,accessoryName,handOutTime,writeOrg,byteNumber,userIsReaded){
+            var storage = $phone.localStorage();
+           	storage.setItem('doc_filename',filename);
+           	storage.setItem('doc_realname',realname);
+           	storage.setItem('doc_wordType',wordType);
+           	storage.setItem('doc_id',id);
+           	storage.setItem('doc_accessoryName',accessoryName);
+           	storage.setItem('doc_handOutTime',handOutTime);
+           	storage.setItem('doc_writeOrg',writeOrg);
+           	storage.setItem('doc_byteNumber',byteNumber);
+           	storage.setItem('doc_userIsReaded',userIsReaded);
+            $page.open('detail.xml', {animation:'down-to-up'});
+        }
+        
+	]]>	
+	</script>
+</imag>

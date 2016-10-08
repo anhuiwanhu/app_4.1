@@ -16,7 +16,7 @@
 	        var itemContent = '';
 	        // 页面加载完后执行
         	$page.onload = function(){
-				$http.post(
+				$http.progress('正在加载，请稍候...').post(
         			evoUrl + '/ezOffice/dealfile/docSendCheckProcess.do',{workId : workId},
         			function(data){
         				if(!data){
@@ -34,11 +34,11 @@
         					alert('数据获取失败！');
         				}
         				var workInfo = jsonData.data_0.data.workInfo;
-        				isDossier = workInfo.isDossier == null? '' : workInfo.isDossier;
-        				var dealTipsContent = workInfo.dealTipsContent;
-        				if(dealTipsContent!=null&&dealTipsContent!=''&&dealTipsContent!='[]'){
-        				   alert(dealTipsContent.replace(/(<[^>]+>)|(&nbsp;)/g,""));
+        				var backComment = workInfo.backComment;   //退回意见弹出
+        				if(backComment!=null&&backComment!=''&&backComment!='[]'){
+        				   alert(backComment.replace(/(<[^>]+>)|(&nbsp;)/g,""));
         				}
+        				isDossier = workInfo.isDossier == null? '' : workInfo.isDossier;
 						var detailData = jsonData.data_1.data;
 						var $contentFormList = $('content_form_list');
 						//创建流程图
@@ -378,8 +378,12 @@
 		        				   		   '</row></col></item>';
 		        		}	
 		        	}
+		        	var backComment = detailData.backComment;
+					if(backComment){
+						itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">退回意见:</label></row></col><col><row>'+
+								   '<label style="align:right;color:#555555">'+backComment+'</label></row></col></item>';
+					}
 	        	}
-	        	
 	        	//正文
 	        	var saveFileIsExitst = detailData.docSaveFile+"";
 	        	if(saveFileIsExitst!=""){   
@@ -411,10 +415,22 @@
 	        	
 	        	// 附件表单
 	        	if(detailData.realFile){
-	        		realFiles = detailData.realFile;
-	        		saveFiles = detailData.saveFile;
-	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">附件:</label>'+
+	        		if(detailData.realFile.file){
+	        			if(detailData.realFile.file.length<=0){
+	        				itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">附件:</label>'+
 	        				   '</row></col><col id="attachments"  style="margin:10;padding:10;"></col></item>';
+	        			}else{
+	        				realFiles = detailData.realFile;
+	        				saveFiles = detailData.saveFile;
+	        				itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">附件:</label>'+
+	        				   '</row></col><col id="attachments"  style="margin:10;padding:10;"></col></item>';
+	        			}
+	        		}else{
+	        			realFiles = detailData.realFile;
+	        			saveFiles = detailData.saveFile;
+	        			itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">附件:</label>'+
+	        				   '</row></col><col id="attachments"  style="margin:10;padding:10;"></col></item>';
+	        		}
 	        	}
  
 	        	// 自定义字段集合批示意见
@@ -697,7 +713,8 @@
 					// 我的文件
 					case '1100' : {
 						if(workInfo.workcurstep.indexOf('办理完毕') < 0){
-							itemContent = 			
+							if(workInfo.workcurstep.indexOf('退回') < 0){
+								itemContent = 			
 					        	'<item>'+
 									'<col>'+
 										'<row style="height:50;">'+
@@ -705,6 +722,7 @@
 										'</row>'+
 									'</col>'+
 								'</item>';
+							}
 						}
 						break;
 					}

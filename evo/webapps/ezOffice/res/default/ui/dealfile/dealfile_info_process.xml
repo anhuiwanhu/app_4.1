@@ -45,6 +45,10 @@
         					alert('数据获取失败！');
         				}
         				var workInfo = jsonData.data_0.data.workInfo;
+        				var backComment = workInfo.backComment;   //退回意见弹出
+        				if(backComment!=null&&backComment!=''&&backComment!='[]'){
+        				   alert(backComment.replace(/(<[^>]+>)|(&nbsp;)/g,""));
+        				}
 						var detailData = jsonData.data_1.data;
 						var commentList = jsonData.data_0.data.commentList;
 						var $contentFormList = $('content_form_list');
@@ -68,7 +72,7 @@
        					//创建编辑正文附件名称
 						createBodyFileName(workInfo);
        					// 根据信息类型,设置信息内容
-						setInfoContent(detailData);	
+						setInfoContent(detailData,jsonData.data_1);	
 						idArrays.map(function(id){
 							createAttCon(id);
 						});
@@ -152,15 +156,20 @@
 			}
 			
 			// 根据信息类型,设置信息内容 TODO
-			function setInfoContent(detailData){
+			function setInfoContent(detailData,informationData){
+				var content;
+				if(informationData.content!=""&&informationData.content!=null){
+					content = informationData.content;
+				}else{
+					content = detailData.informationContent;
+				}
 				var $infoContent = $('infoContent');
 				var informationType = detailData.informationType;
 	        	var infoContent = '';
-	        	var content = detailData.informationContent;
 	        	if(informationType == '0' || informationType == '1'){
 	        		infoContent = $C('<row style="margin-top:30;margin-bottem:30px;"><web id="content_web"></web></row>');
 		        	$infoContent.add(infoContent);
-		        	$('content_web').html = content;
+		        	$('content_web').html = '<article class="wh-article" ><div class="wh-article-fulltext">' +content+ '</div></article>';
 	        	}else if(informationType == '2'){
 	        		// 地址连接
 	        		infoContent = $C('<row style="margin-top:30;margin-bottem:30px;"><web id="content_web"></web></row>');
@@ -172,7 +181,7 @@
 	        		if(cons && cons.length==2){
 	        			var reName = cons[0];
 	        			var saName = cons[1];
-	        			viewFiles2('infoContent',reName,saName,"information","");
+	        			viewFiles2('infoContent',reName,saName,"information",reName.substring(reName.indexOf("."),reName.length));
 	        		}
 	        	}else if(informationType == '4'){
 	        		//word
@@ -185,6 +194,78 @@
 	        		viewFiles2('infoContent',"正文",content+".ppt","information",".ppt");
 	        	}
 			}
+			
+			function downFile(accessorySaveNameseries,accessoryNameseries){
+			   var path = 'html';
+	            $http.post(evoUrl+'/ezOffice/doc/dealFiles.do',
+	              {accessoryNameseries:accessoryNameseries,accessorySaveNameseries:accessorySaveNameseries,path:path},
+	              function(data) {
+		               if(data){
+		                   var obj = JSON.parse(data);
+		                   if(obj.logonerror &&obj.logonerror=='1'){
+				     		    alert("该账号已在设备"+obj.deviceId+"上登录");
+				     		    $page.open('../index.xml',{target:'_self'});
+				                return;
+				           }
+			               var attList = obj.attList;
+			               if(!attList==""){  //不为空，数据进行迭代,并为附件赋值
+			                  for(var k=0;k<attList.length;k++){
+			                 	$http.download(evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&filename='+attList[k].savename+'&uploadPath=html'+'&viewName='+attList[k].realname);
+			                  }
+			               }else{     //无附件，或者后台处理异常
+			               
+			               }
+		               }
+		               
+		            },function(error) {
+					    if (error == 'timeout') {
+						hint('连接服务器超时！');
+					    } else if (error == '404') {
+						hint('链接超时重新登录！');
+					    } else if (error == '500') {
+						hint('内部服务器错误！');
+					    } else {
+						hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+				  });
+            }
+			
+			function downFile(accessorySaveNameseries,accessoryNameseries){
+			   var path = 'html';
+	            $http.post(evoUrl+'/ezOffice/doc/dealFiles.do',
+	              {accessoryNameseries:accessoryNameseries,accessorySaveNameseries:accessorySaveNameseries,path:path},
+	              function(data) {
+		               if(data){
+		                   var obj = JSON.parse(data);
+		                   if(obj.logonerror &&obj.logonerror=='1'){
+				     		    alert("该账号已在设备"+obj.deviceId+"上登录");
+				     		    $page.open('../index.xml',{target:'_self'});
+				                return;
+				           }
+			               var attList = obj.attList;
+			               if(!attList==""){  //不为空，数据进行迭代,并为附件赋值
+			                  for(var k=0;k<attList.length;k++){
+			                 	$http.download(evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&filename='+attList[k].savename+'&uploadPath=html'+'&viewName='+attList[k].realname);
+			                  }
+			               }else{     //无附件，或者后台处理异常
+			               
+			               }
+		               }
+		               
+		            },function(error) {
+					    if (error == 'timeout') {
+						hint('连接服务器超时！');
+					    } else if (error == '404') {
+						hint('链接超时重新登录！');
+					    } else if (error == '500') {
+						hint('内部服务器错误！');
+					    } else {
+						hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+				  });
+            }
 			
 			function viewFiles2(filetype,name1,name2,path,fileType){
 	            $http.post(evoUrl+'/ezOffice/doc/dealFiles.do',{accessoryNameseries:name1,accessorySaveNameseries:name2,path:path},  function(data) {
@@ -709,7 +790,8 @@
 					// 我的文件
 					case '1100' : {
 						if(workInfo.workcurstep.indexOf('办理完毕') < 0){
-							itemContent = 			
+							if(workInfo.workcurstep.indexOf('退回') < 0){
+								itemContent = 			
 					        	'<item>'+
 									'<col>'+
 										'<row style="height:50;">'+
@@ -717,6 +799,7 @@
 										'</row>'+
 									'</col>'+
 								'</item>';
+							}
 						}
 						break;
 					}

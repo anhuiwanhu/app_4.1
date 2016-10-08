@@ -1,0 +1,418 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+    <script>
+        <![CDATA[
+            var storage = $phone.localStorage();
+			var classId = storage.getItem('forum_classId');
+			var className= storage.getItem('forum_className');
+			var hasChild= storage.getItem('forum_hasChild');
+			var evoUrl = storage.getItem('evoUrl');
+			if(className.length>12){
+				$('className').text = className.substring(0,12)+"...";
+			}else{
+				$('className').text = className;
+			}
+			var curpage = "1";
+			var loadFlag = '0';
+			$page.onload=function(){
+				begin();
+            }
+            function begin(){
+	            if(containSpecial($('queryText').value)){
+					$('queryText').value='';
+					return;
+				}
+	            if(loadFlag == '1'){
+		        	return;
+		        }
+		        loadFlag = '1';
+		        if(curpage=='1'){
+					$('forumList').clear();
+				}
+		        if(hasChild =="0"){
+		        	forList();
+		        }else{
+		        	var qutext= $('queryText').value;
+		        	if(qutext==''){
+		        		classList();
+		        	}else{
+		        		forList();
+		        	}
+		        }
+		        $('indexContent').hideTop();
+            }
+            function openPopupMenu() {
+                $('popmenu').open();
+                $('arrow').src = 'mail_up.png';
+            }
+			
+			function toView(id,tile,classId){
+				storage.setItem('forum_id',id);
+				storage.setItem('forum_tile',tile);
+				storage.setItem('forum_classId',classId);
+				$page.open('forum_view.xml',{animation:'down-to-up'});
+			}
+			
+			function openChildChannel(id,hasChild,className){
+				storage.setItem('forum_classId',id);
+				storage.setItem('forum_hasChild',hasChild);
+				storage.setItem('forum_className',className);
+				$page.open('forum_child.xml');
+			}
+			
+			function classList(){
+		        loadFlag = '1';
+				$http.post(evoUrl+'/ezOffice/forum/columnList.do',{parentClassId:classId},function(data){
+					var obj = JSON.parse(data);
+					if(obj.logonerror &&obj.logonerror=='1'){
+			            alert("该账号已在设备"+obj.deviceId+"上登录");
+		          		$page.open('../index.xml',{target:'_self'});
+		                return;
+		            }
+					var result = obj.message.result;
+					var listJson = {items:[]};
+					if(result =="1"){
+						var list = obj.data;
+						if(!list){
+			        	   return false;
+			        	}
+						if(list instanceof Array){
+							for (var i = 0; i < list.length; i++) {
+			                    var haveRightFlag = list[i].haveRightFlag;
+			                    if(haveRightFlag =="1"){
+			                    	var channelName = list[i].className;
+				                    var btn="";
+				                    if(channelName!=null&&channelName!=""){
+				                          btn = channelName.substring(0,1);
+				                    }
+				                    var hasChildChannl = list[i].classHasJunior;
+				                    var childTip = "";
+				                    if(hasChildChannl!="0"){
+				                        childTip = "下级栏目"+hasChildChannl;
+				                    }
+				                    var style = '';
+				                    if((i%6)==0){
+				                         style = 'width:120;background:#f98e75;width:40;height:40;align:left;font-size:16;color:#ffffff';
+				                    }else if((i%6)==1){
+				                         style = 'width:120;background:#f6d75b;width:40;height:40;align:left;font-size:16;color:#ffffff';
+				                    }else if((i%6)==2){
+				                         style = 'width:120;background:#6fd5ff;width:40;height:40;align:left;font-size:16;color:#ffffff';
+				                    }else if((i%6)==3){
+				                         style = 'width:120;background:#9cc2ff;width:40;height:40;align:left;font-size:16;color:#ffffff';
+				                    }else if((i%6)==4){
+				                         style = 'width:120;background:#93df88;width:40;height:40;align:left;font-size:16;color:#ffffff';
+				                    }else if((i%6)==5){
+				                         style = 'width:120;background:#d795ea;width:40;height:40;align:left;font-size:16;color:#ffffff';
+				                    }
+				                    itemJson = {
+					                        template :1,
+					                        onclick : 'openChildChannel("'+list[i].id+'","'+list[i].classHasJunior+'","'+channelName+'")',
+					                        widgets : {
+					                            btn : {text :btn,style: style},
+					                            channelName : {text :channelName},
+					                            childTip    : {text :childTip }
+					                        }
+					                 };
+					                 listJson.items.push(itemJson);
+			                    }
+			                }
+			                $('forumList').update(listJson);
+						}else if(list instanceof Object){
+							list = list.list;
+							var haveRightFlag = list.haveRightFlag;
+			                if(haveRightFlag =="1"){
+			                	var channelName = list.className;
+			                    var btn="";
+			                    if(channelName!=null&&channelName!=""){
+			                          btn = channelName.substring(0,1);
+			                    }
+			                    var hasChildChannl = list.classHasJunior;
+			                    var childTip = "";
+			                    if(hasChildChannl!="0"){
+			                        childTip = "下级栏目"+hasChildChannl;
+			                    }
+			                    var style = 'background:#f98e75;width:40;height:40;align:left;font-size:16;color:#ffffff';
+			                    itemJson = {
+				                        template :1,
+				                        onclick : 'openChildChannel("'+list.id+'","'+list.classHasJunior+'","'+channelName+'")',
+				                        widgets : {
+				                            btn : {text :btn,style: style},
+				                            channelName : {text :channelName},
+				                            childTip    : {text :childTip }
+				                        }
+				                 };
+				                 listJson.items.push(itemJson);
+			                }
+			                $('forumList').update(listJson);
+						}else{
+							var itemJson = {
+			                    template : 2,
+			                    onclick : '',
+			                    widgets : {
+			                        title : {text :'系统没有查询到数据!'}
+			                    }
+			                }
+			                listJson.items.push(itemJson);
+							$('forumList').update(listJson);
+						}
+					}else{
+						var itemJson = {
+		                    template : 2,
+		                    onclick : '',
+		                    widgets : {
+		                        title : {text :'系统没有查询到数据!'}
+		                    }
+		                }
+		                listJson.items.push(itemJson);
+						$('forumList').update(listJson);
+					}
+					forList();
+				},function(error) {
+					toErro(error);
+				});
+			}
+			
+			function forList(){
+				if(containSpecial($('queryText').value)){
+					$('queryText').value='';
+					return;
+				}
+				var flag="true";
+				$http.post(evoUrl+'/ezOffice/forum/forumList.do', 
+					{curpage:curpage,queryText:$('queryText').value,classId:classId}, function(data){
+						var obj = JSON.parse(data);
+						if(obj.logonerror &&obj.logonerror=='1'){
+				            alert("该账号已在设备"+obj.deviceId+"上登录");
+			          		$page.open('../index.xml',{target:'_self'});
+			                return;
+			            }
+						if(obj.logonerror &&obj.logonerror=='1'){
+				            alert("该账号已在设备"+obj.deviceId+"上登录");
+			          		$page.open('../index.xml',{target:'_self'});
+			                return;
+			            }
+						var result = obj.message.result;
+						var listJson = {items:[]};
+						if(result =="1"){
+							var hasRight = obj.hasRight;
+							if(hasRight=="1"){
+								$('forunNew').css('display', 'block');
+							}else{
+								$('forunNew').css('display', 'none');
+							}
+							var recordCount = obj.data.recordCount;
+							if(parseInt(recordCount) <=0){
+								flag = "false";
+							}else{
+								var pageCount = obj.data.pageCount;
+								var picRootPath = obj.picRootPath;
+			                	var list = obj.data.list;
+			                	if(list instanceof Array){
+			                		for(var i=0;i<list.length;i++){
+			                			var empLivingPhoto="login_per.png";
+			                			if(list[i].empLivingPhoto != "" && list[i].empLivingPhoto != "null"
+			                				&& list[i].empLivingPhoto != null){
+				        					empLivingPhoto = picRootPath+list[i].empLivingPhoto;
+				        				}
+					                    var forumIssueTime = list[i].forumIssueTime;
+					                    if(forumIssueTime!=null&&forumIssueTime.length>20){
+					                        forumIssueTime = forumIssueTime.substring(0,19);
+					                    }
+			                			var itemJson = {
+						                    template : 0,
+						                    onclick : 'toView("'+list[i].id+'","'+list[i].forumTitle+'","'+list[i].classid+'")',
+						                    widgets : {
+						                        photo : {src:empLivingPhoto},
+						                        title : {text:list[i].forumTitle},
+						                        data : {text:forumIssueTime},
+						                        informationKits : {text :"阅读"+list[i].forumKits},
+			                                    informationCommonNum : {text :"回帖"+list[i].forumRevertNum}
+						                    }
+						                }
+						                listJson.items.push(itemJson);
+			                		}
+			                	}else if(list instanceof Object){
+		                			var empLivingPhoto="login_per.png";
+		                			if(list.empLivingPhoto != "" && list.empLivingPhoto != "null"
+		                				&& list.empLivingPhoto != null){
+			        					empLivingPhoto = picRootPath+list.empLivingPhoto;
+			        				}
+			        				var forumIssueTime = list.forumIssueTime;
+			                    	if(forumIssueTime!=null&&forumIssueTime.length>20){
+			                        	forumIssueTime = forumIssueTime.substring(0,19);
+				                    }
+			                		var itemJson = {
+					                    template : 0,
+					                    onclick : 'toView("'+list.id+'","'+list.forumTitle+'","'+list.classid+'")',
+					                    widgets : {
+						                        photo : {src:empLivingPhoto},
+						                        title : {text:list.forumTitle},
+						                        data : {text:forumIssueTime},
+						                        informationKits : {text :"阅读"+list.forumKits},
+			                                    informationCommonNum : {text :"回帖"+list.forumRevertNum}
+						                    }
+					                }
+					                listJson.items.push(itemJson);
+			                	}
+			                	$('forumList').addMore(listJson);
+			                	if(parseInt(curpage) < parseInt(pageCount)){
+		                			$('bottom_more').css('display','block');
+	                				$('bottom_load').css('display','none');
+			                	}else{
+			                		$('indexContent').hideBottom();
+			                	}
+			                	$('indexContent').hideTop();
+							}
+						}else{
+							flag = "false";
+						}
+						if(hasChild =="0" && flag=="false"){
+							var itemJson = {
+			                    template : 2,
+			                    onclick : '',
+			                    widgets : {
+			                        title : {text :'暂无相关记录'}
+			                    }
+			                }
+			                listJson.items.push(itemJson);
+							$('forumList').update(listJson);
+							$('indexContent').hideBottom();
+						}
+						if(hasChild !="0" && flag=="false"){
+							var qutext= $('queryText').value;
+				        	if(qutext!=''){
+				        		var itemJson = {
+				                    template : 2,
+				                    onclick : '',
+				                    widgets : {
+				                        title : {text :'暂无相关记录'}
+				                    }
+				                }
+				                listJson.items.push(itemJson);
+								$('forumList').update(listJson);
+				        	}
+							$('indexContent').hideBottom();
+						}
+						loadFlag = '0';
+					},function(error) {
+						toErro(error);
+					});
+			}
+			
+			function containSpecial(s){
+				if(s!=''){
+					if(/[`~!@#\$%\^\&\*\(\)_\+<>《》？，。；、‘ “【】{}|（）=\?:"\{\},\.\-\\\/\\\/;'\[\]]/im.test(s)){
+						alert("搜索值不能为特殊字符，请重新输入！");
+						return true;
+					}
+				}
+				return false;
+			}
+			
+			function downfrsh(){
+				curpage = parseInt(curpage)+1+"";
+				$('bottom_more').css('display','none');
+	            $('bottom_load').css('display','block');
+				forList();
+			}
+			
+			function search(){
+				curpage = "1";
+				$('bottom_more').css('display','none');
+	            $('bottom_load').css('display','block');
+				begin();
+			}
+			
+			function upfrsh(){
+		   		$('bottom_more').css('display','none');
+	            $('bottom_load').css('display','none');
+	            $('indexContent').showBottom();
+		   		curpage = '1';
+				begin();
+		   }
+			
+			function toNew(){
+				storage.setItem('forNew_classId',classId);
+				storage.setItem('forNew_className',className);
+				storage.setItem('forNew_state','1');
+				$page.open('forum_new.xml',{animation:'down-to-up'});
+			}
+			
+			function toErro(error){
+				if (error == 'timeout') {
+					hint('连接服务器超时！');
+				} else if (error == '404') {
+					hint('链接超时重新登录！');
+				} else if (error == '500') {
+					hint('内部服务器错误！');
+				} else {
+					hint('访问网络错误！错误代码:' + error);
+				}
+				$page.open('../index.xml',{animation:'down-to-up'});
+			}
+        ]]>
+    </script>
+    <page>
+        <title style="background:#38adff;tint-color:white">
+            <left>
+                <button role="back"></button>
+            </left>
+            <center>
+                <label id="className"></label>
+            </center>
+            <right>
+                <button id="forunNew" onclick="toNew();" icon="desk_personcenter_add.png"></button>
+            </right>
+        </title>
+        <header>
+            <row>
+                <input type="search" placeholder="请输入帖子标题查询" id="queryText" onclick="search();"/>
+            </row>
+		</header>
+		<content id="indexContent" draggable="true" ondragdown="upfrsh();">
+            <list id="forumList" reuse="true">
+                <item style="col-width:30,*">
+                    <col>
+                        <img reusekey="photo" style="height:25;width:25;" default="login_per.png" effect="round"/>
+                    </col>
+                    <col>
+                        <label reusekey="title" style="font-size:16;color:#555555;"></label>
+                        <row>
+                            <label reusekey="data" style="font-size:12;color:#b8b8b8;"></label>
+                            <button style="corner-radius:6;font-size:10;width:50;height:18;align:right;margin-right:10;color:#b8b8b8;background:#ffffff;padding:0 0;border: 1 #b8b8b8;" reusekey="informationKits"></button>
+							<button style="corner-radius:6;font-size:10;width:40;height:18;align:right;color:#b8b8b8;background:#ffffff;padding:0 0;border: 1 #b8b8b8;" reusekey="informationCommonNum"></button>
+                        </row>
+                    </col>
+                </item>
+                <item style="col-width:45,*;">
+                    <col>
+					   <row>
+					   		<button reusekey="btn"></button>
+					   </row>
+				   </col>
+				   <col style="margin-left:5;">
+					   <row><label reusekey="channelName" style="font-size:16;color:#555555;"></label></row>
+					   <row><label reusekey="childTip" style="font-size:12;color:#b8b8b8;"></label></row>
+				   </col>
+                </item>
+                <item>
+                   <col><row><label reusekey="title" style="align:center;"></label></row></col>
+                </item>
+            </list>
+            <bottom id="bottom" style="display:block">
+	            <list>
+	                <item onclick="downfrsh();" style="background:null,#DEE3E7">
+	                    <row id="bottom_load">
+		                    <label style="align:center;">正在加载...</label>
+		                    <progress style="align:center"/>
+	                    </row>
+	                    <row id="bottom_more" style="display:none">
+	                        <label style="align:center;">点击加载更多...</label>
+	                        <progress id="globalProgress" style="display:hidden;align:center;"/>
+	                    </row>
+	                </item>
+	            </list>
+	        </bottom>
+        </content>
+    </page>
+</imag>

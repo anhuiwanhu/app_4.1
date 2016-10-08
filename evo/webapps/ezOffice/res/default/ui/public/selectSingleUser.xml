@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag mode="develop">
+    <script>
+    <![CDATA[
+        var offset = "0";
+        var selectUserIds="";
+        var selectUserNames="";
+        var storage = $phone.localStorage();
+        var userAccount = storage.getItem('userAccount');
+        var evoUrl = storage.getItem('evoUrl');
+        var selectuser_range = storage.getItem('sys_selectuser_range');
+        var selectUserIds = storage.getItem('sys_selectuser_userids');
+        var selectUserNames = storage.getItem('sys_selectuser_usernames');
+        var selectuser_returnfuc = storage.getItem('sys_selectuser_returnfuc');
+		$page.onload = function() {
+            loadpersonList();
+		}
+		function setSelected(type,obj,id,name){
+		    if(obj.checked){
+		       addMult(type,id,name);
+		       if(type=="user"){
+		          if(selectUserIds.indexOf("$"+id+"$")==-1){
+		              selectUserIds = "$"+id+"$";
+                      selectUserNames = name+",";
+                  }
+               }else if(type=="org"){
+                  if(selectUserIds.indexOf("*"+id+"*")==-1){
+		            
+		              selectUserIds = "*"+id+"*";
+                      selectUserNames = name+",";
+                  }
+               }
+	        }else{
+	           delMult(type,id,name);
+	           if(type=="user"){
+		          if($('chek_user'+id)!=null){
+	                $('chek_user'+id).checked=false;
+	              }
+	              if($('orgusercheck'+id)!=null){
+	                $('orgusercheck'+id).checked=false;
+	              }
+	              selectUserIds = selectUserIds.replace("$"+id+"$","");
+                  selectUserNames = selectUserNames.replace(name+",","");
+               }else if(type=="org"){
+                  if($('orgcheck'+id)!=null){
+	                $('orgcheck'+id).checked=false;
+	              }
+                  selectUserIds = selectUserIds.replace("*"+id+"*","");
+                  selectUserNames = selectUserNames.replace(name+",","");
+               }
+	           
+	        }
+
+		}
+		function delSelected(type,id,name){
+		   delMult(type,id,name);
+		   if(type=="user"){
+
+              if($('orgusercheck'+id)!=null){
+               $('orgusercheck'+id).checked=false;
+              }
+              if($('chek_user'+id)!=null){
+               $('chek_user'+id).checked=false;
+              }
+              selectUserIds = selectUserIds.replace("$"+id+"$","");
+              selectUserNames = selectUserNames.replace(name+",","");
+           }else if(type=="org"){
+              if($('orgcheck'+id)!=null){
+                $('orgcheck'+id).checked=false;
+              }
+              selectUserIds = selectUserIds.replace("*"+id+"*","");
+              selectUserNames = selectUserNames.replace(name+",","");
+           }
+		}
+		function addMult(type,id,name){
+		   
+		   $('multipleview').clear();
+           if(type=="user"){
+
+              if($("mulView_user"+id)==null){
+		             $('multipleview').add($C('<multipleviewitem onclick="delSelected(\''+type+'\',\''+id+'\',\''+name+'\')" id="mulView_user'+id+'" style="margin-left:8;margin-right:8">' +
+		        			  '<icon src="login_user.png" style="width:30;height:30"/>' +
+		        			  '<label style="color:#38adff;font-size:8">'+name+'</label>' +
+		        		      '</multipleviewitem>'));
+               }
+        		         
+           }else if(type=="org"){
+           
+              if($("mulView_org"+id)==null){
+
+		              $('multipleview').add($C('<multipleviewitem onclick="delSelected(\''+type+'\',\''+id+'\',\''+name+'\')" id="mulView_org'+id+'" style="margin-left:8;margin-right:8"' +
+		        			  '<icon src="login_user.png" style="width:30;height:30;"/>' +
+		        			  '<label style="color:#38adff;font-size:8">'+name+'</label>' +
+		        		      '</multipleviewitem>'));
+        	   }
+           }
+	        
+		}
+		
+		function delMult(type,id,name){
+
+          if(type=="user"){
+	        //移除下方multipleview人员
+        	  
+        	if($("mulView_user"+id)!=null){
+        		$('multipleview').remove($("mulView_user"+id));
+            }
+          }else if(type=="org"){
+        	if($("mulView_org"+id)!=null){
+        		$('multipleview').remove($("mulView_org"+id));
+            }
+          }
+	        
+		}
+		
+		function opencloseMenu(obj,ic){
+		   
+	       if(obj.collapsed){
+	         $(ic).src="forum_opendown.png";
+	       }else{
+	         $(ic).src="forum_openup.png";
+	       }
+	       
+	    }
+		
+		function containSpecial(s){
+			if(s!=''){
+				if(/[`~!@#\$%\^\&\*\(\)_\+<>《》？，。；、‘ “【】{}|（）=\?:"\{\},\.\-\\\/\\\/;'\[\]]/im.test(s)){
+					alert("搜索值不能为特殊字符，请重新输入！");
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		function loadpersonList(){
+		  if(containSpecial($('searchuser').value)){
+			  $('searchuser').value='';
+			  return;
+		  }
+		  $('resuelist').clear();
+		  $http.post(evoUrl+'/ezOffice/person/getSearchUserList.do',
+		  	{range:selectuser_range,offset:'0',searchuser:$('searchuser').value},
+		  function(data) {
+			     var obj = JSON.parse(data);
+			     if(obj.logonerror &&obj.logonerror=='1'){
+	     		     alert("该账号已在设备"+obj.deviceId+"上登录");
+	     		     $page.open('../index.xml',{target:'_self'});
+	                 return;
+	             }
+			     var result = obj.person.message.result;
+			     if(result=="1"){
+			        var persondata = obj.person.data.list;
+			        var currentPage = obj.person.data.currentPage;
+			        var pageCount = obj.person.data.pageCount;
+			        offset  = obj.offset;
+			        if(persondata instanceof Array){
+			           for(var i=0;i<persondata.length;i++){
+				          var userId = persondata[i].userId;
+				          var userName = persondata[i].userName;
+				          var orgNameString = persondata[i].orgNameString;
+				          var sel = '';
+				          if(selectUserIds.indexOf("$"+userId+"$")>-1){
+				            sel = 'checked="true"';
+				            addMult("user",userId,userName);
+				          }
+				          $('resuelist').add($C('<list-item>'+
+								'<item style="background:#ffffff;col-width:40,55,*;">'+
+									'<col>'+
+									'<radio style="align:left;font-size:18" id="chek_user'+userId+'" value="'+userName+'" '+sel+' name="radio1" onclick="setSelected(\'user\',this,\''+userId+'\',\''+userName+'\');"/>'+
+									'</col><col>'+
+									'<img default="login_user.png" src="" style="width:35;height:35;margin-left:5;" effect="round"/>'+
+									'</col><col>'+
+									'<row><label style="align:left;font-size:16;color:#555555;">'+userName+'</label></row>'+
+									'<row><label style="align:left;font-size:12;color:#b8b8b8;">'+orgNameString+'</label></row>'+
+									'</col>'+
+								'</item>'+
+							'</list-item>'));
+				        }
+			       }else if(persondata instanceof Object){
+				          var userId = persondata.userId;
+				          var userName = persondata.userName;
+				          var orgNameString = persondata.orgNameString;
+				          var sel = '';
+				          if(selectUserIds.indexOf("$"+userId+"$")>-1){
+				            sel = 'checked="true"';
+				            addMult("user",userId,userName);
+				          }
+				          $('resuelist').add($C('<list-item>'+
+								'<item style="background:#ffffff;col-width:40,55,*;">'+
+									'<col>'+
+									'<radio style="align:left;font-size:18" id="chek_user'+userId+'" value="'+userName+'" '+sel+' name="radio1" onclick="setSelected(\'user\',this,\''+userId+'\',\''+userName+'\');"/>'+
+									'</col><col>'+
+									'<img default="login_user.png" src="" style="width:35;height:35;margin-left:5;" effect="round"/>'+
+									'</col><col>'+
+									'<row><label style="align:left;font-size:16;color:#555555;">'+userName+'</label></row>'+
+									'<row><label style="align:left;font-size:12;color:#b8b8b8;">'+orgNameString+'</label></row>'+
+									'</col>'+
+								'</item>'+
+							'</list-item>'));
+			        }
+			        if(parseInt(currentPage) < parseInt(pageCount)){
+	              		 $('bottom_hasmore').css('display','block');
+	              		 $('bottom_load').css('display','none');
+	               	}else{
+	               		$('bottom_hasmore').css('display','none');
+		    	   		$('bottom_load').css('display','none'); 
+	               	}
+			     }else{
+			        $('resuelist').add($C('<list-item>'+
+								'<item><col><row><label style="align:center;">暂无相关记录</label></row></col></item>'+
+							'</list-item>'));
+			        $('bottom_hasmore').css('display','none');
+		    	    $('bottom_load').css('display','none'); 
+			     }
+			},function(error) {
+			    if (error == 'timeout') {
+			        hint('连接服务器超时！');
+			    } else if (error == '404') {
+			        hint('链接超时重新登录！');
+			    } else if (error == '500') {
+			        hint('内部服务器错误！');
+			    } else {
+			        hint('访问网络错误！错误代码:' + error);
+			    }
+			    $page.open('../index.xml',{animation:'down-to-up'});
+		    });
+		}
+		
+		function addpersonList(){
+          if(containSpecial($('searchuser').value)){
+			  $('searchuser').value='';
+			  return;
+		  }
+          $('bottom_hasmore').css('display','none');
+		  $('bottom_load').css('display','block');
+		  $http.post(evoUrl+'/ezOffice/person/getSearchUserList.do',
+		  	{range:selectuser_range,offset:offset,searchuser:$('searchuser').value},
+		  function(data) {
+			     var obj = JSON.parse(data);
+			     if(obj.logonerror &&obj.logonerror=='1'){
+	     		     alert("该账号已在设备"+obj.deviceId+"上登录");
+	     		     $page.open('../index.xml',{target:'_self'});
+	                 return;
+	             }
+			     var result = obj.person.message.result;
+			     if(result=="1"){
+			        var persondata = obj.person.data.list;
+			        var currentPage = obj.person.data.currentPage;
+			        var pageCount = obj.person.data.pageCount;
+			        offset  = obj.offset;
+			        if(persondata instanceof Array){
+			           for(var i=0;i<persondata.length;i++){
+				          var userId = persondata[i].userId;
+				          var userName = persondata[i].userName;
+				          var orgNameString = persondata[i].orgNameString;
+				          var sel = '';
+				          if(selectUserIds.indexOf("$"+userId+"$")>-1){
+				            sel = 'checked="true"';
+				            addMult("user",userId,userName);
+				          }
+				          $('resuelist').add($C('<list-item>'+
+								'<item style="background:#ffffff;col-width:40,55,*;">'+
+									'<col>'+
+									'<radio style="align:left;font-size:18" id="chek_user'+userId+'" value="'+userName+'" '+sel+' name="radio1" onclick="setSelected(\'user\',this,\''+userId+'\',\''+userName+'\');"/>'+
+									'</col><col>'+
+									'<img default="login_user.png" src="" style="width:35;height:35;margin-left:5;" effect="round"/>'+
+									'</col><col>'+
+									'<row><label style="align:left;font-size:16;color:#555555;">'+userName+'</label></row>'+
+									'<row><label style="align:left;font-size:12;color:#b8b8b8;">'+orgNameString+'</label></row>'+
+									'</col>'+
+								'</item>'+
+							'</list-item>'));
+				        }
+			        }else if(persondata instanceof Object){
+				          var userId = persondata.userId;
+				          var userName = persondata.userName;
+				          var orgNameString = persondata.orgNameString;
+				          var sel = '';
+				          if(selectUserIds.indexOf("$"+userId+"$")>-1){
+				            sel = 'checked="true"';
+				            addMult("user",userId,userName);
+				          }
+				          $('resuelist').add($C('<list-item>'+
+								'<item style="background:#ffffff;col-width:40,55,*;">'+
+									'<col>'+
+									'<radio style="align:left;font-size:18" id="chek_user'+userId+'" value="'+userName+'" '+sel+' name="radio1" onclick="setSelected(\'user\',this,\''+userId+'\',\''+userName+'\');"/>'+
+									'</col><col>'+
+									'<img default="login_user.png" src="" style="width:35;height:35;margin-left:5;" effect="round"/>'+
+									'</col><col>'+
+									'<row><label style="align:left;font-size:16;color:#555555;">'+userName+'</label></row>'+
+									'<row><label style="align:left;font-size:12;color:#b8b8b8;">'+orgNameString+'</label></row>'+
+									'</col>'+
+								'</item>'+
+							'</list-item>'));
+			        }
+			        if(parseInt(currentPage) < parseInt(pageCount)){
+	              		 $('bottom_hasmore').css('display','block');
+	              		 $('bottom_load').css('display','none');
+	               	}else{
+	               		$('bottom_hasmore').css('display','none');
+		    	   		$('bottom_load').css('display','none'); 
+	               	}
+			     }
+			},function(error) {
+			    if (error == 'timeout') {
+			        hint('连接服务器超时！');
+			    } else if (error == '404') {
+			        hint('链接超时重新登录！');
+			    } else if (error == '500') {
+			        hint('内部服务器错误！');
+			    } else {
+			        hint('访问网络错误！错误代码:' + error);
+			    }
+			    $page.open('../index.xml',{animation:'down-to-up'});
+		    });
+		}
+
+		 //完成选择
+        function completeseleted(){
+            var returnfuc = selectuser_returnfuc+'(\"'+selectUserIds+'\",\"'+selectUserNames+'\")' ;
+            //alert(selectUserIds+"  "+selectUserNames);
+        	$page.close(0, returnfuc);
+       	} 
+		
+    ]]>
+    </script> 
+	<page>
+		<title style="background:#3daffe;tint-color:white">
+            <left>
+                <button role="back"></button>
+            </left>
+            <center>
+                <label style="color:#ffffff">人员选择</label>
+            </center>
+        </title>
+	    <header>
+            <row style="text-align:center;">
+			   <input type="search" id="searchuser" placeholder="请输入用户查询" onclick="loadpersonList();"/>
+		    </row>
+        </header>
+        <content id="content_per">
+	         <list id="resuelist">
+	         </list>
+            <bottom>
+	             <list>
+	                 <item>
+	                     <row id="bottom_load"><label style="align:center;">正在加载...</label><progress style="align:center"/></row>
+	                   	   <row style="display:none" id="bottom_hasmore" onclick="addpersonList();">
+	                      <label style="align:center;">点击加载更多...</label>
+	                        <progress id="more_progress" style="display:none;align:center"/>
+	                  </row>
+	              </item>
+	             </list>
+            </bottom>
+     </content>
+        <footer style="background:#e0e0e0;">
+			<multipleview id="multipleview" style="tint-color:#ffffff;margin-right:2;confirm-titlesize:16;height:50;" confirmBackground="#0000ff,#0000ff" onclick="completeseleted();"></multipleview>
+		</footer>
+		
+	</page>
+	
+</imag>

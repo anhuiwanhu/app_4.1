@@ -1,0 +1,609 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+     <script>
+        <![CDATA[
+			var storage = $phone.localStorage();
+			var evoUrl = storage.getItem('evoUrl');
+			var userId = storage.getItem('sys_sys_userId');
+			var model = $param['model'];
+        	var fromXml = $param['fromXml'];
+        	
+			$page.onload = function(){
+				//CacheDataToPage();
+				updateCache();
+			}
+			
+			//更新缓存数据并刷新页面
+	        function updateCache(){
+	           $http.post(
+	       			evoUrl + '/ezOffice/workflow/getTopFlowList.do',{processName : ''}, 
+			        function(data) {
+			            var jsonData = eval('(' + data + ')');
+						if(jsonData.logonerror &&jsonData.logonerror=='1'){
+			         		alert("该账号已在设备"+jsonData.deviceId+"上登录");
+		          			$page.open('../index.xml',{target:'_self'});
+		                    return;
+		                }
+			            if(data!=''&&data!='[]'){
+			              storage.setItem('workflow_list_topflow',data); 
+			            }else{
+			              storage.setItem('workflow_list_topflow',''); 
+			            }
+			        	getAllFlow();   //获取所有流程信息
+			        },function(error) {
+					    if (error == 'timeout') {
+							hint('连接服务器超时！');
+					    } else if (error == '404') {
+							hint('链接超时重新登录！');
+					    } else if (error == '500') {
+							hint('内部服务器错误！');
+					    } else {
+							hint('访问网络错误！错误代码:' + error);
+					    }
+					    $page.open('../index.xml',{animation:'down-to-up'});
+					  }
+				   );
+	        }
+	        
+	        function getAllFlow(){
+	        	$http.post(
+	       			evoUrl + '/ezOffice/workflow/getFlowList.do',{processName : ''}, 
+			        function(data) {
+			            if(!data){
+        					alert('加载列表失败！');
+        					return false;
+        				}
+        				var jsonData = eval('('+data+')');
+        				if(jsonData.logonerror &&jsonData.logonerror=='1'){
+			         		alert("该账号已在设备"+jsonData.deviceId+"上登录");
+		          			$page.open('../index.xml',{target:'_self'});
+		                    return;
+		                }
+        				if(!jsonData){
+        					alert('加载列表失败！');
+        					return false;
+        				}
+        				var result = jsonData.result;
+        				if(result != 'success'){
+        					alert('加载列表失败！');
+        					return false;
+        				}
+        				var resultParam = jsonData.data_0.message.result;
+        				if(resultParam != '1'){
+        					alert('加载列表失败！');
+        					return false;
+        				}
+        				var resultData = jsonData.data_0.data;
+			            if(resultData){
+			        	  DbToCacheData(resultData);
+			        	  CacheDataToPage();
+			        	}
+			        },function(error) {
+					    if (error == 'timeout') {
+							hint('连接服务器超时！');
+					    } else if (error == '404') {
+							hint('链接超时重新登录！');
+					    } else if (error == '500') {
+							hint('内部服务器错误！');
+					    } else {
+							hint('访问网络错误！错误代码:' + error);
+					    }
+					    $page.open('../index.xml',{animation:'down-to-up'});
+					  }
+				  );
+	        }
+	        
+	        //将获取到的数据存入缓存
+	        function DbToCacheData(resultData) {
+               var storage = $phone.localStorage();
+	           var dbName = storage.getItem('ezMobile_dbName');
+	           var userId = storage.getItem('sys_sys_userId');
+               var db = $phone.openDatabase(dbName);
+		       db.transaction(DbToCacheData_1);
+		       function DbToCacheData_1(tx) {
+                    if(resultData){
+				        tx.executeSql('delete from workflow_list');
+				        if(resultData instanceof Array){
+				            var workflow_classlist = '';
+        					for(var i=0;i<resultData.length;i++){
+        					    var processCon = resultData[i].process;
+								var processNum = resultData[i].processNum;
+								var packageName = resultData[i].packageName;
+								var packageId = resultData[i].packageId;
+								var moduleId = resultData[i].moduleId;
+                                workflow_classlist = workflow_classlist + packageId+','+packageName+';';
+								if(processNum == 1){
+									var processType = processCon.pool_process_type;
+									var pool_processId = processCon.pool_processId;
+									var pool_processName = processCon.pool_processName;
+									var pool_oldprocess_id = processCon.pool_oldprocess_id;
+									var pool_oldprocess_formid = processCon.pool_oldprocess_formid;
+									var pool_ezflowprocess_key = processCon.pool_ezflowprocess_key;
+									var pool_ezflowprocess_defid = processCon.pool_ezflowprocess_defid;
+									var pool_ezflowprocess_formKey = processCon.pool_ezflowprocess_formKey;
+									
+									var workflow_sql='insert into workflow_list(moduleId,packageId,pool_processId,pool_processName,pool_process_type,pool_oldprocess_id,pool_oldprocess_formid,pool_ezflowprocess_key,pool_ezflowprocess_defid,pool_ezflowprocess_formKey,userId) '+
+										' values("'+moduleId+'","'+packageId+'","'+pool_processId+'","'+pool_processName+'","'+processType+'","'+pool_oldprocess_id+'","'+pool_oldprocess_formid+'","'+pool_ezflowprocess_key+'","'+pool_ezflowprocess_defid+'","'+pool_ezflowprocess_formKey+'","'+userId+'")';
+									tx.executeSql(workflow_sql);
+
+								}else if(processNum > 1){
+									for(var j=0;j<processCon.length;j++){
+										var processType = processCon[j].pool_process_type;
+										var pool_processId = processCon[j].pool_processId;
+										var pool_processName = processCon[j].pool_processName;
+										var pool_oldprocess_id = processCon[j].pool_oldprocess_id;
+										var pool_oldprocess_formid = processCon[j].pool_oldprocess_formid;
+										var pool_ezflowprocess_key = processCon[j].pool_ezflowprocess_key;
+										var pool_ezflowprocess_defid = processCon[j].pool_ezflowprocess_defid;
+										var pool_ezflowprocess_formKey = processCon[j].pool_ezflowprocess_formKey;
+										
+										var workflow_sql='insert into workflow_list(moduleId,packageId,pool_processId,pool_processName,pool_process_type,pool_oldprocess_id,pool_oldprocess_formid,pool_ezflowprocess_key,pool_ezflowprocess_defid,pool_ezflowprocess_formKey,userId) '+
+											' values("'+moduleId+'","'+packageId+'","'+pool_processId+'","'+pool_processName+'","'+processType+'","'+pool_oldprocess_id+'","'+pool_oldprocess_formid+'","'+pool_ezflowprocess_key+'","'+pool_ezflowprocess_defid+'","'+pool_ezflowprocess_formKey+'","'+userId+'")';
+										tx.executeSql(workflow_sql);
+									}
+								}
+			        				
+        					}
+        					storage.setItem('workflow_classlist',workflow_classlist);
+        				}else if(resultData instanceof Object){
+
+       						var processCon = resultData.package.process;
+							var processNum = resultData.package.processNum;
+							var packageName = resultData.package.packageName;
+							var packageId = resultData.package.packageId;
+							var moduleId = resultData.package.moduleId;
+
+							var workflow_classlist = packageId+','+packageName+';';
+
+							if(processNum == 1){
+								var processType = processCon.pool_process_type;
+								var pool_processId = processCon.pool_processId;
+								var pool_processName = processCon.pool_processName;
+								var pool_oldprocess_id = processCon.pool_oldprocess_id;
+								var pool_oldprocess_formid = processCon.pool_oldprocess_formid;
+								var pool_ezflowprocess_key = processCon.pool_ezflowprocess_key;
+								var pool_ezflowprocess_defid = processCon.pool_ezflowprocess_defid;
+								var pool_ezflowprocess_formKey = processCon.pool_ezflowprocess_formKey;
+								
+								var workflow_sql='insert into workflow_list(moduleId,packageId,pool_processId,pool_processName,pool_process_type,pool_oldprocess_id,pool_oldprocess_formid,pool_ezflowprocess_key,pool_ezflowprocess_defid,pool_ezflowprocess_formKey,userId) '+
+									' values("'+moduleId+'","'+packageId+'","'+pool_processId+'","'+pool_processName+'","'+processType+'","'+pool_oldprocess_id+'","'+pool_oldprocess_formid+'","'+pool_ezflowprocess_key+'","'+pool_ezflowprocess_defid+'","'+pool_ezflowprocess_formKey+'","'+userId+'")';
+								tx.executeSql(workflow_sql);
+
+							}else if(processNum > 1){
+								for(var i=0,length=processCon.length;i<length;i++){
+									var processType = processCon[i].pool_process_type;
+									var pool_processId = processCon[i].pool_processId;
+									var pool_processName = processCon[i].pool_processName;
+									var pool_oldprocess_id = processCon[i].pool_oldprocess_id;
+									var pool_oldprocess_formid = processCon[i].pool_oldprocess_formid;
+									var pool_ezflowprocess_key = processCon[i].pool_ezflowprocess_key;
+									var pool_ezflowprocess_defid = processCon[i].pool_ezflowprocess_defid;
+									var pool_ezflowprocess_formKey = processCon[i].pool_ezflowprocess_formKey;
+									
+									var workflow_sql='insert into workflow_list(moduleId,packageId,pool_processId,pool_processName,pool_process_type,pool_oldprocess_id,pool_oldprocess_formid,pool_ezflowprocess_key,pool_ezflowprocess_defid,pool_ezflowprocess_formKey,userId) '+
+										' values("'+moduleId+'","'+packageId+'","'+pool_processId+'","'+pool_processName+'","'+processType+'","'+pool_oldprocess_id+'","'+pool_oldprocess_formid+'","'+pool_ezflowprocess_key+'","'+pool_ezflowprocess_defid+'","'+pool_ezflowprocess_formKey+'","'+userId+'")';
+									tx.executeSql(workflow_sql);
+								}
+							}
+							storage.setItem('workflow_classlist',workflow_classlist);
+								
+        				}
+
+			        }
+		        
+			   }
+		    
+		    }
+		    
+		    //将缓存数据更新到页面
+		    function CacheDataToPage(){
+	        	  var storage = $phone.localStorage();
+                  var workflow_classlist = storage.getItem('workflow_classlist');
+                  var workflow_classlists  = '';
+                  if(workflow_classlist == null || workflow_classlist==''){
+                  		
+                  }else{
+                  		workflow_classlists = workflow_classlist.split(';');
+                  }
+			      var processItems = '';
+			      var topflowdata = storage.getItem('workflow_list_topflow');
+			      if(topflowdata!=null && topflowdata!='null' && topflowdata!=''){
+			           processItems += '<item collapsed="true" onclick="opencloseMenu(this);">'+
+								   '<row><label style="font-size:16;color:#38adff">常用流程</label>'+
+						           '<icon id="" src="forum_opendown.png" style="align:right;margin:2"></icon></row>';
+                       processItems += CacheDataToPage3(topflowdata);
+                       
+					   processItems += '</item><item style="background:#f0eff5;padding:2"><col></col></item>';
+			      }
+			      
+			      if(workflow_classlists!='' && workflow_classlists.length>0){
+				      	for(var i=0;i<workflow_classlists.length;i++){
+				         if(workflow_classlists[i]!=''){
+				           var workflow_classlistss = workflow_classlists[i].split(',');
+				           var packageId = workflow_classlistss[0];
+				           var packageName = workflow_classlistss[1];
+				           
+				           processItems += '<item collapsed="true" onclick="opencloseMenu(this);">'+
+									   '<row><label style="font-size:16;color:#38adff">'+packageName+'</label>'+
+							           '<icon id="" src="forum_opendown.png" style="align:right;margin:2"></icon></row>';
+	
+				           processItems += CacheDataToPage2(packageId);
+	
+						   processItems += '</item><item style="background:#f0eff5;padding:2"><col></col></item>';
+				           
+				         }
+				      }
+			      }
+				  $('content').clear();
+				  $('content').add($C('<list>' + processItems + '</list>'));
+
+	        }
+	        function CacheDataToPage2(packageId){
+	              var itemprocess = '';
+	              var storage = $phone.localStorage();
+	        	  var dbName = storage.getItem('ezMobile_dbName');
+	              var db = $phone.openDatabase(dbName);
+			      db.transaction(queryClassListDB, function(err){alert(err);}, function(){});
+			      function queryClassListDB(tx) {
+				        tx.executeSql('select moduleId,pool_processId,pool_processName,pool_process_type,pool_oldprocess_id,pool_oldprocess_formid,pool_ezflowprocess_key,pool_ezflowprocess_defid,pool_ezflowprocess_formKey from workflow_list where packageId="'+packageId+'" and userId = "'+userId+'"',[],
+						function(results){
+						  if(results.rows!=null && results.rows.length>0){
+						    for(var i=0; i<results.rows.length; i++){
+						    
+						        var moduleId = results.rows.item(i).moduleId;
+						        var pool_processId = results.rows.item(i).pool_processId;
+						        var pool_processName = results.rows.item(i).pool_processName;
+						        var pool_process_type = results.rows.item(i).pool_process_type;
+						        var pool_oldprocess_id = results.rows.item(i).pool_oldprocess_id;
+						        var pool_oldprocess_formid = results.rows.item(i).pool_oldprocess_formid;
+						        var pool_ezflowprocess_key = results.rows.item(i).pool_ezflowprocess_key;
+						        var pool_ezflowprocess_defid = results.rows.item(i).pool_ezflowprocess_defid;
+						        var pool_ezflowprocess_formKey = results.rows.item(i).pool_ezflowprocess_formKey;
+						        
+						        var clickFun = '';
+						        if(moduleId=='11'){
+						           
+						           if(pool_process_type =='0'){
+									clickFun = 'openCarNewForm(\''+pool_oldprocess_formid+'\',\''+pool_oldprocess_id+'\',\''+pool_processName+'\',\''+pool_process_type+'\')';
+								  }else if(pool_process_type =='1'){
+									clickFun = 'openCarNewEzForm(\''+pool_ezflowprocess_formKey+'\',\''+pool_ezflowprocess_defid+'\',\''+pool_processName+'\',\''+pool_process_type+'\')';
+								  }
+						        }else if(moduleId=='15'){
+						        
+						           if(pool_process_type =='0'){
+									clickFun = 'openRoomReqNewForm(\''+pool_oldprocess_formid+'\',\''+pool_oldprocess_id+'\',\''+pool_processName+'\')';
+								  }else if(pool_process_type =='1'){
+									clickFun = 'openRoomReqNewEzForm(\''+pool_ezflowprocess_formKey+'\',\''+pool_ezflowprocess_defid+'\',\''+pool_processName+'\')';
+								  }
+						        }else if(moduleId=='16'){
+						          if(pool_process_type =='0'){
+									clickFun = 'openRoomAppNewForm(\''+pool_oldprocess_formid+'\',\''+pool_oldprocess_id+'\',\''+pool_processName+'\')';
+								  }else if(pool_process_type =='1'){
+									clickFun = 'openRoomAppNewEzForm(\''+pool_ezflowprocess_formKey+'\',\''+pool_ezflowprocess_defid+'\',\''+pool_processName+'\')';
+								  }
+						        }else{
+						          if(pool_process_type =='0'){
+									clickFun = 'openNewForm(\''+pool_oldprocess_formid+'\',\''+pool_oldprocess_id+'\',\''+pool_processName+'\')';
+								  }else if(pool_process_type =='1'){
+									clickFun = 'openNewEzForm(\''+pool_ezflowprocess_formKey+'\',\''+pool_ezflowprocess_defid+'\',\''+pool_processName+'\')';
+								  }
+								}
+								itemprocess += '<item accessory="indicator" style="col-width:40,*" onclick="'+clickFun+'">'+
+								                     '<col>'+
+								                        '<icon src="flow_ic.png" style="margin:10"></icon>'+
+								                     '</col>'+
+								                     '<col>'+
+								                    	'<label style="color:#555555;font-size:16;">'+pool_processName+'</label>'+
+								                     '</col>'+
+								                  '</item>';
+						
+						    }
+						    
+						  }
+						  
+						} , function(err){alert(err);}); 
+			      }
+
+	           return itemprocess;
+	        }
+	        function CacheDataToPage3(data){
+	               var jsonData = eval('('+data+')');
+	               var result = jsonData.data_0.message.result;
+	               var resultData = jsonData.data_0.data.process;
+	               if(!resultData){
+	                  resultData = jsonData.data_0.data;
+	               }
+	               var items =  '';
+	               if(result=='1'){
+		               if(resultData instanceof Array){
+	      					for(var i=0,length=resultData.length;i<length;i++){
+                                var moduleId = resultData[i].moduleId;
+						        var pool_processId = resultData[i].pool_processId;
+						        var pool_processName = resultData[i].pool_processName;
+						        var pool_process_type = resultData[i].pool_process_type;
+						        var pool_oldprocess_id = resultData[i].pool_oldprocess_id;
+						        var pool_oldprocess_formid = resultData[i].pool_oldprocess_formid;
+						        var pool_ezflowprocess_key = resultData[i].pool_ezflowprocess_key;
+						        var pool_ezflowprocess_defid = resultData[i].pool_ezflowprocess_defid;
+						        var pool_ezflowprocess_formKey = resultData[i].pool_ezflowprocess_formKey;
+						        
+						        var clickFun = '';
+						        if(moduleId=='11'){
+						        
+								  if(pool_process_type =='0'){
+									clickFun = 'openCarNewForm(\''+pool_oldprocess_formid+'\',\''+pool_oldprocess_id+'\',\''+pool_processName+'\',\''+pool_process_type+'\')';
+								  }else if(pool_process_type =='1'){
+									clickFun = 'openCarNewEzForm(\''+pool_ezflowprocess_formKey+'\',\''+pool_ezflowprocess_defid+'\',\''+pool_processName+'\',\''+pool_process_type+'\')';
+								  }
+						        }else if(moduleId=='15'){
+						        
+						           if(pool_process_type =='0'){
+									clickFun = 'openRoomReqNewForm(\''+pool_oldprocess_formid+'\',\''+pool_oldprocess_id+'\',\''+pool_processName+'\')';
+								  }else if(pool_process_type =='1'){
+									clickFun = 'openRoomReqNewEzForm(\''+pool_ezflowprocess_formKey+'\',\''+pool_ezflowprocess_defid+'\',\''+pool_processName+'\')';
+								  }
+						        }else if(moduleId=='16'){
+						          if(pool_process_type =='0'){
+									clickFun = 'openRoomAppNewForm(\''+pool_oldprocess_formid+'\',\''+pool_oldprocess_id+'\',\''+pool_processName+'\')';
+								  }else if(pool_process_type =='1'){
+									clickFun = 'openRoomAppNewEzForm(\''+pool_ezflowprocess_formKey+'\',\''+pool_ezflowprocess_defid+'\',\''+pool_processName+'\')';
+								  }
+						        }else{
+						          if(pool_process_type =='0'){
+									clickFun = 'openNewForm(\''+pool_oldprocess_formid+'\',\''+pool_oldprocess_id+'\',\''+pool_processName+'\')';
+								  }else if(pool_process_type =='1'){
+									clickFun = 'openNewEzForm(\''+pool_ezflowprocess_formKey+'\',\''+pool_ezflowprocess_defid+'\',\''+pool_processName+'\')';
+								  }
+								}
+								items += '<item accessory="indicator" style="col-width:40,*" onclick="'+clickFun+'">'+
+								                     '<col>'+
+								                        '<icon src="flow_ic.png" style="margin:10"></icon>'+
+								                     '</col>'+
+								                     '<col>'+
+								                    	'<label style="color:#555555;font-size:16;">'+pool_processName+'</label>'+
+								                     '</col>'+
+								                  '</item>';
+	      					}
+	      				}else if(resultData instanceof Object){
+	      				
+	     					    var moduleId = resultData.moduleId;
+						        var pool_processId = resultData.pool_processId;
+						        var pool_processName = resultData.pool_processName;
+						        var pool_process_type = resultData.pool_process_type;
+						        var pool_oldprocess_id = resultData.pool_oldprocess_id;
+						        var pool_oldprocess_formid = resultData.pool_oldprocess_formid;
+						        var pool_ezflowprocess_key = resultData.pool_ezflowprocess_key;
+						        var pool_ezflowprocess_defid = resultData.pool_ezflowprocess_defid;
+						        var pool_ezflowprocess_formKey = resultData.pool_ezflowprocess_formKey;
+						        
+						        var clickFun = '';
+						        if(moduleId=='11'){
+						           if(pool_process_type =='0'){
+									clickFun = 'openCarNewForm(\''+pool_oldprocess_formid+'\',\''+pool_oldprocess_id+'\',\''+pool_processName+'\',\''+pool_process_type+'\')';
+								  }else if(pool_process_type =='1'){
+									clickFun = 'openCarNewEzForm(\''+pool_ezflowprocess_formKey+'\',\''+pool_ezflowprocess_defid+'\',\''+pool_processName+'\',\''+pool_process_type+'\')';
+								  }
+						        }else if(moduleId=='15'){
+						        
+						           if(pool_process_type =='0'){
+									clickFun = 'openRoomReqNewForm(\''+pool_oldprocess_formid+'\',\''+pool_oldprocess_id+'\',\''+pool_processName+'\')';
+								  }else if(pool_process_type =='1'){
+									clickFun = 'openRoomReqNewEzForm(\''+pool_ezflowprocess_formKey+'\',\''+pool_ezflowprocess_defid+'\',\''+pool_processName+'\')';
+								  }
+						        }else if(moduleId=='16'){
+						          if(pool_process_type =='0'){
+									clickFun = 'openRoomAppNewForm(\''+pool_oldprocess_formid+'\',\''+pool_oldprocess_id+'\',\''+pool_processName+'\')';
+								  }else if(pool_process_type =='1'){
+									clickFun = 'openRoomAppNewEzForm(\''+pool_ezflowprocess_formKey+'\',\''+pool_ezflowprocess_defid+'\',\''+pool_processName+'\')';
+								  }
+						        }else{
+						          if(pool_process_type =='0'){
+									clickFun = 'openNewForm(\''+pool_oldprocess_formid+'\',\''+pool_oldprocess_id+'\',\''+pool_processName+'\')';
+								  }else if(pool_process_type =='1'){
+									clickFun = 'openNewEzForm(\''+pool_ezflowprocess_formKey+'\',\''+pool_ezflowprocess_defid+'\',\''+pool_processName+'\')';
+								  }
+								}
+								items += '<item accessory="indicator" style="col-width:40,*" onclick="'+clickFun+'">'+
+								                     '<col>'+
+								                        '<icon src="flow_ic.png" style="margin:10"></icon>'+
+								                     '</col>'+
+								                     '<col>'+
+								                    	'<label style="color:#555555;font-size:16;">'+pool_processName+'</label>'+
+								                     '</col>'+
+								                  '</item>';
+	      				}
+      			   }
+
+      			   return items;
+	        }
+			
+			// 加载流程列表
+			function loadFlowList(processName){
+				$http.post(
+        			evoUrl + '/ezOffice/workflow/getFlowList.do',{processName : processName},
+        			function(data){
+        				if(!data){
+        					alert('加载列表失败！');
+        					return false;
+        				}
+        				var jsonData = eval('('+data+')');
+        				if(jsonData.logonerror &&jsonData.logonerror=='1'){
+			         		alert("该账号已在设备"+jsonData.deviceId+"上登录");
+		          			$page.open('../index.xml',{target:'_self'});
+		                    return;
+		                }
+        				if(!jsonData){
+        					alert('加载列表失败！');
+        					return false;
+        				}
+        				var result = jsonData.result;
+        				if(result != 'success'){
+        					alert('加载列表失败！');
+        					return false;
+        				}
+        				var resultParam = jsonData.data_0.message.result;
+        				if(resultParam != '1'){
+        					alert('加载列表失败！');
+        					return false;
+        				}
+        				var resultData = jsonData.data_0.data;
+        				var items = '';
+        				if(resultData instanceof Array){
+        					for(var i=0,length=resultData.length;i<length;i++){
+        						items += createFlowListCon(resultData[i]);
+        					}
+        				}else if(resultData instanceof Object){
+       						items += createFlowListCon(resultData.package);
+        				}
+        				$('content').add($C('<list>' + items + '</list>'));
+        			},function(error) {
+				    if (error == 'timeout') {
+						hint('连接服务器超时！');
+				    } else if (error == '404') {
+						hint('链接超时重新登录！');
+				    } else if (error == '500') {
+						hint('内部服务器错误！');
+				    } else {
+						hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+				  }
+        		);
+			}
+
+			// 创建流程列表内容
+			function createFlowListCon(resultData){
+				var processItems = '<item collapsed="true" onclick="opencloseMenu(this);">'+
+								   '<row><label style="font-size:16;color:#38adff">'+resultData.packageName+'</label>'+
+						           '<icon id="" src="forum_opendown.png" style="align:right;margin:2"></icon></row>';
+				var processCon = resultData.process;
+				var processNum = resultData.processNum;
+				if(processNum == 1){
+					processItems += createProcessItem(processCon);
+				}else if(processNum > 1){
+					for(var i=0,length=processCon.length;i<length;i++){
+						processItems += createProcessItem(processCon[i]);
+					}
+				}
+				processItems += '</item><item style="background:#f0eff5;padding:2"><col></col></item>';
+				return processItems;
+			}
+			
+			// 创建流程列表数据
+			function createProcessItem(processCon){
+				var clickFun = '';
+				var processType = processCon.pool_process_type;
+				if(processCon.pool_process_type =='0'){
+					clickFun = 'openNewForm(\''+processCon.pool_oldprocess_formid+'\',\''+processCon.pool_oldprocess_id+'\',\''+processCon.pool_processName+'\')';
+				}else if(processCon.pool_process_type =='1'){
+					clickFun = 'openNewEzForm(\''+processCon.pool_ezflowprocess_formKey+'\',\''+processCon.pool_ezflowprocess_defid+'\',\''+processCon.pool_processName+'\')';
+				}
+				var process = '<item accessory="indicator" style="col-width:40,*" onclick="'+clickFun+'">'+
+				                     '<col>'+
+				                        '<icon src="flow_ic.png" style="margin:10"></icon>'+
+				                     '</col>'+
+				                     '<col>'+
+				                    	'<label style="color:#555555;font-size:16;">'+processCon.pool_processName+'</label>'+
+				                     '</col>'+
+				                  '</item>';
+				return process;
+			}
+			
+		    // 打开新建老流程
+		    function openNewForm(pageId,processId,processName){
+				$page.open('workflow_new_process.xml?fromXml='+fromXml+'&model='+model+'&pageId='+pageId+'&processId='+encodeURIComponent(processId)+'&processName='+encodeURIComponent(processName),{animation:'down-to-up'});
+			}
+			
+		    // 打开新建新流程
+		    function openNewEzForm(pageId,processId,processName){
+				$page.open('workflow_new_ezprocess.xml?fromXml='+fromXml+'&model='+model+'&pageId='+pageId+'&processId='+encodeURIComponent(processId)+'&processName='+encodeURIComponent(processName),{animation:'down-to-up'});
+			}
+			
+			// 打开新建车辆流程
+		    function openCarNewForm(pageId,processId,processName,type){
+				$page.open('workflow_new_voiture.xml?type='+type+'&fromXml='+fromXml+'&model='+model+'&pageId='+pageId+'&processId='+encodeURIComponent(processId)+'&processName='+encodeURIComponent(processName),{animation:'down-to-up'});
+			}
+			
+			// 打开新建车辆老流程
+		    function openCarNewEzForm(pageId,processId,processName,type){
+				$page.open('workflow_new_voiture.xml?type='+type+'&fromXml='+fromXml+'&model='+model+'&pageId='+pageId+'&processId='+encodeURIComponent(processId)+'&processName='+encodeURIComponent(processName),{animation:'down-to-up'});
+			}
+			
+			// 打开新建会议申请老流程
+		    function openRoomReqNewForm(pageId,processId,processName){
+				$page.open('workflow_new_meet_process.xml?fromXml='+fromXml+'&model='+model+'&pageId='+pageId+'&processId='+encodeURIComponent(processId)+'&processName='+encodeURIComponent(processName),{animation:'down-to-up'});
+			}
+			
+		    // 打开新建会议申请新流程
+		    function openRoomReqNewEzForm(pageId,processId,processName){
+				$page.open('workflow_new_meet_ezprocess.xml?fromXml='+fromXml+'&model='+model+'&pageId='+pageId+'&processId='+encodeURIComponent(processId)+'&processName='+encodeURIComponent(processName),{animation:'down-to-up'});
+			}
+			
+			// 打开新建会议转批老流程
+		    function openRoomAppNewForm(pageId,processId,processName){
+				$page.open('workflow_new_convert_process.xml?fromXml='+fromXml+'&model='+model+'&pageId='+pageId+'&processId='+encodeURIComponent(processId)+'&processName='+encodeURIComponent(processName),{animation:'down-to-up'});
+			}
+			
+		    // 打开新建会议转批新流程
+		    function openRoomAppNewEzForm(pageId,processId,processName){
+				$page.open('workflow_new_convert_ezprocess.xml?fromXml='+fromXml+'&model='+model+'&pageId='+pageId+'&processId='+encodeURIComponent(processId)+'&processName='+encodeURIComponent(processName),{animation:'down-to-up'});
+			}
+			
+			
+			// 展开流程分类
+	       	function opencloseMenu(obj){
+		       if(obj.collapsed){
+		       
+		       }else{
+		       	
+		       }
+		    }
+		    
+		    function openSer(){
+		    	$('queryText').css('display', 'block');
+		    }
+		    
+		    function closeSer(){
+		    	$('queryText').css('display', 'none');
+		    }
+		    
+		    // 流程标题查询
+		    function searchList(){
+		   	 	if(containSpecial($('queryText').value)){
+					$('queryText').value='';
+					return;
+				}
+				$('content').clear();
+		    	loadFlowList($('queryText').value);
+		    }
+		    
+		    function containSpecial(s){
+				if(s!=''){
+					if(/[`~!@#\$%\^\&\*\(\)_\+<>《》？，。；、‘ “【】{}|（）=\?:"\{\},\.\-\\\/\\\/;'\[\]]/im.test(s)){
+						alert("搜索值不能为特殊字符，请重新输入！");
+						return true;
+					}
+				}
+				return false;
+			}
+        ]]>
+    </script>
+   <page>
+        <title style="background:#3daffe;tint-color:white">
+            <left>
+                <button role="back"></button>
+            </left>
+            <center>
+                <label>发起流程</label>
+            </center>
+        </title>
+        <header>
+            <input type="search" placeholder="请输入流程标题查询" id="queryText" onclick="searchList();"/>
+		</header>
+			<content id="content" ondragdown="updateCache();$('content').hideTop();" draggable="true" >
+	        </content>
+    </page>
+</imag>
+
+
+

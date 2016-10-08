@@ -1286,7 +1286,22 @@
              exit();
           }
        }
+       
+       function containSpecial(s){
+			if(s!=''){
+				if(/[`~!@#\$%\^\&\*\(\)_\+<>《》？，。；、‘ “【】{}|（）=\?:"\{\},\.\-\\\/\\\/;'\[\]]/im.test(s)){
+					alert("搜索值不能为特殊字符，请重新输入！");
+					return true;
+				}
+			}
+			return false;
+		}
+       
        function go_SearchLinkbook(searchUser){
+            if(containSpecial(searchUser)){
+				$('username').value='';
+				return;
+			}
             var storage = $phone.localStorage();
             storage.setItem('inner_searchUser',searchUser);
 			$page.open('person/searchUser.xml',{animation:'down-to-up'});

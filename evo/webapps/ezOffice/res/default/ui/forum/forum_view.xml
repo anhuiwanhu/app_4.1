@@ -9,12 +9,17 @@
 			var evoUrl = storage.getItem('evoUrl');
 			var curpage = "1";
 			var fool = "0";
+			var addMore='0';
 			$page.onload=function(){
             	$('title').text=forumTile;
             	forList();
             }
 			
 			function forList(){
+				if(addMore=='1'){
+					return;
+				}
+				addMore='1';
 				$http.post(evoUrl+'/ezOffice/forum/followList.do', 
 					{curpage:curpage,forumId:forumId}, function(data){
 						var obj = JSON.parse(data);
@@ -84,7 +89,11 @@
 												html+='<a class="desc-quote" href="#" onclick="forumCite(\\\''+list[i].id+'\\\',\\\''+cont+'\\\');">引用</a>';
 											}
 											html+='</div>';
-											html+='<div class="wh-article-fulltext">'+list[i].newCont+'<div>';
+											html+='<table><tr><td>'+list[i].newCont+'</td></tr>';
+											if(list[i].forumSign!=null&&list[i].forumSign!=""){
+												html+='<tr><td>签名档:'+list[i].forumSign+'</td></tr>';
+											}
+											html+='</table>';
 									    var file = list[i].files;
 									    if(file.length>0){
 									   	   html+='<div class="wh-article-atta">';
@@ -108,10 +117,12 @@
 			                		$('forum_web').exec(sc2);
 			                	}
 			                	$('indexContent').hideTop();
+			                	addMore='0';
 							}
 						}else{
 							hint("请求数据错误");
 							$('indexContent').hideTop();
+							addMore='0';
 						}
 					},function(error) {
 						toErro(error);

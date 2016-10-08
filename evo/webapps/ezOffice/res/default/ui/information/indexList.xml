@@ -1,0 +1,514 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+<script>
+        <![CDATA[
+			var loadFlag = '0';  //函数执行置为1，提交之前进行判断，若为1，则禁止 提交，防重复提交
+	        var pagerOffset=0;
+	        var commUserChannelId = '';        //传递后台频道ID，加载此id下的信息列表,全部时为'';
+	        var cunrrentContentIdIndex = '';   //当前从contentList 的id序号。加载下一个tabbar时，清楚前一个content中的模板内容
+	        var commUserDefine = '1';           //加载更多时传递到后台的
+	        var commChannelType = '0';          //加载更多时传递到后台的
+	        
+	         //页面家在完成后执行
+	        $page.onload = function() {
+	            initHeader('');    //tabbar 页签不需要建立缓存机制
+	        }
+	        
+	        function loadList(loadType){   //加载更多
+	           initList(loadType,commUserChannelId,cunrrentContentIdIndex,commUserDefine,commChannelType);
+	        }
+	        
+	         //检索列表查询方法
+	        function searchInfo(){
+	        	pagerOffset = '0';
+	        	initList('update',commUserChannelId,cunrrentContentIdIndex,commUserDefine,commChannelType);
+	        }
+	        
+	        function channelList(userChannelId,contentIdIndex,userDefine,channelType){   //全部信息（userDefine：1，channelType：'0'）,信息管理（0,0），单位主页（0,1），分频道（1,1）；
+	            $('docList'+cunrrentContentIdIndex).clear();   //清理上一个content内容
+	            commUserChannelId = userChannelId;
+	            commUserDefine = userDefine;
+	            commChannelType = channelType;
+	            pagerOffset = 0;
+	            $('search').value = "";
+	            initList("update",userChannelId,contentIdIndex,userDefine,channelType);  //加载 所选频道列表
+	        }
+	        
+            function openPopupMenu() {
+                $('popmenu').open();
+                $('arrow').src = 'mail_up.png'; 
+            }
+
+            function initHeader(contentIdIndex){
+	            if(loadFlag == '1'){
+		        	return false;
+		        }
+		        loadFlag = '1';
+		        $('bottom_hasmore'+contentIdIndex).css('display','hidden');
+		    //    $('bottom_load'+contentIdIndex).css('display','');
+		        $('indexContent'+contentIdIndex).showBottom();
+		        var storage = $phone.localStorage();
+				var evoUrl = storage.getItem('evoUrl');
+	            $http.progress('正在加载，请稍后...').post(evoUrl+'/ezOffice/information/index.do',function(data) {
+	                if(data){
+		                var obj = JSON.parse(data);
+		                if(obj.logonerror &&obj.logonerror=='1'){
+		         		    alert("该账号已在设备"+obj.deviceId+"上登录");
+		         		    $page.open('../index.xml',{target:'_self'});
+		                    return;
+		                }
+		                var result = obj.message.result;
+		                var channelAllItem = $C('<tabbar-item><item label="全部"  onchange="channelList(\'\',\'\',\'1\',\'0\')" ></item></tabbar-item>');
+			        	var channelInfoItem =$C('<tabbar-item><item label="信息管理"   onchange="channelList(\'\',\'info\',\'0\',\'0\')" ></item></tabbar-item>');
+			        	var channelPortalItem =$C('<tabbar-item><item label="单位主页"  onchange="channelList(\'\',\'portal\',\'0\',\'1\')" ></item></tabbar-item>');
+			        	$('tabbar').clear();
+			        	$('tabbar').add(channelAllItem);
+			        	$('tabbar').add(channelInfoItem);
+			        	$('tabbar').add(channelPortalItem);
+					    if(result =="1"){
+					        var objArr = obj.data.userChannel; //返回列表数组
+					        if(!objArr){
+				                return false;
+				        	}
+				        	if(objArr instanceof Array){    //返回多条数据
+					                for (var i = 0; i < objArr.length; i++) {
+					                  //加载标题
+					                   var item = $C('<tabbar-item><item label="'+objArr[i].userChannelName+'" onchange="channelList(\''+objArr[i].userChannelId+'\',\''+i+'\',\'1\',\'1\')" ></item></tabbar-item>');
+							           $('tabbar').add(item);
+							           var contentItem = $C('<content draggable="true" id="indexContent'+i+'" ondragdown="refreshPage(\''+i+'\');" >'+
+									                '<list  id="docList'+i+'" reuse="true" >'+
+									                    '<item style="background:#f0eff5;padding:2;border:1 #f0eff5;" >'+
+													            '<col>'+
+															    '</col>'+
+											            '</item>'+
+														'<item>'+
+													           '<col>'+
+																	   '<row>'+
+																	      '<label reusekey="title" ></label>'+
+																	  '</row>'+
+																	  '<row>'+
+																	      '<label style="font-size:12;color:#b8b8b8;align:left;" reusekey="date"></label>'+
+																		  '<button style="corner-radius:6;font-size:10;width:50;height:18;align:right;margin-right:10;color:#b8b8b8;background:#ffffff;padding:0 0;border: 1 #b8b8b8;"  reusekey="informationKits"></button>'+
+																		  '<button style="corner-radius:6;font-size:10;width:40;height:18;align:right;color:#b8b8b8;background:#ffffff;padding:0 0;border: 1 #b8b8b8;"  reusekey="informationCommonNum"></button>'+
+																	  '</row>'+
+															   '</col>'+
+										                '</item>'+
+										                '<item>'+
+										                    '<col>'+
+										                    	'<row>'+
+										                    		'<label reusekey="title" style="align:center;"></label>'+
+										                    	'</row>'+
+										                    '</col>'+
+										                '</item>'+
+											        '</list>'+
+											        '<bottom>'+
+										                '<list>'+
+										                    '<item onclick="loadList(\'add\')">'+
+										                        '<row id="bottom_load'+i+'" style="display:hidden;"><label style="align:center;">正在加载...</label><progress style="align:center"/></row>'+
+										                      	'<row style="display:hidden" id="bottom_hasmore'+i+'">'+
+											                        '<label style="align:center;">点击加载更多...</label>'+
+											                        '<progress id="more_progress" style="display:none;align:center"/>'+
+											                    '</row>'+
+											                '</item>'+
+										                '</list>'+
+									                '</bottom>'+
+									            '</content>');
+							           $('contents').add(contentItem);
+					                }
+				        	}else if(objArr instanceof Object){   //返回一条数据
+				        	         var item = $C('<tabbar-item><item onchange="channelList(\''+objArr.userChannelId+'\',\'0\',\'1\',\'1\')" ><label>'+objArr.userChannelName+'</label></item></tabbar-item>');
+							         $('tabbar').add(item);
+							          var contentItem = $C('<content  draggable="true" id="indexContent0" ondragdown="refreshPage(\'0\');" >'+
+									                '<list  id="docList0" reuse="true" >'+
+									                    '<item style="background:#f0eff5;padding:2;border:1 #f0eff5;" >'+
+													            '<col>'+
+															    '</col>'+
+											            '</item>'+
+														'<item>'+
+													           '<col>'+
+																	  '<row>'+
+																	      '<label reusekey="title" ></label>'+
+																	  '</row>'+
+																	  '<row>'+
+																	      '<label style="font-size:12;color:#b8b8b8;align:left;" reusekey="date"></label>'+
+																		  '<button style="corner-radius:6;font-size:10;width:50;height:18;align:right;margin-right:10;color:#b8b8b8;background:#ffffff;padding:0 0;border: 1 #b8b8b8;"  reusekey="informationKits"></button>'+
+																		  '<button style="corner-radius:6;font-size:10;width:40;height:18;align:right;color:#b8b8b8;background:#ffffff;padding:0 0;border: 1 #b8b8b8;"  reusekey="informationCommonNum"></button>'+
+																	  '</row>'+
+															   '</col>'+
+										                '</item>'+
+										                '<item>'+
+										                    '<col>'+
+										                    	'<row>'+
+										                    		'<label reusekey="title" style="align:center;"></label>'+
+										                    	'</row>'+
+										                    '</col>'+
+										                '</item>'+
+											        '</list>'+
+											        '<bottom id="content_bottom">'+
+										                '<list>'+
+										                    '<item onclick="loadList(\'add\')">'+
+										                        '<row id="bottom_load0" style="display:hidden;"><label style="align:center;">正在加载...</label><progress style="align:center"/></row>'+
+										                      	'<row style="display:hidden" id="bottom_hasmore0">'+
+											                        '<label style="align:center;">点击加载更多...</label>'+
+											                        '<progress id="more_progress" style="display:none;align:center"/>'+
+											                    '</row>'+
+											                '</item>'+
+										                '</list>'+
+									                '</bottom>'+
+									            '</content>');
+							           $('contents').add(contentItem);
+			               	}
+		                }
+		            }
+		        	loadFlag = '0';
+		         	initList("update","",contentIdIndex,"1","0");  //加载全部列表
+		         },function(error) {
+					    if (error == 'timeout') {
+					        hint('连接服务器超时！');
+					    } else if (error == '404') {
+					        hint('链接超时重新登录！');
+					    } else if (error == '500') {
+					        hint('内部服务器错误！');
+					    } else {
+					        hint('访问网络错误！错误代码:' + error);
+					    }
+					    $page.open('../index.xml',{animation:'down-to-up'});
+				    }
+		         );
+        	}
+	     
+	     function containSpecial(s){
+			if(s!=''){
+				if(/[`~!@#\$%\^\&\*\(\)_\+<>《》？，。；、‘ “【】{}|（）=\?:"\{\},\.\-\\\/\\\/;'\[\]]/im.test(s)){
+					alert("搜索值不能为特殊字符，请重新输入！");
+					return true;
+				}
+			}
+			return false;
+		}
+	     
+        function initList(loadType,userChannelId,contentIdIndex,userDefine,channelType){
+            if(containSpecial($('search').value)){
+				$('search').value='';
+				return;
+			}
+            if(loadFlag == '1'){
+	        	return false;
+	        }
+	        cunrrentContentIdIndex = contentIdIndex;       //公共序列赋值
+	        loadFlag = '1';
+	        $('bottom_hasmore'+contentIdIndex).css('display','hidden');
+	        $('bottom_load'+contentIdIndex).css('display','');
+	        $('indexContent'+contentIdIndex).showBottom();
+	        var storage = $phone.localStorage();
+			var evoUrl = storage.getItem('evoUrl');
+            $http.progress('正在加载，请稍后...').post(evoUrl+'/ezOffice/information/listAll.do',{title : $('search').value,pagerOffset:pagerOffset,userChannelId:userChannelId,userDefine:userDefine,channelType:channelType},function(data){
+                if(data){
+	                var obj = JSON.parse(data);
+	                if(obj.logonerror &&obj.logonerror=='1'){
+	         		    alert("该账号已在设备"+obj.deviceId+"上登录");
+	         		    $page.open('../index.xml',{target:'_self'});
+	                    return;
+	                }
+	                var result = obj.message.result;
+	                var listJson = {items:[]};   //存储返回数据列表信息
+		            var itemJson;
+		            var recordCount = '';
+				    if(result =="1"){
+				        pagerOffset = obj.data.pager_offset;
+				        recordCount = obj.data.recordCount;
+				        var objArr = obj.data.infoList; //返回列表数组
+			        	if(objArr instanceof Array){    //返回多条数据
+				                for (var i = 0; i < objArr.length; i++) {
+				                    //显示阅读数和评论数
+				                    var informationKits = objArr[i].informationKits;
+				                    var informationCommonNum = objArr[i].informationCommonNum;
+				                    var readAndComment = "阅读 （"+informationKits+"） 评论（"+informationCommonNum+"）";
+				                    //时间显示，年月日时分秒
+				                    var informationIssueTime = objArr[i].informationIssueTime;
+				                    if(informationIssueTime!=null&&informationIssueTime.length>20){
+				                        informationIssueTime =informationIssueTime.substring(0,19);
+				                    }
+				                    //标题样式（普通的或者红色的）
+				                    var style = 'color:#555555;font-size:16;';
+				                    if(objArr[i].titleColor == '1'){
+				                    	style = 'color:red;font-size:16;' ;
+				                    }
+				                    itemJson = {
+					                        template :1,
+					                        onclick : 'openDetail("'+objArr[i].informationId+'","'+objArr[i].informationType+'","'+objArr[i].channelId+'")',
+					                        widgets : {
+					                            title : {text :objArr[i].informationTitle,style:style },
+					                            informationKits : {text :"阅"+informationKits},
+			                                    informationCommonNum : {text :"评论"+informationCommonNum},
+					                            date : {text :informationIssueTime}
+					                        }
+					                 };
+					                 listJson.items.push(itemJson);
+					                 if(i <(objArr.length-1)){
+						                  var  itemJson_null = {   
+								                        template : 0,
+								                        onclick : '',
+								                        widgets : {
+								                        }
+								                  };
+								         listJson.items.push(itemJson_null);
+								       }
+				                }
+			        	}else if(objArr instanceof Object){   //返回一条数据
+			        	       var informationKits = objArr.informationKits;
+		                       var informationCommonNum = objArr.informationCommonNum;
+		                       
+		                      //时间显示，年月日时分秒
+		                       var informationIssueTime = objArr.informationIssueTime;
+		                       if(informationIssueTime!=null&&informationIssueTime.length>20){
+		                         informationIssueTime = informationIssueTime.substring(0,19);
+		                       }
+		                       
+		                       //标题样式（普通的或者红色的）
+			                   var style = 'font-size:16;';
+			                   if(objArr.titleColor == '1'){
+			                       style = 'color:red;font-size:16;' ;
+			                   }
+		                      itemJson = {
+			                        template :1,
+			                        onclick : 'openDetail("'+objArr.informationId+'","'+objArr.informationType+'","'+objArr.channelId+'")',
+			                        widgets : {
+			                            title : {text :objArr.informationTitle,style:style },
+			                            informationKits : {text :"阅"+informationKits},
+			                            informationCommonNum : {text :"评论"+informationCommonNum},
+			                            date : {text :informationIssueTime}
+			                        }
+			                 };
+			                 listJson.items.push(itemJson);
+		               	}else{   //没有返回数据
+		               	   itemJson = {
+			                    template : 2,
+			                    onclick : '',
+                                widgets : {
+			                             title : {text :'暂无相关记录' },
+			                         }
+			                }
+			                listJson.items.push(itemJson); 
+			            }
+	                }else{       //查询异常
+	                    itemJson = {
+			                    template : 2,
+			                    onclick : '',
+			                    widgets : {
+			                    title : {text : '暂无相关记录'}
+                                }
+			                }
+			            listJson.items.push(itemJson); 
+	                }
+	                pagerOffset = parseInt(pagerOffset)+15;
+	                if(parseInt(recordCount) > parseInt(pagerOffset)){
+        				$('bottom_hasmore'+contentIdIndex).css('display','');
+        			}else{
+        				$('bottom_hasmore'+contentIdIndex).css('display','none');
+        				$('indexContent'+contentIdIndex).hideBottom();
+        			}
+        			if(loadType == 'add'){
+	        			$('docList'+contentIdIndex).addMore(listJson);
+        			}else if(loadType == 'update'){
+	        			$('docList'+contentIdIndex).update(listJson);
+        			}
+	            }
+	            $('bottom_load'+contentIdIndex).css('display','none');
+	        	loadFlag = '0';
+	         },function(error) {
+				    if (error == 'timeout') {
+				        hint('连接服务器超时！');
+				    } else if (error == '404') {
+				        hint('链接超时重新登录！');
+				    } else if (error == '500') {
+				        hint('内部服务器错误！');
+				    } else {
+				        hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+			    }
+	         );
+        }
+        
+        function refreshPage(contentIdIndex){
+            $('indexContent'+contentIdIndex).hideTop();
+            $('docList'+cunrrentContentIdIndex).clear();   //清理上一个content内容
+	        pagerOffset = 0;
+	        initList("update",commUserChannelId,contentIdIndex,commUserDefine,commChannelType);  //加载 所选频道列表
+        }
+        
+        ]]>
+</script>
+	<page >
+	   <title style="background:#3daffe;tint-color:white;">
+	        <left>
+				<button role="back" />
+			</left>
+            <center >
+                <label onclick="openPopupMenu();" >信息更新</label>
+                <icon id="arrow" src="mail_down.png" style="width:15;margin-left:5;" onclick="openPopupMenu();" ></icon>
+            </center>
+            <right>
+                <button onclick="$page.open('new.xml', {animation:'down-to-up'});" icon="desk_personcenter_add.png"></button>
+            </right>
+	    </title>
+	    <popupmenu id="popmenu" position="topcenter" onclose="$('arrow').src = 'mail_down.png';" style="width:150">
+            <list>
+                <item onclick="$('popmenu').close();$page.open('indexList.xml',{target:'_self'});" style="background:#3daffe,#474747;">
+                    <row>
+                        <label style="margin-left:15;font-size:18;color:white;">信息更新</label>
+                        <icon src="top_updown.png" style="align:right;width:15;"  ></icon>
+                    </row>
+                </item>
+                <item onclick="$('popmenu').close();$page.open('column.xml',{target:'_self'});" style="background:#3daffe,#474747">
+                    <row>
+                        <label style="margin-left:15;font-size:18;color:white;" >栏目视图</label>
+                    </row>
+                </item>
+            </list>
+		</popupmenu> 
+	    <header>
+	        <tabbar id="tabbar" controlContents="true" style="label-color:#b8b8b8,#008eef;indicator-color:#008eef;background:#f9f9f9;" >
+            </tabbar>
+			<row style="text-align:center; padding:0 0;">
+				<input type="search" id="search" name="title" placeholder="请输入信息标题查询" onclick="searchInfo();" style="height:45;" value=""/>
+			</row>
+		</header>
+		<contents id="contents" scrollable="true">
+		  	<content draggable="true" id="indexContent"  ondragdown="refreshPage('');" >
+	                <list  id="docList" reuse="true" >
+	                    <item style="background:#f0eff5;padding:2;border:1 #f0eff5;" >
+					            <col>
+							    </col>
+			            </item>
+						<item>
+					            <col>
+									  <row>
+									      <label reusekey="title" style="" ></label>
+									  </row>
+									  <row>
+									      <label style="font-size:12;color:#b8b8b8;align:left;" reusekey="date"></label>
+										  <button style="corner-radius:6;font-size:10;width:50;height:18;align:right;margin-right:10;color:#b8b8b8;background:#ffffff;padding:0 0;border: 1 #b8b8b8;"  reusekey="informationKits"></button>
+										  <button style="corner-radius:6;font-size:10;width:40;height:18;align:right;color:#b8b8b8;background:#ffffff;padding:0 0;border: 1 #b8b8b8;"  reusekey="informationCommonNum"></button>
+									 </row>
+							   </col>
+		                </item>
+		                <item>
+		                    <col>
+		                    	<row>
+		                    		<label reusekey="title" style="align:center;"></label>
+		                    	</row>
+		                    </col>
+		                </item>
+			        </list>
+			        <bottom>
+		                <list>
+		                    <item onclick="loadList('add')">
+		                        <row id="bottom_load" style="display:hidden;"><label style="align:center;">正在加载...</label><progress style="align:center"/></row>
+		                      	<row style="display:hidden" id="bottom_hasmore">
+			                        <label style="align:center;">点击加载更多...</label>
+			                        <progress id="more_progress" style="display:none;align:center"/>
+			                    </row>
+			                </item>
+		                </list>
+	                </bottom>
+	            </content>
+	            <content draggable="true" id="indexContentinfo"  ondragdown="refreshPage('info');" >
+	                <list  id="docListinfo" reuse="true" >
+	                    <item style="background:#f0eff5;padding:2;border:1 #f0eff5;" >
+					            <col>
+							    </col>
+			            </item>
+						<item>
+					            <col>
+									  <row>
+									      <label reusekey="title" ></label>
+									  </row>
+									  <row>
+									      <label style="font-size:12;color:#b8b8b8;align:left;" reusekey="date"></label>
+										  <button style="corner-radius:6;font-size:10;width:50;height:18;align:right;margin-right:10;color:#b8b8b8;background:#ffffff;padding:0 0;border: 1 #b8b8b8;"  reusekey="informationKits"></button>
+										  <button style="corner-radius:6;font-size:10;width:40;height:18;align:right;color:#b8b8b8;background:#ffffff;padding:0 0;border: 1 #b8b8b8;"  reusekey="informationCommonNum"></button>
+									 </row>
+							   </col>
+		                </item>
+		                <item>
+		                    <col>
+		                    	<row>
+		                    		<label reusekey="title" style="align:center;"></label>
+		                    	</row>
+		                    </col>
+		                </item>
+			        </list>
+			        <bottom>
+		                <list>
+		                    <item onclick="loadList('add')">
+		                        <row id="bottom_loadinfo" style="display:hidden;"><label style="align:center;">正在加载...</label><progress style="align:center"/></row>
+		                      	<row style="display:hidden" id="bottom_hasmoreinfo">
+			                        <label style="align:center;">点击加载更多...</label>
+			                        <progress id="more_progressinfo" style="display:none;align:center"/>
+			                    </row>
+			                </item>
+		                </list>
+	                </bottom>
+	            </content>
+	            <content draggable="true" id="indexContentportal"  ondragdown="refreshPage('portal');" >
+	                <list  id="docListportal" reuse="true" >
+	                    <item style="background:#f0eff5;padding:2;border:1 #f0eff5;" >
+					            <col>
+							    </col>
+			            </item>
+						<item>
+					            <col>
+									  <row>
+									      <label reusekey="title" ></label>
+									  </row>
+									  <row>
+									      <label style="font-size:12;color:#b8b8b8;align:left;" reusekey="date"></label>
+										  <button style="corner-radius:6;font-size:10;width:50;height:18;align:right;margin-right:10;color:#b8b8b8;background:#ffffff;padding:0 0;border: 1 #b8b8b8;"  reusekey="informationKits"></button>
+										  <button style="corner-radius:6;font-size:10;width:40;height:18;align:right;color:#b8b8b8;background:#ffffff;padding:0 0;border: 1 #b8b8b8;"  reusekey="informationCommonNum"></button>
+									 </row>
+							   </col>
+		                </item>
+		                <item>
+		                    <col>
+		                    	<row>
+		                    		<label reusekey="title" style="align:center;"></label>
+		                    	</row>
+		                    </col>
+		                </item>
+			        </list>
+			        <bottom>
+		                <list>
+		                    <item onclick="loadList('add')">
+		                        <row id="bottom_loadportal" style="display:hidden;"><label style="align:center;">正在加载...</label><progress style="align:center"/></row>
+		                      	<row style="display:hidden" id="bottom_hasmoreportal">
+			                        <label style="align:center;">点击加载更多...</label>
+			                        <progress id="more_progressportal" style="display:none;align:center"/>
+			                    </row>
+			                </item>
+		                </list>
+	                </bottom>
+	            </content>
+          </contents>
+	</page>
+	<script>
+	<![CDATA[
+	//栏目页面
+	function toColumnList(){
+	   $('infoFresh').src="";
+	   $('columnView').css('display','');
+	   $('popmenu').close();
+	   $page.open('column.xml',{target:'_self'});
+	}
+	
+	function openDetail(informationId,informationType,channelId){
+	   var storage = $phone.localStorage();
+       storage.setItem('information_informationId',informationId);
+       storage.setItem('information_informationType',informationType);
+       storage.setItem('information_channelId',channelId);
+       $page.open('info.xml', {animation:'down-to-up'});
+	}
+	]]>
+	</script>
+</imag>

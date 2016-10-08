@@ -46,9 +46,9 @@
         					alert('数据获取失败！');
         				}
         				var workInfo = jsonData.data_0.data.workInfo;
-        				var dealTipsContent = workInfo.dealTipsContent;
-        				if(dealTipsContent!=null&&dealTipsContent!=''&&dealTipsContent!='[]'){
-        				   alert(dealTipsContent.replace(/(<[^>]+>)|(&nbsp;)/g,""));
+        				var backComment = workInfo.backComment;   //退回意见弹出
+        				if(backComment!=null&&backComment!=''&&backComment!='[]'){
+        				   alert(backComment.replace(/(<[^>]+>)|(&nbsp;)/g,""));
         				}
         				if(workInfo.modibutton.indexOf('cmdReadtext')  > 0 ){
         					isEdit = '1';
@@ -776,8 +776,17 @@
 				custemCon += '<row><label style="align:left;font-size:16;color:#555555">'+custemField.name+':</label></row></col><col style="margin:10;padding:10;">';
 				var content = custemField.content;
 				var fieldDisplayType = custemField.displayType;
-				if(content && fieldDisplayType){
-					custemCon += '<row><label style="align:right;color:#555555">'+content+'</label></row>';
+				if(fieldDisplayType=='705' || fieldDisplayType=='704' || fieldDisplayType=='214' 
+				    || fieldDisplayType=='212' || fieldDisplayType=='211' || fieldDisplayType=='210'){
+				    if(content){
+				    	var cons = content.split(";");
+				    	custemCon += '<row><label style="align:right;color:#555555">'+cons[0]+'</label></row>';
+				    }
+				    
+				}else{
+					if(content && fieldDisplayType){
+						custemCon += '<row><label style="align:right;color:#555555">'+content+'</label></row>';
+					}
 				}
 				custemCon += '</col></item>';
 				return custemCon;
@@ -1074,7 +1083,8 @@
 					// 我的文件
 					case '1100' : {
 						if(workInfo.workcurstep.indexOf('办理完毕') < 0){
-							itemContent = 			
+							if(workInfo.workcurstep.indexOf('退回') < 0){
+								itemContent = 			
 					        	'<item>'+
 									'<col>'+
 										'<row style="height:50;">'+
@@ -1082,6 +1092,7 @@
 										'</row>'+
 									'</col>'+
 								'</item>';
+							}
 						}
 						break;
 					}

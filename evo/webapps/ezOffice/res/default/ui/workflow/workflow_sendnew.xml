@@ -21,6 +21,7 @@
           	var g_scopeId = '';  //用来选择人员信息使用，公共参数
           	var conActivityId = '' ;  //判断是否自动提交
           	var g_nextActivityList = '';
+          	var g_isReturn = '';   //判断是否有物理返回键
         	$page.onload = function() {
         		getNextActivity();
         	}
@@ -95,6 +96,14 @@
         		         selectActivity(gateType);
 	        			isCompleteFile(conActivityId);  //是否是多人办理后，自动提交直接返回的
 	        			createSmsTip(nextActivityList);
+	        			if($param['workType'] == '0'){   //随机流程
+	        				 // 创建节点选择及办理人选择
+	        			    createTranInfoContent($contentList,nextActivityList);
+	        			   // 创建固定ITEM
+	        			    randomCreateOtherItem($contentList);
+	        			    $('randomFlow').css('display','');
+	        			    $('normalFlow').css('display','none');
+	        			}
 	        	},function(error) {
 				    if (error == 'timeout') {
 						hint('连接服务器超时！');
@@ -109,7 +118,48 @@
 				  });
         	}
         	
+        	function createTranInfoContent(contentList,tranInfo){   //随机流程转办 创建下一环节、下一办理人内容 
+        		if(!tranInfo){
+        			alert('转办信息为空！');
+        			return false;
+        		}
+        		var scopeType = tranInfo.scopeType;
+        		var items = '';
+				if(scopeType == 'default_users'){
+        			items += '<item style="col-width: 90,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>选择办理人：</label></row></col><col style="padding:10;margin:10;">';
+					items += '<input type="hidden" id="chooseUserId" name="chooseUserId" value="'+tranInfo.scopeId+'"/>'+
+           			'<input style="border:0 white;font-size:16;text-align:right;" type="text" readonly="readonly" id="chooseUserName" name="chooseUserName" value="'+tranInfo.scopeName+'"/>';
+				}else if(scopeType == 'scopes_user'){
+        			items += '<item onclick="selectUser(\'chooseUserId\',\'chooseUserName\',\''+tranInfo.scopeId+'\',\'1\')" style="col-width: 90,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>选择办理人：</label></row></col><col style="padding:10;margin:10;">';
+					items += '<input type="hidden" id="chooseUserId" name="chooseUserId" value="" />'+
+           			'<input style="border:0 white;font-size:16;text-align:right;" placeholder="请选择>" type="text" readonly="readonly" id="chooseUserName" name="chooseUserName" value="" onclick="selectUser(\'chooseUserId\',\'chooseUserName\',\''+tranInfo.scopeId+'\',\'1\')"/>';
+				}else{
+        			items += '<item onclick="selectUser(\'chooseUserId\',\'chooseUserName\',\''+tranInfo.scopeId +'\',\'1\')" style="col-width: 90,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>选择办理人：</label></row></col><col style="padding:10;margin:10;">';
+					items += '<input type="hidden" id="chooseUserId" name="chooseUserId" value="" />'+
+           			'<input style="border:0 white;font-size:16;text-align:right;" placeholder="请选择>" type="text" readonly="readonly" id="chooseUserName" name="chooseUserName" value="" onclick="selectUser(\'chooseUserId\',\'chooseUserName\',\''+tranInfo.scopeId +'\',\'1\')"/>';
+				}
+				var workcurstep = decodeURIComponent($param["workcurstep"]);
+				items += '</col></item><item style="col-width: 90,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>下一活动：</label></row></col>'+
+		                     '<col style="padding:10;margin:10;"><row><checkbox disabled="true"  style="align:right" checked="true"  name="activity" value="'+tranInfo.id+'">'+tranInfo.name+'</checkbox>'+
+		                     '<input type="hidden" value="1"  name="randomSend" /></row></col></item>';
+		        $('nextActivityNode').css('display','none');
+        		contentList.addMore('<imag><list>' + items + '</list></imag>');
+        	}
+        	
+        	function randomCreateOtherItem(contentList){   //随机流程 创建固定ITEM内容
+        		var randomItemContent =  
+                '<item style="col-width: 90,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>办理提示：</label></row></col><col style="padding:10;margin:10;"><row><textarea rows="5" name="smsContent" id="tips" maxrows="5"></textarea></row></col> </item>'+
+                '<item style="col-width: 90,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>办理提醒：</label>'+
+	            '</row></col><col style="padding:10;margin:10;"><row><checkbox type="switch" style="align:right" name="needMailRemind" value="1" id="msRemind_mail" checked="false">内部邮件</checkbox>'+
+                '<checkbox type="switch" style="display:none;align:right" name="needMailRemind" value="0" id="msRemind_mail" checked="false">短信</checkbox></row></col></item>';
+        		contentList.addMore('<imag><list>' + randomItemContent + '</list></imag>');
+        	}
+        	
         	function createSmsTip(nextActivityList){
+        	    if(!nextActivityList){
+        			//alert('下一办理环节为空！');
+        			return false;
+        		}
         		var isArray = nextActivityList instanceof Array;
         		var smsRight = '';
         		if(isArray){
@@ -134,10 +184,8 @@
         		if( '-100' == activityId){
         		//	hint('该文件已办理完毕!');
         		    $('footer').css('display','hidden');
+        		    g_isReturn = 'no';  //没有物理返回
         		    sendFlow();
-        		    $page.setTimeout(function() {
-				      
-				    }, 1500);
         		}
         	}
         	
@@ -262,7 +310,6 @@
 		            pushMustFillArray('userId');
         		}
         		contentList.addMore('<imag><list>' + items + '</list></imag>');
-        		
         		if($('activity')){
 	       			//$('activity').onchange = "selectActivity('" + JSON.stringify(nextActivityList) + "','" + gateType + "')";
         		}
@@ -442,7 +489,6 @@
                 itemContent += '<item style="col-width: 90,*;padding:0;margin:0;" id="msRemind_item"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>办理提醒：</label>'+
 	               '</row></col><col style="padding:10;margin:10;"><row><checkbox type="switch" style="align:right" name="needMailRemind" value="1" id="msRemind_mail" checked="false">内部邮件</checkbox>'+
                    '<checkbox type="switch" style="display:none;align:right" name="needSmsRemind" value="1" id="msRemind_message" checked="false">短信</checkbox></row></col></item>';
-                
         		contentList.addMore('<imag><list>' + itemContent + '</list></imag>');
         		var act ="";
         		if($('activity') != null){
@@ -495,7 +541,7 @@
 	        	isDefault_Users = nextActivity.scopeType ;
        			var items = '';
 		       	if(nextActivity.scopeType == 'default_users'){
-	    			items += '<item style="col-width: 90,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>下一活动：</label></row></col>'+
+	    			items += '<item style="col-width: 90,*;padding:0;margin:0;" id="nextActivityNode"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>下一活动：</label></row></col>'+
 		                     '<col style="padding:10;margin:10;"><row><checkbox ' + isDisabled + ' style="align:right" checked="true" id="activity'+nextActivity.id+'" name="activity" value="'+nextActivity.id+'">'+nextActivity.name+'</checkbox>'+
 		                     '</row></col></item><item onclick="selectUser(\'userId'+nextActivity.id+'\',\'userName'+nextActivity.id+'\',\''+scopeId+'\',\'1\')" style="col-width: 90,*;padding:0;margin:0;'+isDisplay+'"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>下一办理人：</label></row></col>';
 		       		items += '<col style="padding:10;margin:10;"><row><input style="border:0 white;font-size:16;text-align:right;" type="text" placeholder="请选择>" id="userName'+nextActivity.id+'" name="userName'+nextActivity.id+'" readonly="true" value="' + scopeName + '" onclick="selectUser(\'userId'+nextActivity.id+'\',\'userName'+nextActivity.id+'\',\''+scopeId+'\',\'1\')"/>'+
@@ -509,14 +555,14 @@
 		       		scopeNameArray = nextActivity.scopeName.split(',');
 		       		scopeNameArrayLen = scopeNameArray.length;
 		       		if(scopeNameArrayLen == 2){
-		    			items += '<item style="col-width: 90,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>下一活动：</label></row></col>'+
+		    			items += '<item style="col-width: 90,*;padding:0;margin:0;" id="nextActivityNode"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>下一活动：</label></row></col>'+
 			                     '<col style="padding:10;margin:10;"><row><checkbox ' + isDisabled + ' style="align:right" checked="true" id="activity'+nextActivity.id+'" name="activity" value="'+nextActivity.id+'">'+nextActivity.name+'</checkbox>'+
 			                     '</row></col></item><item onclick="selectUser(\'userId'+nextActivity.id+'\',\'userName'+nextActivity.id+'\',\''+scopeId+'\',\'1\')" style="col-width: 90,*;padding:0;margin:0;'+isDisplay+'"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>下一办理人：</label></row></col>';
 			       		items += '<col style="padding:10;margin:10;"><row><input style="border:0 white;font-size:16;text-align:right;" type="text" placeholder="请选择>" id="userName'+nextActivity.id+'" name="userName'+nextActivity.id+'" readonly="true" onclick="selectUser(\'userId'+nextActivity.id+'\',\'userName'+nextActivity.id+'\',\''+scopeId+'\',\'1\')" value="' + userName + '"/>'+
 			       				 '<input type="hidden" name="scopeId" value="' + scopeId + '"/>'+
 			       				 '<input type="hidden" name="userId'+nextActivity.id+'" id="userId'+nextActivity.id+'" value="' + userId + '"/>';
 		       		}else if(scopeNameArrayLen > 2){
-		    			items += '<item style="col-width: 90,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>下一活动：</label></row></col>'+
+		    			items += '<item style="col-width: 90,*;padding:0;margin:0;" id="nextActivityNode"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>下一活动：</label></row></col>'+
 			                     '<col style="padding:10;margin:10;"><row><checkbox ' + isDisabled + ' style="align:right" checked="true" id="activity'+nextActivity.id+'" name="activity" value="'+nextActivity.id+'">'+nextActivity.name+'</checkbox>'+
 			                     '</row></col></item><item onclick="selectUser(\'userId'+nextActivity.id+'\',\'userName'+nextActivity.id+'\',\''+scopeId+'\',\'1\')" style="col-width: 90,*;padding:0;margin:0;'+isDisplay+'"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>下一办理人：</label></row></col>';
 			       		items += '<col style="padding:10;margin:10;"><row><input style="border:0 white;font-size:16;text-align:right;" type="text" placeholder="请选择>" id="userName'+nextActivity.id+'" name="userName'+nextActivity.id+'" readonly="true" onclick="selectUser(\'userId'+nextActivity.id+'\',\'userName'+nextActivity.id+'\',\''+scopeId+'\',\'1\')" value=""/>'+
@@ -525,7 +571,7 @@
      				}
      				 pushMustFillArray('userId'+nextActivity.activityId);		
         		}else{
-	    			items += '<item style="col-width: 90,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>下一活动：</label></row></col>'+
+	    			items += '<item style="col-width: 90,*;padding:0;margin:0;" id="nextActivityNode"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>下一活动：</label></row></col>'+
 		                     '<col style="padding:10;margin:10;"><row><checkbox ' + isDisabled + ' style="align:right" checked="true" id="activity'+nextActivity.id+'" name="activity" value="'+nextActivity.id+'">'+nextActivity.name+'</checkbox>'+
 		                     '</row></col></item><item onclick="selectUser(\'userId'+nextActivity.id+'\',\'userName'+nextActivity.id+'\',\''+scopeId+'\',\'1\')" style="col-width: 90,*;padding:0;margin:0;'+isDisplay+'"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>下一办理人：</label></row></col>';
         			items += '<col style="padding:10;margin:10;"><row><input style="border:0 white;font-size:16;text-align:right;" type="text" placeholder="请选择>" id="userName'+nextActivity.id+'" name="userName'+nextActivity.id+'" readonly="true" onclick="selectUser(\'userId'+nextActivity.id+'\',\'userName'+nextActivity.id+'\',\''+scopeId+'\',\'1\')"/>'+
@@ -575,6 +621,15 @@
 	        function setUserInfo(id,name){
 	        	$(userIdConIdVal).value = id;
 	        	$(userNameConIdVal).value = name;
+	        }
+	        
+	        function closeFlow(){
+	        	if(isDossier == 'true'){
+       			  //  $('footer').css('display','hidden');
+       				alert('当前流程需要办结归档，请与电脑端操作办理！');
+       				return;
+       			}
+       			sendFlow();
 	        }
 	        
         	// 发送流程
@@ -630,7 +685,44 @@
 	            	return;
 	            }
         	}
-        	
+        	function tranInfo(){
+        		if($('chooseUserName') && $('chooseUserName').value==''){
+        		    alert('请选择办理人！');
+        			return false;
+        		}else{
+        			var storage = $phone.localStorage();
+        	        var sys_sys_userId = storage.getItem('sys_sys_userId');
+        			if($('chooseUserId').value.indexOf('$'+sys_sys_userId+'$')>-1){
+        		   		 alert('办理人中不能包含自己！');
+        				 return false;
+        		  }
+        		}
+        		evoUrl = storage.getItem('evoUrl');
+        		$('sendForm').action = evoUrl + '/ezOffice/workflow/workflowTran.do';
+				$('sendForm').submit(function(data) {
+					if(!data){
+						alert('发送失败！');
+						return false;
+					}
+					var jsonData = eval('(' + data + ')');
+					if(jsonData.logonerror &&jsonData.logonerror=='1'){
+		         		alert("该账号已在设备"+jsonData.deviceId+"上登录");
+	          			$page.open('../index.xml',{target:'_self'});
+	                    return;
+	                }
+					if(jsonData.result == 'fail'){
+						alert('发送失败！');
+						return false;
+					}
+					alert('发送成功！');
+					$page.close(-2);
+				    $page.close(-1);
+					$page.open(
+						'../dealfile/dealfile_index.xml',{target:'_self'});
+	            }, function(error) {
+	                alert('发送失败！');
+	            });
+        	}
         	 //添加数组元素 
 	        function pushMustFillArray(val){
 	        	mustFillCon.push(val);
@@ -704,9 +796,17 @@
 				}
         	}
         	
+        	function physicalReturn(){
+        	    if(g_isReturn == 'no'){
+        	    
+        	    }else{
+        	    	 $page.close(0);
+        	    }
+        	}
+        	
         ]]>
     </script>
-    <page>
+    <page onback="physicalReturn();">
         <title style="background:#3daffe;tint-color:white">
             <left>
             	<button role="back"></button>
@@ -756,8 +856,12 @@
 			<list type="toolbar" id="footer_list">
 				<item>
 					<col>
-						<row style="height:60;">
+						<row style="height:60;" id="normalFlow">
 							<button onclick="sendFlow();" style="align:center;background:#3EAFFF,#007aff;color:#F0F9FF,white;border:0;corner-radius:3;width:300;height:40;font-size:14;">确定发送</button>
+						</row>
+						<row style="height:60;display:none" id="randomFlow">
+							<button onclick="tranInfo();" style="align:center;background:#3EAFFF,#007aff;color:#F0F9FF,white;border:0;corner-radius:3;width:100;height:40;font-size:14;">发送</button>
+							<button onclick="closeFlow();" style="align:center;background:#3EAFFF,#007aff;color:#F0F9FF,white;border:0;corner-radius:3;width:100;height:40;font-size:14;margin-left:20;">结束流程</button>
 						</row>
 					</col>
 				</item>

@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+	<script>
+    <![CDATA[
+        var storage = $phone.localStorage();
+		var forumId = storage.getItem('forum_id');
+		var forumTile = storage.getItem('forum_tile');
+		var classId = storage.getItem('forum_classId');
+		var repId = storage.getItem('forum_repId');
+		var cont = storage.getItem('forum_cont');
+		storage.removeItem("forum_id");
+		storage.removeItem("forum_tile");
+		storage.removeItem("forum_classId");
+		storage.removeItem("forum_repId");
+		storage.removeItem("forum_cont");
+		var evoUrl = storage.getItem('evoUrl');
+		$page.onload=function(){
+        	$("title").text="RE:"+forumTile;
+        	$("forumId").value=forumId;
+        	$("forumTile").value="RE:"+forumTile;
+        	$("classId").value=classId;
+        	$("childId").value=repId;
+        	getCont();
+        }
+        
+        function getCont(){
+        	$http.post(evoUrl+'/ezOffice/forum/getCont.do', 
+				{repId:repId,classId:classId}, function(data){
+				    var obj = JSON.parse(data);
+				    if(obj.logonerror &&obj.logonerror=='1'){
+			            alert("该账号已在设备"+obj.deviceId+"上登录");
+		          		$page.open('../index.xml',{target:'_self'});
+		                return;
+		            }
+					var result = obj.result;
+					if(result =="1"){
+						$("newCont").text=cont + obj.oldCont;
+						$("oldCont").html=cont + obj.oldCont;
+						var nick = obj.mailto;
+						if(nick !="" && nick.length!=0){
+							$('nick').css('display', 'block')
+						}
+						var estopAnonymity = obj.mailcc;
+						if(estopAnonymity =="1"){
+			           		$('hidname').css('display', 'none');
+			            }
+					}
+				},function(error) {
+					toErro(error);
+				});
+        }
+        
+		function submit(){
+   			$('forumForm').action=evoUrl+"/ezOffice/forum/replyForum.do";
+   			var cont = $('forumContent').value.trim();
+   			var newCont="";
+   			if(cont.length != 0){
+       			newCont = chanCont(cont);
+   			}
+   			$('newCont').value=newCont;
+			$('forumForm').submit(function(data) {
+				var obj = JSON.parse(data);
+				if(obj.logonerror &&obj.logonerror=='1'){
+		            alert("该账号已在设备"+obj.deviceId+"上登录");
+	          		$page.open('../index.xml',{target:'_self'});
+	                return;
+	            }
+				var result = obj.message.result;
+				if(result =="1"){
+				   var checkexamin = obj.data.checkexamin;
+				   if(checkexamin=="1"){
+				   		hint('您发表的帖子已提交给版主审核！');
+				   }else{
+				   		hint(obj.message.description);
+				   }
+				}else{
+					hint(obj.message.description);
+				}
+                $page.close();
+			}, function(error) {
+				hint('提交失败！');
+			});
+		}
+		
+		function chanCont(cont){
+			cont = cont.replace(/\[微笑\]/g,"<img src=\"/defaultroot/modules/comm/forum/images/QQ_New/1.gif\"/>");
+			cont = cont.replace(/\[呲牙\]/g,"<img src=\"/defaultroot/modules/comm/forum/images/QQ_New/2.gif\"/>");
+			cont = cont.replace(/\[大笑\]/g,"<img src=\"/defaultroot/modules/comm/forum/images/QQ_New/3.gif\"/>");
+			cont = cont.replace(/\[可爱\]/g,"<img src=\"/defaultroot/modules/comm/forum/images/QQ_New/4.gif\"/>");
+			cont = cont.replace(/\[流泪\]/g,"<img src=\"/defaultroot/modules/comm/forum/images/QQ_New/5.gif\"/>");
+			cont = cont.replace(/\[抠鼻\]/g,"<img src=\"/defaultroot/modules/comm/forum/images/QQ_New/6.gif\"/>");
+			cont = cont.replace(/\[惊讶\]/g,"<img src=\"/defaultroot/modules/comm/forum/images/QQ_New/7.gif\"/>");
+			cont = cont.replace(/\[害羞\]/g,"<img src=\"/defaultroot/modules/comm/forum/images/QQ_New/8.gif\"/>");
+			cont = cont.replace(/\[调皮\]/g,"<img src=\"/defaultroot/modules/comm/forum/images/QQ_New/9.gif\"/>");
+			cont = cont.replace(/\[闭嘴\]/g,"<img src=\"/defaultroot/modules/comm/forum/images/QQ_New/10.gif\"/>");
+			cont = cont.replace(/\[鄙视\]/g,"<img src=\"/defaultroot/modules/comm/forum/images/QQ_New/11.gif\"/>");
+			cont = cont.replace(/\[爱心\]/g,"<img src=\"/defaultroot/modules/comm/forum/images/QQ_New/12.gif\"/>");
+			cont = cont.replace(/\[大哭\]/g,"<img src=\"/defaultroot/modules/comm/forum/images/QQ_New/13.gif\"/>");
+			cont = cont.replace(/\[偷笑\]/g,"<img src=\"/defaultroot/modules/comm/forum/images/QQ_New/14.gif\"/>");
+			cont = cont.replace(/\[脸红\]/g,"<img src=\"/defaultroot/modules/comm/forum/images/QQ_New/15.gif\"/>");
+			cont = cont.replace(/\[呕吐\]/g,"<img src=\"/defaultroot/modules/comm/forum/images/QQ_New/16.gif\"/>");
+			cont = cont.replace(/\[加油\]/g,"<img src=\"/defaultroot/modules/comm/forum/images/QQ_New/17.gif\"/>");
+			var dealContent = cont;
+			cont.replace(/<img [^>]*src=['"]([^'"]+)[^>]*>/gi, function(match){
+				dealContent = dealContent.replace(match,match.substring(0,match.length-1)+"/>");
+				dealContent = dealContent.replace("width=\"100\"","");
+			});
+			return cont;
+		}
+		
+		function faceOpen(){
+        	var face = $('face').value;
+        	if(face=='0'){
+        		$('faceview').css('display', 'block')
+        		$('faceOpen').src='forum_open.png';
+        		$('face').value='1';
+        	}else{
+        		$('faceview').css('display', 'none')
+        		$('faceOpen').src='forum_noopen.png';
+        		$('face').value='0';
+        	}
+        }
+        
+        function toErro(error){
+			if (error == 'timeout') {
+				hint('连接服务器超时！');
+			} else if (error == '404') {
+				hint('链接超时重新登录！');
+			} else if (error == '500') {
+				hint('内部服务器错误！');
+			} else {
+				hint('访问网络错误！错误代码:' + error);
+			}
+			$page.open('../index.xml',{animation:'down-to-up'});
+		}
+    ]]>
+    </script> 
+
+<script>
+   <![CDATA[
+        var fileindex =0;    //附件最多能上传5个
+        var fileAddressArr = new Array();
+        var fileTypeArr = new Array();   //附件上传时，存储对应数组fileAddressArr中的类型。pic:图片类型，sound：声音类型，file：其他附件类型
+        
+        function getAttanchNum(){
+			if(fileindex>=5){
+				hint('上传附件不能超过5个！');
+				return false;
+			}
+			return true;
+		}
+        function doRelatedAcc(file){   //相关附件
+        	 var menu = $C('<actionmenu cancelTitle="取消">' +
+							 '<item style="text-decoration:underline;" label="拍照"     onclick="doFileCamera(this)"/>' +
+							 '<item style="text-decoration:underline;" label="相册照片" onclick="doFilePhotoAlbum(this)"/>' +
+							 '<item style="text-decoration:underline;" label="录音文件" onclick="doFileRecordSound(this)"/>' +
+							 '<item style="text-decoration:underline;" label="其他文件" onclick="doFileBrowse(this)"/>' +
+						'</actionmenu>');
+                menu.show();
+        }
+        
+        function doFileCamera(file) {  //拍照
+			if(!getAttanchNum()){
+				return;
+			}
+		    $phone.camera({
+		        success: function(path) {
+		        	var showpath = path.substring(path.lastIndexOf('/')+1,path.length);
+		        	fileAddressArr.push(path);
+		        	fileTypeArr.push('pic');
+		            uploadFileView();
+		        	fileindex++;
+		        },
+		        error: function() {
+		            hint('拍照失败！');
+		        }
+		    });
+		}
+		
+		 function doFilePhotoAlbum(file){    //上传文件选择相册
+		    if(!getAttanchNum()){
+				return;
+			}
+			$page.browseImage({
+				complete: function(path) {
+				 	var showpath = path.substring(path.lastIndexOf('/')+1,path.length);
+		            fileAddressArr.push(path);
+		        	fileTypeArr.push('pic');
+		            uploadFileView();
+		        	fileindex++;
+		        },
+		        error: function() {
+		            hint('上传图片失败！');
+		        }
+			  });
+		 }
+        
+        function doFileRecordSound(file) {
+			if(!getAttanchNum()){
+				return;
+			}
+		    $phone.recordSound({
+		        success: function(path) {
+		        	var showpath = path.substring(path.lastIndexOf('/')+1,path.length);
+		        	fileAddressArr.push(path);
+		        	fileTypeArr.push('sound');
+		            uploadFileView();
+		        	fileindex++;
+		        },
+		        error: function() {
+		            hint('录音失败！');
+		        }
+		    });
+		}
+        
+        function doFileBrowse(file) {   //附件上传
+			if(!getAttanchNum()){
+				return;
+			}
+		    $page.browse({
+		        complete: function(path){
+		            var showpath = path.substring(path.lastIndexOf('/')+1,path.length);
+		        	if(showpath.indexOf(".") == -1) {
+		        		hint("无后缀名的附件不允许上传，请重新选择");
+		        		return false;
+		        	}
+		        	var filenameExt = path.substring(path.lastIndexOf('\.')+1,path.length);
+		        	if(filenameExt == 'exe'){
+		        	    hint("后缀名为exe的附件不允许上传，请重新选择");
+		        		return false;
+		        	}
+		        	if(filenameExt == 'cmd'){
+		        	    hint("后缀名为cmd的附件不允许上传，请重新选择");
+		        		return false;
+		        	}
+		        	if(filenameExt == 'jsp'){
+		        	    hint("后缀名为jsp的附件不允许上传，请重新选择");
+		        		return false;
+		        	}
+		        	fileAddressArr.push(path);
+		        	fileTypeArr.push('file');
+		            uploadFileView();
+		        	fileindex++;
+		        }
+		    });
+		}
+		
+		function uploadFileView(){   //附件上传展示
+            $("fileRow").clear();
+            if(fileTypeArr.length == fileAddressArr.length){  //两个数组中长度一致
+            	for(var i=0;i<fileAddressArr.length;i++){
+					if(fileAddressArr[i]!=null&&fileAddressArr[i]!=""&&fileAddressArr[i]!=undefined){
+					    var path = fileAddressArr[i];
+					    var fileType = fileTypeArr[i];
+					    var iconRow = '';
+					    if(fileType == 'pic'){
+					    	iconRow = $C('<icon src="'+path+'" style="width:28;height:28;margin-right:0;" id="file_'+i+'"/>');
+					    }else if(fileType == 'sound'){
+					        iconRow = $C('<icon src="information_sound.png" style="width:28;height:28;margin-right:0;" id="file_'+i+'"/>');
+					    }else if(fileType == 'file'){
+					    	iconRow = $C('<icon src="information_file.png" style="width:28;height:28;margin-right:0;" id="file_'+i+'"/>');
+					    }
+			            $("fileRow").add(iconRow);
+			            var inputRow = $C('<input type="file" style="display:none;" value="'+path+'" name="attachment" />');
+			            $("fileRow").add(inputRow);
+			            var deleteIconRow = $C('<icon relative="file_'+i+'" position="topright" src="mail_del.png" style="width:12;height:12;margin-bottom:30;margin-right:2;" onclick="delFile(\''+i+'\');"/>');
+			            $("fileRow").add(deleteIconRow);
+					}	            
+	            }
+            }else{   //若不一致
+                 alert('上传出错！');
+            }
+            var uploadFileRow = $C('<icon src="mail_addfu.png" style="width:28;height:28;margin-left:8;"  onclick="doRelatedAcc(this)" />');
+		    $("fileRow").add(uploadFileRow);
+             	
+        }
+        
+        function delFile(index){   //删除附件
+			if(confirm('确认删除附件吗？')){
+				fileAddressArr.splice(parseInt(index),'1');
+				fileTypeArr.splice(parseInt(index),'1');
+			    uploadFileView();
+				fileindex--;
+			}
+		}
+	]]>
+</script>
+
+    <page>
+        <title style="background:#38adff;tint-color:white">
+            <left>
+                <button role="back"></button>
+            </left>
+            <center>
+                <label>引用帖子</label>
+            </center>
+            <right>
+                <button onclick="submit();" style="font-size:18;color:#ffffff">发布</button>
+            </right>
+        </title>
+        <content>
+            <form id="forumForm" action="" progress="提交表单|正在提交表单，请稍后..." multipart="true">
+                <list>
+                	<item style="background:white">
+                    	<row><label id="title" style="font-size:16;color:#38adff;font-weight:bold;align:center;"></label></row>
+                    	<input type="hidden" id="forumId" name="forumId"></input>
+                    	<input type="hidden" id="classId" name="classId"></input>
+                    	<input type="hidden" id="forumTile" name="forumTile"></input>
+                    	<input type="hidden" id="childId" name="childId"></input>
+                	</item>
+                </list>
+                <list>
+                    <item style="col-width:100,*">
+                        <col>
+                           <label style="font-size:16;color:#555555;">署名方式：</label>
+                        </col>
+                        <col>
+                            <row>
+                               <radio name="anonymous" value="0" style="align:right;font-size:16;color:#555555;" checked="true">实名</radio>
+                               <radio name="anonymous" id="hidname" value="1" style="align:right;margin-left:10;font-size:16;color:#555555;">匿名</radio>
+                               <radio name="anonymous" id="nick" value="2" style="align:right;margin-left:10;display:none;font-size:16;color:#555555;">昵称</radio>
+                            </row>
+                        </col>
+                    </item>
+                    <item style="col-width:80,*">
+	                    <col>
+	                    	<row style="height:40;">
+	                    		<label style="font-size:16;color:#555555;">附件：</label>
+	                    	</row>
+	                    </col>
+	                    <col>
+	                    	<row id="fileRow">
+	                    	    <icon src="mail_addfu.png" style="width:28;height:28;" onclick="doRelatedAcc(this)"/>
+	                    	</row>
+	                    </col>
+	                </item>
+	                <item>
+                        <label style="margin-bottom:5;font-size:16;color:#555555;">正文：</label>
+                     	<row><web id="oldCont" style="margin-bottom:5"></web></row>
+                        <row><textarea id="forumContent" name="forumContent" placeholder="请输入" rows="15" maxrows="15" style="border:0 white;color:#555555;font-size:16"></textarea></row>
+                        <input id="newCont" name="newCont" type="hidden"/>
+                    </item>
+                </list>
+             </form>
+        </content>
+        <footer>
+	        <list>
+		        <item onclick="faceOpen();">
+	            	<row><icon src="forum_smil.png"></icon><icon id="faceOpen" src="forum_noopen.png" style="margin-left:5"></icon></row>
+	            </item>
+	        </list>
+	        <input id="face" name="face" type="hidden" value="0"/>
+	        <faceview id="faceview" style="display:none" onclick="this.input=$('forumContent')"></faceview>
+        </footer>
+    </page>
+</imag>
