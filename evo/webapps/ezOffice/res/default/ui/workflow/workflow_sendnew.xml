@@ -622,7 +622,11 @@
 		        if('0' == type){
 				    $page.open('../public/selectSingleUser.xml', {animation:'down-to-up'});
 		        }else if('1' == type){
-				    $page.open('../public/selectUser.xml', {animation:'down-to-up'});
+		           if(range == '*0*'){
+		            	 $page.open('../public/selectUserByOrg.xml', {animation:'down-to-up'});
+		            }else{
+		            	 $page.open('../public/selectUser.xml', {animation:'down-to-up'});
+		            }
 		        }else if('2' == type){
 				    $page.open('../public/selectSingleOrg.xml', {animation:'down-to-up'});
 		        }else if('3' == type){

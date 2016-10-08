@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+	<script>
+        <![CDATA[
+        	var storage = $phone.localStorage();
+        	var boardroomApplyId = storage.getItem('boardroomApplyId');//会议室流程申请ID
+        	var evoUrl = storage.getItem('evoUrl');
+	        var webServiceUrl = storage.getItem('webServiceUrl');
+	        var  fileNameArr = new Array();   //附件名称，需要显示的名称
+        	var  fileSaveNameArr = new Array();  //保存的名称
+	        
+	        var itemContent = '';
+	        // 页面加载完后执行
+        	$page.onload = function(){
+				$http.progress('正在加载，请稍后...').post(
+        			evoUrl + '/ezOffice/mail/getMeetInfo.do',{boardroomApplyId : boardroomApplyId},
+        			function(data){
+        				if(!data){
+        					alert('数据获取失败！');
+        				}
+        				var obj = eval('(' + data + ')');
+        				if(obj.logonerror &&obj.logonerror=='1'){
+		         			alert("该账号已在设备"+obj.deviceId+"上登录");
+		          			$page.open('../index.xml',{target:'_self'});
+		                    return;
+		                }
+						var $contentFormList = $('content_form_list');
+       					// 初始化表单数据
+       					createFormData(obj.data);
+       					$contentFormList.addMore('<imag><list>' + itemContent + '</list></imag>');
+       					if(fileNameArr.length>0){    //页面加载完，将附件加载到页面
+	     					for(var i=0;i<fileNameArr.length;i++ ){
+		     					viewMeetFiles(fileNameArr[i],fileSaveNameArr[i],'boardroom');
+		     				}
+	     				}
+        			}
+        		);
+        	}
+        	
+        	//初始化会议申请表单数据
+	        function createFormData(detailData){
+	        	if(detailData.boardroomCode){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">会议编号:</label>'+
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.boardroomCode == undefined ? '' : detailData.boardroomCode)+'</label></row></col></item>';
+	        	}
+	        	if(detailData.boardroomApplyType){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">会议类型:</label>'+
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.boardroomApplyType == undefined ? '' : detailData.boardroomApplyType)+'</label></row></col></item>';
+	        	}
+	        	if(detailData.motif){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">主题:</label>'+
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.motif == undefined ? '' : detailData.motif)+'</label></row></col></item>';
+	        	}
+	        	if(detailData.emceeName){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">主持人:</label>'+
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.emceeName == undefined ? '' : detailData.emceeName)+'</label></row></col></item>';
+	        	}
+	        	
+	        	if(detailData.personNum){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">出席人数:</label>'+
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.personNum == null ? '' : detailData.personNum)+'</label></row></col></item>';
+	        	}
+	        	if(detailData.attendeeLeader){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">出席领导:</label>'+
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.attendeeLeader == undefined ? '' : detailData.attendeeLeader)+'</label></row></col></item>';
+	        	}
+	        	if(detailData.meetingTimeList){
+	        	    var itemContentDate = '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">日期:</label>'+
+	        				   '</row></col><col style="margin:10;padding:10;">';
+  				    var itemContentHour = '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">开始时间:</label>'+
+  				   '</row></col><col style="margin:10;padding:10;">';
+  				    var itemContentMinu = '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">结束时间:</label>'+
+  				   '</row></col><col style="margin:10;padding:10;">';
+	        	    var meetingData = detailData.meetingTimeList;
+	        	    if(meetingData instanceof Array){
+	        	         for(var i=0;i<meetingData.length;i++){
+	        	         	itemContentDate +='<row><label style="align:right;color:#555555">'+(meetingData[i].destineDate == undefined ? '' : meetingData[i].destineDate)+'</label></row>';
+	        	         	var  startHour = meetingData[i].startHour;  //开始时
+	        	         	var  startMinute = meetingData[i].startMinute;  //开始分
+	        	         	var  endHour = meetingData[i].endHour;  
+	        	         	var  endMinute = meetingData[i].endMinute;
+	        	         	if(startHour <10){
+	        	         	    startHour = '0'+startHour;
+	        	         	}
+	        	         	if(startMinute <10){
+	        	         	    startMinute = '0'+startMinute;
+	        	         	}
+	        	         	if(endHour <10){
+	        	         	    endHour = '0'+endHour;
+	        	         	}
+	        	         	if(endMinute <10){
+	        	         	    endMinute = '0'+endMinute;
+	        	         	}
+	        	            itemContentHour +='<row><label style="align:right;color:#555555">'+startHour+':'+startMinute+'</label></row>';
+	        	        	itemContentMinu +='<row><label style="align:right;color:#555555">'+endHour+':'+endMinute+'</label></row>';
+	        	         }
+	        	    }else if(meetingData instanceof Object){
+	        	    	itemContentDate +='<row><label style="align:right;color:#555555">'+(meetingData.destineDate == undefined ? '' : meetingData.destineDate)+'</label></row>';
+	        	         	var  startHour = meetingData.startHour;  //开始时
+	        	         	var  startMinute = meetingData.startMinute;  //开始分
+	        	         	var  endHour = meetingData.endHour;  
+	        	         	var  endMinute = meetingData.endMinute;
+	        	         	if(startHour <10){
+	        	         	    startHour = '0'+startHour;
+	        	         	}
+	        	         	if(startMinute <10){
+	        	         	    startMinute = '0'+startMinute;
+	        	         	}
+	        	         	if(endHour <10){
+	        	         	    endHour = '0'+endHour;
+	        	         	}
+	        	         	if(endMinute <10){
+	        	         	    endMinute = '0'+endMinute;
+	        	         	}
+	        	            itemContentHour +='<row><label style="align:right;color:#555555">'+startHour+':'+startMinute+'</label></row>';
+	        	        	itemContentMinu +='<row><label style="align:right;color:#555555">'+endHour+':'+endMinute+'</label></row>';
+	        	    }
+	        		itemContentDate += '</col></item>';
+	        		itemContentHour += '</col></item>';
+	        		itemContentMinu += '</col></item>';
+	        		itemContent +=(itemContentDate+itemContentHour+itemContentMinu);
+	        	}
+	        	if(detailData.boardroomName){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">会议室名称:</label>'+
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.boardroomName == undefined ? '' : detailData.boardroomName)+'</label></row></col></item>';
+	        	}
+	        	if(detailData.addr){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">地点:</label>'+
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.addr == undefined ? '' : detailData.addr)+'</label></row></col></item>';
+	        	}
+	        	if(detailData.points){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">点数:</label>'+
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.points == undefined ? '' : detailData.points)+'</label></row></col></item>';
+	        	}
+	        	if(detailData.attendee){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">会议出席人:</label>'+
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.attendee == undefined ? '' : detailData.attendee)+'</label></row></col></item>';
+	        	}
+	        	if(detailData.nonvoting){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">会议列席人:</label>'+
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.nonvoting == undefined ? '' : detailData.nonvoting)+'</label></row></col></item>';
+	        	}
+	        	if(detailData.otherAttendeePerson){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">其他参会人员:</label>'+
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.otherAttendeePerson == undefined ? '' : detailData.otherAttendeePerson)+'</label></row></col></item>';
+	        	}
+	        	if(detailData.swPerson){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">单位收文员:</label>'+
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.swPerson == undefined ? '' : detailData.swPerson)+'</label></row></col></item>';
+	        	}
+	        	if(detailData.applyEmpName){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">预定者:</label>'+
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.applyEmpName == undefined ? '' : detailData.applyEmpName)+'</label></row></col></item>';
+	        	}
+	        	if(detailData.applyOrgName){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">预定部门:</label>'+
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.applyOrgName == undefined ? '' : detailData.applyOrgName)+'</label></row></col></item>';
+	        	}
+	        	if(detailData.applyDate){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">预定日期:</label>'+
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.applyDate == undefined ? '' : detailData.applyDate.substring(0,10))+'</label></row></col></item>';
+	        	}
+	        	if(detailData.linkTelephone){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">联系电话:</label>'+
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.linkTelephone == undefined ? '' : detailData.linkTelephone)+'</label></row></col></item>';
+	        	}
+	        	if(detailData.seatcard){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">席卡:</label>'+
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.seatcard == undefined ? '' : detailData.seatcard)+'</label></row></col></item>';
+	        	}
+	        	if(detailData.remark){
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">备注:</label>'+
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.remark == undefined ? '' : detailData.remark)+'</label></row></col></item>';
+	        	}
+	        	if(detailData.boardroomFileList){   // 附件下载
+	        	    var boardroomFileData = detailData.boardroomFileList;
+	        	    if(boardroomFileData instanceof Array){
+	        	    	for(var i=0;i<boardroomFileData.length;i++){
+	        	    		fileNameArr.push(boardroomFileData[i].boardroomFileName);
+	        	    		fileSaveNameArr.push(boardroomFileData[i].boardroomSaveName);
+	        	    	}
+	        	    }else if(boardroomFileData instanceof Object){
+	        	    		fileNameArr.push(boardroomFileData.boardroomFileName);
+	        	    		fileSaveNameArr.push(boardroomFileData.boardroomSaveName);
+	        	    }
+	        	    itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">附件:</label>'+
+	        				   '</row></col><col style="margin:10;padding:10;" id="meetFilesId"></col></item>';
+	        	}
+	        }
+	        
+	        function viewMeetFiles(accessoryNameseries,accessorySaveNameseries,path){  //附件显示
+	            var storage = $phone.localStorage();
+			    var evoUrl = storage.getItem('evoUrl');
+	            $http.post(evoUrl+'/ezOffice/doc/dealFiles.do',{accessoryNameseries:accessoryNameseries,accessorySaveNameseries:accessorySaveNameseries,path:path},  function(data) {
+	               if(data){
+	                   var obj = JSON.parse(data);
+	                   if(obj.logonerror &&obj.logonerror=='1'){
+		         			alert("该账号已在设备"+obj.deviceId+"上登录");
+		          			$page.open('../index.xml',{target:'_self'});
+		                    return;
+		               }
+		               var attList = obj.attList;
+		               if(!attList==""){  //不为空，数据进行迭代,并为附件赋值
+		                  for(var k=0;k<attList.length;k++){
+		                 // alert(attList[k].savename);
+		                      var files = $C('<row><icon src="mail_fujian.png" style="align:left;margin-right:5;"/><label style="color:#38adff;align:left;font-size:16;"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath='+path+'&amp;viewName=' + attList[k].realname +'\')">'+attList[k].realname+'</label></row>')
+		                      $('meetFilesId').add(files); 
+		                  }
+		               }else{     //无附件，或者后台处理异常
+		               
+		               }
+	               }
+	            },function(error) {
+					    if (error == 'timeout') {
+					        hint('连接服务器超时！');
+					    } else if (error == '404') {
+					        hint('页面不存在！');
+					    } else if (error == '500') {
+					        hint('内部服务器错误！');
+					    } else {
+					        hint('访问网络错误！错误代码:' + error);
+					    }
+					    $page.open('../index.xml',{animation:'down-to-up'});
+				   }
+	            );
+	        }
+        ]]>
+    </script>
+	<page>
+        <title style="background:#3daffe;tint-color:white">
+            <left>
+            	<button role="back"></button>
+            </left>
+            <center>
+            	<label>会议信息</label>
+            </center>
+        </title>
+        <content style="background:white" id="content_form">
+			<list id="content_form_list">
+			</list>
+        </content>
+	</page>
+</imag>

@@ -32,6 +32,11 @@
 	        				alert('获取转办信息失败！');
 	        				return false;
 	        			}
+	        			$('comment').value = decodeURIComponent($param['comment']);
+						// 手写审批、语言批示数据
+						$('commentShouxie_backName').value = $param['commentShouxie_backName'];
+						$('commentYuyin_backName').value =  $param['commentYuyin_backName'];
+						$('commentType').value = $param['commentType'];
 	        			var tranInfo = jsonData.data_0.data;
 	        			var $contentList = $('content_list');
 	        			// 创建节点选择及办理人选择
@@ -175,6 +180,10 @@
         <content id="content" style="background:white;">
         	<form id="sendForm" multipart="true" prompt="请稍后...">
    		        <input type="hidden" value="" name="workId" id="workId"/>
+				<input type="hidden" name="comment" id="comment" value="" />
+				<input type="hidden" name="commentShouxie_backName" id="commentShouxie_backName" value="" />
+				<input type="hidden" name="commentYuyin_backName" id="commentYuyin_backName" value="" />
+				<input type="hidden" name="commentType" id="commentType" value="" />
 	            <list id="content_list">
 	            </list>
             </form>

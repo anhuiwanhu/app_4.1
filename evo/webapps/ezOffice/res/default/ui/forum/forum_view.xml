@@ -129,6 +129,42 @@
 					});
 			}
 			
+			function downHtmlEditFile(accessorySaveNameseries,accessoryNameseries){
+			   var path = 'html';
+	            $http.post(evoUrl+'/ezOffice/doc/dealFiles.do',
+	              {accessoryNameseries:accessoryNameseries,accessorySaveNameseries:accessorySaveNameseries,path:path},
+	              function(data) {
+		               if(data){
+		                   var obj = JSON.parse(data);
+		                   if(obj.logonerror &&obj.logonerror=='1'){
+				     		    alert("该账号已在设备"+obj.deviceId+"上登录");
+				     		    $page.open('../index.xml',{target:'_self'});
+				                return;
+				           }
+			               var attList = obj.attList;
+			               if(!attList==""){  //不为空，数据进行迭代,并为附件赋值
+			                  for(var k=0;k<attList.length;k++){
+			                 	$http.download(evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&filename='+attList[k].savename+'&uploadPath=html'+'&viewName='+attList[k].realname);
+			                  }
+			               }else{     //无附件，或者后台处理异常
+			               
+			               }
+		               }
+		               
+		            },function(error) {
+					    if (error == 'timeout') {
+						hint('连接服务器超时！');
+					    } else if (error == '404') {
+						hint('链接超时重新登录！');
+					    } else if (error == '500') {
+						hint('内部服务器错误！');
+					    } else {
+						hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+				  });
+            }
+			
 			function downFile(attachurlser,savename,viewName){
 				$http.download(evoUrl+'/ezOffice/download/file.do?url='+attachurlser+'&filename='+savename+'&uploadPath=forum'+'&viewName='+viewName);
 			}
@@ -218,6 +254,9 @@
                				function down(attachurlser,savename,viewName){
                					$imag.exec('downFile(\''+attachurlser+'\',\''+savename+'\',\''+viewName+'\')');
                				}
+               				function fileDowload(savename,viewName){
+				               	$imag.exec('downHtmlEditFile(\''+savename+'\',\''+viewName+'\')');
+				            }
                			</script>
 					<body>
 					<article class="wh-article wh-article-forum" >

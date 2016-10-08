@@ -545,20 +545,6 @@
 		        				   		   '</row></col></item>';
 		        		}
 		        	}
-		        	if(key=='field4'&&govDocDetail.field4){
-						itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">'+govDocDetail.field4.name+':</label>'+
-		        				   '</row></col>';
-		        		var fieldDisplayType = govDocDetail.field4.fieldDisplayType;
-		        		if(fieldDisplayType == '13' || fieldDisplayType == '14' || fieldDisplayType == '17'){
-		        			if(govDocDetail.field4.text && govDocDetail.field4.text.length > 0){
-			        			attachmentArray.push(govDocDetail.field4.text + ';field4');
-		        			}
-		        			itemContent += '<col id="field4" style="margin:10;padding:10;"></col></item>';
-		        		}else{
-		        			itemContent += '<col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(govDocDetail.field4.text == undefined ? '' : govDocDetail.field4.text)+'</label>'+
-		        				   		   '</row></col></item>';
-		        		}
-		        	}
 		        	if(key=='field5'&&govDocDetail.field5){
 						itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">'+govDocDetail.field5.name+':</label>'+
 		        				   '</row></col>';

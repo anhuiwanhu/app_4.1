@@ -477,13 +477,14 @@
 				var processItems = '<item collapsed="true" onclick="opencloseMenu(this);">'+
 								   '<row><label style="font-size:16;color:#38adff">'+resultData.packageName+'</label>'+
 						           '<icon id="" src="forum_opendown.png" style="align:right;margin:2"></icon></row>';
+				var moduleId = resultData.moduleId;
 				var processCon = resultData.process;
 				var processNum = resultData.processNum;
 				if(processNum == 1){
-					processItems += createProcessItem(processCon);
+					processItems += createProcessItem(processCon,moduleId);
 				}else if(processNum > 1){
 					for(var i=0,length=processCon.length;i<length;i++){
-						processItems += createProcessItem(processCon[i]);
+						processItems += createProcessItem(processCon[i],moduleId);
 					}
 				}
 				processItems += '</item><item style="background:#f0eff5;padding:2"><col></col></item>';
@@ -491,13 +492,33 @@
 			}
 			
 			// 创建流程列表数据
-			function createProcessItem(processCon){
+			function createProcessItem(processCon,moduleId){
 				var clickFun = '';
 				var processType = processCon.pool_process_type;
-				if(processCon.pool_process_type =='0'){
+				if(moduleId=='11'){
+		           if(processType =='0'){
+					clickFun = 'openCarNewForm(\''+processCon.pool_oldprocess_formid+'\',\''+processCon.pool_oldprocess_id+'\',\''+processCon.pool_processName+'\')';
+				  }else if(processType =='1'){
+					clickFun = 'openCarNewEzForm(\''+processCon.pool_ezflowprocess_formKey+'\',\''+processCon.pool_ezflowprocess_defid+'\',\''+processCon.pool_processName+'\')';
+				  }
+		        }else if(moduleId=='15'){
+		           if(processType =='0'){
+					clickFun = 'openRoomReqNewForm(\''+processCon.pool_oldprocess_formid+'\',\''+processCon.pool_oldprocess_id+'\',\''+processCon.pool_processName+'\')';
+				  }else if(processType =='1'){
+					clickFun = 'openRoomReqNewEzForm(\''+processCon.pool_ezflowprocess_formKey+'\',\''+processCon.pool_ezflowprocess_defid+'\',\''+processCon.pool_processName+'\')';
+				  }
+		        }else if(moduleId=='16'){
+		          if(processType =='0'){
+					clickFun = 'openRoomAppNewForm(\''+processCon.pool_oldprocess_formid+'\',\''+processCon.pool_oldprocess_id+'\',\''+processCon.pool_processName+'\')';
+				  }else if(processType =='1'){s
+					clickFun = 'openRoomAppNewEzForm(\''+processCon.pool_ezflowprocess_formKey+'\',\''+processCon.pool_ezflowprocess_defid+'\',\''+processCon.pool_processName+'\')';
+				  }
+		        }else{
+		          if(processType =='0'){
 					clickFun = 'openNewForm(\''+processCon.pool_oldprocess_formid+'\',\''+processCon.pool_oldprocess_id+'\',\''+processCon.pool_processName+'\')';
-				}else if(processCon.pool_process_type =='1'){
+				  }else if(processType =='1'){
 					clickFun = 'openNewEzForm(\''+processCon.pool_ezflowprocess_formKey+'\',\''+processCon.pool_ezflowprocess_defid+'\',\''+processCon.pool_processName+'\')';
+				  }
 				}
 				var process = '<item accessory="indicator" style="col-width:40,*" onclick="'+clickFun+'">'+
 				                     '<col>'+

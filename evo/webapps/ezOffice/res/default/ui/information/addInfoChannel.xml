@@ -8,7 +8,6 @@
 	        var cunrrentContentIdIndex = '';   //当前从contentList 的id序号。加载下一个tabbar时，清楚前一个content中的模板内容
 	        var commChannelKind = '0';           //加载更多时传递到后台的
 	        var commChannelType = '0';          //加载更多时传递到后台的
-	        var channelIdArr = new Array();
 	        var elements = new Array();   
 	        var channelIdArr = new Array();      //临时存放id、name等数据，点击多选框时true，将数据写入，false时剔除
             var channelNameArr = new Array();
@@ -311,10 +310,6 @@
         }
         
         function opencloseMenu(obj,ic,gchannelId,channelType){
-           if(loadFlag == '1'){
-	        	return false;
-	       }
-	       loadFlag = '1';
            if(obj.subItems().length>0){
 		        return;
 		   }
@@ -456,7 +451,6 @@
 							alert('没有下级栏目');
 						}
 					}
-					loadFlag = '0';
 		         },function(error) {
 					    if (error == 'timeout') {
 					        hint('连接服务器超时！');
@@ -535,9 +529,24 @@
 			 }, 0);
 			 loadFlag = '0';
          }
+         
+          function getCheckedInfoTimeOut(channelId,channelName,isCanAdd,channelNeedCheckup){
+            if($("id_"+channelId).checked==true){
+           		 channelIdArr.push(channelId);   //选中插入数组
+		   		 channelNameArr.push(channelName);
+		   		 isCanAddArr.push(isCanAdd);
+		   		 channelNeedCheckupArr.push(channelNeedCheckup);
+            }else{
+                for (var i = 0; i < channelIdArr.length; i++) {  //删除数据
+                    if (channelIdArr[i] == channelId){
+                       channelIdArr[i] = '';
+                       break;
+                    } 
+	            }
+            }
+        }
         
-        
-         function getCheckedInfoTimeOut(channelId,channelName,isCanAdd,channelNeedCheckup){
+         function getCheckedInfoTimeOut22(channelId,channelName,isCanAdd,channelNeedCheckup){
 		    var  flag = '1';
 		    var  Arr_index = -1;
 		    for (var i = 0; i < channelIdArr.length; i++) {  //删除数据
@@ -546,9 +555,9 @@
                     	flag = '2';
                     	break;
                     } 
-               }
+            }
             if($("id_"+channelId).checked==true){
-               var flag = '1';  //channelIdArr中无数据，2表示有数据
+               var flag = '1';                       //channelIdArr中无数据，2表示有数据
 	           if(flag == '1'){
 	           		 channelIdArr.push(channelId);   //选中插入数组
 			   		 channelNameArr.push(channelName);
@@ -577,14 +586,17 @@
 		   function populateDB(tx) {
 		        tx.executeSql('delete from myInfoChannel');
 		        for (var i = 0; i < channelIdArr.length; i++) {
-	                    var channelId = channelIdArr[i];
-	                    var channelName = channelNameArr[i];
-	                    channelName = channelName.replace(/(&)/g,'');
-	                    var isCanAdd = isCanAddArr[i];
-	                    var channelNeedCheckup = channelNeedCheckupArr[i];
-	                    var sql='INSERT INTO myInfoChannel (channelId,channelName,isCanAdd,channelNeedCheckup) VALUES ("'+channelId+'","'+channelName+'","'+isCanAdd+'","'+channelNeedCheckup+'")';
-	                   // alert(sql);
-	                    tx.executeSql(sql);
+		                var channelId = channelIdArr[i];
+		                if(channelId == ''){
+		                	
+		                }else{
+		                    var channelName = channelNameArr[i];
+		                    channelName = channelName.replace(/(&)/g,'');
+		                    var isCanAdd = isCanAddArr[i];
+		                    var channelNeedCheckup = channelNeedCheckupArr[i];
+		                    var sql='INSERT INTO myInfoChannel (channelId,channelName,isCanAdd,channelNeedCheckup) VALUES ("'+channelId+'","'+channelName+'","'+isCanAdd+'","'+channelNeedCheckup+'")';
+		                    tx.executeSql(sql);
+		                }
 	            }
 		    }
 		    loadFlag = '0';

@@ -1461,9 +1461,9 @@
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
 	        		//金额
 	        		if(fieldType == '1000000' || fieldType == '1000001'){
-	        			itemContent += '<row><input style="color:#555555;font-size:16;" type="number" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '" value="' + field.value + '" maxlength="9" onchange="computeExpress(this);" onchange="computeExpress(this);"/></row>';
+	        			itemContent += '<row><input style="color:#555555;font-size:16;" type="number" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '" value="' + field.value + '" maxlength="9"  onchange="computeExpress(this);"/></row>';
 	        		}else{
-	        			itemContent += '<row><input style="color:#555555;font-size:16;" type="text" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '" value="' + field.value + '" maxlength="9" onchange="computeExpress(this);" onchange="computeExpress(this);"/></row>';
+	        			itemContent += '<row><input style="color:#555555;font-size:16;" type="text" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '" value="' + field.value + '" maxlength="9"  onchange="computeExpress(this);"/></row>';
 	        		}
 	        		canComputeField.push(field.sysname);
 	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);

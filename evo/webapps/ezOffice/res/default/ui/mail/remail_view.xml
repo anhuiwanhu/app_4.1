@@ -69,9 +69,9 @@
 								$('mailweb').css('display', 'block');
 								$('mailcontent').css('display', 'none');
 							}else{
-								$("mailcontent").text=newcontent;
-								$('mailweb').css('display', 'none');
-								$('mailcontent').css('display', 'block');
+								$("mailweb").html=newcontent;
+								$('mailweb').css('display', 'block');
+								$('mailcontent').css('display', 'none');
 							}
 							
 							var objArr = data.attachments;
@@ -98,6 +98,50 @@
 						toErro(error);
 					});
 			}
+			
+			function jumpInfo(informationId,informationType){
+				storage.setItem('information_informationId',informationId);
+				storage.setItem('information_informationType',informationType);
+				$page.open('../information/info.xml',{target:'_self'});
+			}
+			function jumpMeetRoomDetail(boardroomApplyId){
+				storage.setItem('boardroomApplyId',boardroomApplyId);
+				$page.open('meetRoomDetail.xml',{target:'_self'});
+			}
+			
+			function downFile(accessorySaveNameseries,accessoryNameseries){
+			   var path = 'html';
+	            $http.post(evoUrl+'/ezOffice/doc/dealFiles.do',
+	              {accessoryNameseries:accessoryNameseries,accessorySaveNameseries:accessorySaveNameseries,path:path},
+	              function(data) {
+		               if(data){
+		                   var obj = JSON.parse(data);
+		                   if(obj.logonerror &&obj.logonerror=='1'){
+				     		    alert("该账号已在设备"+obj.deviceId+"上登录");
+				     		    $page.open('../index.xml',{target:'_self'});
+				                return;
+				           }
+			               var attList = obj.attList;
+			               if(!attList==""){  //不为空，数据进行迭代,并为附件赋值
+			                  for(var k=0;k<attList.length;k++){
+			                 	$http.download(evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&filename='+attList[k].savename+'&uploadPath=html'+'&viewName='+attList[k].realname);
+			                  }
+			               }else{     //无附件，或者后台处理异常
+			               }
+		               }
+		            },function(error) {
+					    if (error == 'timeout') {
+						hint('连接服务器超时！');
+					    } else if (error == '404') {
+						hint('链接超时重新登录！');
+					    } else if (error == '500') {
+						hint('内部服务器错误！');
+					    } else {
+						hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+				  });
+            }
 			
 			function viewFiles(accessoryNameseries,accessorySaveNameseries){
 			    $('docFiles').css('display','block');

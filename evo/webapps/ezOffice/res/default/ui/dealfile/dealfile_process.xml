@@ -2330,12 +2330,20 @@
 			// 转办发送
 			function tranInfo(){
 				$('main_popupmenu').close();
-				/**
-				if(!confirm('确定转办？')){
-					return false;
+				var commentType = $('commentType').value;
+				commentType = '';
+				var $comment = $('comment_input');
+				var commentCon = '';
+				if(commentType == '4'){
+					commentCon = $('comment_input_shouxie').value;
+				}else if(commentType == '5'){
+					commentCon = $('comment_input_yuyin').value;
+				}else{
+					if($comment){
+						commentCon = $comment.value;
+					}
 				}
-				**/
-				$page.open('../workflow/workflow_tranInfo.xml?fromXml='+fromXml+'&workId='+workId+'&workcurstep='+encodeURIComponent($('workcurstep').value),
+				$page.open('../workflow/workflow_tranInfo.xml?fromXml='+fromXml+'&workId='+workId+'&workcurstep='+encodeURIComponent($('workcurstep').value)+'&commentType='+commentType+'&comment='+encodeURIComponent(commentCon),
 				{animation:'down-to-up'});
 			}
 			

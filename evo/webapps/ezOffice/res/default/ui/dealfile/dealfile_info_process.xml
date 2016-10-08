@@ -175,7 +175,7 @@
 	        		// 地址连接
 	        		infoContent = $C('<row style="margin-top:30;margin-bottem:30px;"><web id="content_web"></web></row>');
 	        		$infoContent.add(infoContent);
-	        		$('content_web').html = '<div style="text-align:center;" ><a href="'+content+'" >'+content+'</a></div>';
+	        		$('content_web').html = '<div style="text-align:center;" ><a href="" >'+content+'</a></div>';
 	        	}else if(informationType == '3'){
 	        		// 文件链接
 	        		var cons = content.split(":");
@@ -879,8 +879,10 @@
 				var commentIsNone = $('commentmustnonull').value;  //节点中的批示意见是否为空表示，若为true为不能为空
 			    if(commentIsNone == 'true'){
 			    	 if(commentCon == ''){
-			    	 	//alert('批示意见不能为空！');
-			    	 	//return;
+			    	 	if($comment){
+			    	 		alert('批示意见不能为空！');
+			    	 		return;
+			    	 	}
 			    	 }
 			    }
 				$('sendForm').action = evoUrl + '/ezOffice/workflow/sendnew.do';

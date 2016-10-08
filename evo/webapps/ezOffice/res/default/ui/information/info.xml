@@ -111,11 +111,10 @@
 					       $('info_content').add(content_label);
 					       $('content_web').html = '<article class="wh-article" ><div class="wh-article-fulltext">' +obj.content+ '</div></article>';
 				       }else if(data.informationType=="2"){   //地址链接
-				           var  content_label = $C('<row><web id="web_2" ></web></row>');
+				           var  content_label = $C('<web id="web_2"></web>');
 				           $('info_content').clear();
 				           $('info_content').add(content_label);
-				          // $('web_2').htm1 =  obj.data.informationContent;
-				          $('web_2').html = '<div style="text-align:center;" ><a href="'+obj.data.informationContent+'" >'+obj.data.informationContent+'</a></div>';
+				           $('web_2').src=obj.data.informationContent;
 				       }else if(data.informationType=="3"){   //文件链接
 				           var httpserver =  obj.httpserver;
 				           var attachurl = obj.attachurl;

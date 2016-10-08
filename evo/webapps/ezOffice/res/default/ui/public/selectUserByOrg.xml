@@ -1,0 +1,652 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+<script>
+<![CDATA[
+    var storage = $phone.localStorage();
+    var searchOrgId = '0';
+    var lastOrgName ='';
+    var evoUrl = storage.getItem('evoUrl');
+    var deptArr = [];
+    
+    var selectuser_range = storage.getItem('sys_selectuser_range');
+    var selectUserIds = storage.getItem('sys_selectuser_userids');
+    var selectUserNames = storage.getItem('sys_selectuser_usernames');
+    var selectuser_returnfuc = storage.getItem('sys_selectuser_returnfuc');
+    var picPath = storage.getItem('picPath');
+    var addMore='0';
+    var curpage = '0';
+    var hasMore='0';
+	var page='0';
+	$page.onload = function() {
+        gotoDeptById(searchOrgId, lastOrgName);
+        $('contents').showContent(0);
+	}
+	
+    function toFirst(){
+		curpage = '0';
+		hasMore='0';
+    	var seOrgId = $('orgId').value;
+    	$http.post(evoUrl+'/ezOffice/contacts/getDepartment.do', 
+			{searchOrgId:seOrgId}, function(data){
+			var obj = JSON.parse(data);
+			if(obj.logonerror &&obj.logonerror=='1'){
+     		    alert("该账号已在设备"+obj.deviceId+"上登录");
+     		    $page.open('../index.xml',{target:'_self'});
+                return;
+            }
+			var result1 = obj.message.result;
+			var listJson = {items:[]};
+			if(result1 =="1"){
+				var orgData = obj.data;
+		        if(orgData instanceof Array){
+			        hasMore='1';
+			        for(var i=0;i<orgData.length;i++){
+			           var orgId = orgData[i].orgId;
+				       var orgName = orgData[i].orgName;
+			           var firstname = "";
+			           if(orgName.length==0){
+			           	   orgName="";
+			           }else{
+			               firstname = orgName.substring(0,1); 
+			           }
+			           var style = 'width:120;background:#f98e75;width:40;height:40;align:left;font-size:16;color:#ffffff';
+			           var itemJson = {
+			              template :0,
+			              onclick :'gotoDeptById("'+orgId+'","'+orgName+'")',
+			              widgets:{
+			                  btn:{text:firstname,style:style},
+			                  orgName:{text:orgName}
+			              }
+			           }
+			          listJson.items.push(itemJson);
+			        }
+		        }else if(orgData instanceof Object){
+		               hasMore='1';
+		               var org = orgData.org;
+		               var orgId = org.orgId;
+				       var orgName = org.orgName;
+			           var firstname = "";
+			           if(orgName.length==0){
+			           	   orgName="";
+			           }else{
+			               firstname = orgName.substring(0,1); 
+			           }
+			           var style = 'width:120;background:#f98e75;width:40;height:40;align:left;font-size:16;color:#ffffff';
+			           var itemJson = {
+			              template :0,
+			              onclick :'gotoDeptById("'+orgId+'","'+orgName+'")',
+			              widgets:{
+			                  btn:{text:firstname,style:style},
+			                  orgName:{text:orgName}
+			              }
+			           }
+		            listJson.items.push(itemJson);
+		        }
+		        $('innerList').update(listJson);
+		       getUser(seOrgId);
+		    }
+   		},function(error) {
+			toErro(error);
+		});
+    }
+    
+    function getUser(seOrgId){
+    	if(addMore=='1'){
+			return;
+		}
+		addMore='1';
+		$('InnerCon').showBottom();
+		$http.progress('正在加载，请稍后...').post(evoUrl+'/ezOffice/contacts/searchUserList.do',
+		   {range:selectuser_range,curpage:curpage,searchuser:'',
+		     selectType:'1',orgId:seOrgId},
+		  function(data) {
+                 var listJson = {items:[]};
+			     var obj = JSON.parse(data);
+			     if(obj.logonerror &&obj.logonerror=='1'){
+	     		     alert("该账号已在设备"+obj.deviceId+"上登录");
+	     		     $page.open('../index.xml',{target:'_self'});
+	                 return;
+	             }
+			    var result = obj.message.result;
+				var listJson = {items:[]};
+				if(result =="1"){
+					var recordCount = obj.data.recordCount;
+					if(parseInt(recordCount) <=0){
+						if(hasMore!='1'){
+							creatNodata();
+						}
+						$('InnerCon').hideBottom();
+						$('InnerCon').hideTop();
+						addMore='0';
+					}else{
+						var pageCount = obj.data.pageCount;
+						var currentPage = obj.data.currentPage;
+		                var list = obj.data.list;
+		                if(list instanceof Array){
+	                		for(var i=0;i<list.length;i++){
+	                			var userId = list[i].userId;
+						        var userName = list[i].userName;
+						        var mobilePhone = "";
+						        var empLivingPhoto="";
+						        if(list[i].empLivingPhoto != "" && list[i].empLivingPhoto != "null" && list[i].empLivingPhoto != null){
+		        					empLivingPhoto = picPath+list[i].empLivingPhoto;
+		        				}
+		        				if(list[i].empLivingPhoto.indexOf('.gif')>-1){
+						        	empLivingPhoto="";
+						        }
+		        				var sel = 'false';
+						        if(selectUserIds.indexOf("$"+userId+"$")>-1){
+						           sel = 'true';
+						           addMult("user",userId,userName);
+						        }
+						        var itemJson = {
+				                    template:1,
+				                    onclick:'',
+				                    widgets:{
+				                        check:{id:'chek_user'+userId,checked:sel,onclick:'setSelect("user",this,"'+userId+'","'+userName+'");'},
+				                        photo:{src:empLivingPhoto},
+				                        cont:{text:userName},
+				                        phone:{text:mobilePhone}
+				                    }
+				                  }
+				                listJson.items.push(itemJson);
+	                		}
+	                	}else if(list instanceof Object){
+	                		var userId = list.userId;
+					        var userName = list.userName;
+					        var mobilePhone = "";
+					        var empLivingPhoto="";
+					        if(list.empLivingPhoto != "" && list.empLivingPhoto != "null" && list.empLivingPhoto != null){
+	        					empLivingPhoto = picPath+list.empLivingPhoto;
+	        				}
+	        				var sel = 'false';
+					        if(selectUserIds.indexOf("$"+userId+"$")>-1){
+					           sel = 'true';
+					           addMult("user",userId,userName);
+					        }
+					        var itemJson = {
+			                    template:1,
+			                    onclick:'',
+			                    widgets:{
+			                        check:{id:'chek_user'+userId,checked:sel,onclick:'setSelect("user",this,"'+userId+'","'+userName+'");'},
+			                        photo:{src:empLivingPhoto},
+			                        cont:{text:userName},
+			                        phone:{text:mobilePhone}
+			                    }
+			                  }
+			                listJson.items.push(itemJson);
+	                	}
+		                $('innerList').addMore(listJson);
+	                	if(parseInt(currentPage) < parseInt(pageCount)){
+                			$('bottom_more').css('display','block');
+                			disp='1';
+	                	}else{
+	                		$('InnerCon').hideBottom();
+	                		disp='0';
+	                	}
+	                	$('InnerCon').hideTop();
+						addMore='0';
+					}
+				}else{
+					if(hasMore!='1'){
+						creatNodata();
+					}
+					$('InnerCon').hideBottom();
+					$('InnerCon').hideTop();
+					addMore='0';
+			}
+	   		},function(error) {
+				toErro(error);
+			});
+    }
+    
+    function creatNodata(){
+    	var listJson = {items:[]};
+    	var itemJson = {
+            template :2,
+            onclick : '',
+            widgets : {
+                title : {text :'暂无相关记录'}
+            }
+        }
+        listJson.items.push(itemJson);
+        $('innerList').update(listJson);
+    }
+    
+    function setSelect(type,obj,id,name){
+    	if(obj.checked){
+	        if(type=="user"){
+	            if(selectUserIds.indexOf("$"+id+"$")==-1){
+	                 selectUserIds += "$"+id+"$";
+                     selectUserNames += name+",";
+                 }
+            }
+            addMult(type,id,name);
+        }else{
+        	delSelect(type,id,name)
+        }
+    }
+    
+    function addMult(type,id,name){
+          if(type=="user"){
+             if($("mulView_user"+id)==null){
+	             $('multipleview').add($C('<multipleviewitem onclick="delSelect(\''+type+'\',\''+id+'\',\''+name+'\')" id="mulView_user'+id+'" style="margin-left:8;margin-right:8">' +
+	        			  '<icon src="login_user.png" style="width:30;height:30;"/>' +
+	        			  '<label style="color:#38adff;font-size:8">'+name+'</label>' +
+	        		      '</multipleviewitem>'));
+              }
+          }
+          $('multipleview').badge=$('multipleview').widgets().length;
+	}
+    function delSelect(type,id,name){
+    	if(type=="user"){
+	           if($('chek_user'+id)!=null){
+	            $('chek_user'+id).checked=false;
+	           }
+	           selectUserIds = selectUserIds.replace("$"+id+"$","");
+	           selectUserNames = selectUserNames.replace(name+",","");
+        }
+        delMult(type,id,name);
+    }
+    function delMult(type,id,name){
+        if(type=="user"){
+	      	if($("mulView_user"+id)!=null){
+	      		$('multipleview').remove($("mulView_user"+id));
+	        }
+        }
+        $('multipleview').badge=$('multipleview').widgets().length;
+	}
+
+	function upfrsh(){
+   		var se = $("searchUser").value;
+		if(se==''){
+			$('bottom_more').css('display','none');
+	        $('InnerCon').showBottom();
+	   		curpage = '0';
+	   		if($("orgId").value!=searchOrgId){
+				showHeaderHierarchy();
+			}
+			toFirst();
+			$('contents').showContent(0);
+		}else{
+			$('sear_more').css('display','none');
+	        $('serCon').showBottom();
+	   		page = '0';
+	   		getSearch();
+			$('contents').showContent(1);
+		}
+   }
+	
+   function search(){
+		var se = $("searchUser").value;
+		if(se==''){
+			$('contents').showContent(0);
+			curpage = '0';
+			if($("orgId").value!=searchOrgId){
+				showHeaderHierarchy();
+			}
+			toFirst();
+		}else{
+			$('contents').showContent(1);
+			hideHeaderHierarchy();
+			page = '0';
+			getSearch();
+		}
+	}
+
+   function downfrsh(){
+		curpage = parseInt(curpage)+15+"";
+		$('bottom_more').css('display','none');
+		var seOrgId = $('orgId').value;
+		getUser(seOrgId);
+	}
+    
+    var flag='0';
+    function getSearch(){
+    	if(flag=='1'){
+			return;
+		}
+		if(page=='0'){
+			$('serList').clear();
+		}
+		flag='1';
+		$('serCon').showBottom();
+		$http.progress('正在加载，请稍后...').post(evoUrl+'/ezOffice/contacts/searchUserList.do',
+		   {range:selectuser_range,curpage:page,searchuser:$("searchUser").value,
+		     selectType:'0',orgId:''},
+		  function(data) {
+                 var listJson = {items:[]};
+			     var obj = JSON.parse(data);
+			     if(obj.logonerror &&obj.logonerror=='1'){
+	     		     alert("该账号已在设备"+obj.deviceId+"上登录");
+	     		     $page.open('../index.xml',{target:'_self'});
+	                 return;
+	             }
+			    var result = obj.message.result;
+				var listJson = {items:[]};
+				if(result =="1"){
+					var recordCount = obj.data.recordCount;
+					if(parseInt(recordCount) <=0){
+						creatNo();
+						$('serCon').hideBottom();
+						$('serCon').hideTop();
+						flag='0';
+					}else{
+						var pageCount = obj.data.pageCount;
+						var currentPage = obj.data.currentPage;
+		                var list = obj.data.list;
+		                if(list instanceof Array){
+	                		for(var i=0;i<list.length;i++){
+	                			var userId = list[i].userId;
+						        var userName = list[i].userName;
+						        var mobilePhone = "";
+						        var empLivingPhoto="";
+						        if(list[i].empLivingPhoto != "" && list[i].empLivingPhoto != "null" && list[i].empLivingPhoto != null){
+		        					empLivingPhoto = picPath+list[i].empLivingPhoto;
+		        				}
+		        				if(list[i].empLivingPhoto.indexOf('.gif')>-1){
+						        	empLivingPhoto="";
+						        }
+		        				var sel = 'false';
+						        if(selectUserIds.indexOf("$"+userId+"$")>-1){
+						           sel = 'true';
+						           addMult("user",userId,userName);
+						        }
+						        var itemJson = {
+				                    template:0,
+				                    onclick:'',
+				                    widgets:{
+				                        check:{id:'chek_user'+userId,checked:sel,onclick:'setSelect("user",this,"'+userId+'","'+userName+'");'},
+				                        photo:{src:empLivingPhoto},
+				                        cont:{text:userName},
+				                        phone:{text:mobilePhone}
+				                    }
+				                  }
+				                listJson.items.push(itemJson);
+	                		}
+	                	}else if(list instanceof Object){
+	                		var userId = list.userId;
+					        var userName = list.userName;
+					        var mobilePhone = "";
+					        var empLivingPhoto="";
+					        if(list.empLivingPhoto != "" && list.empLivingPhoto != "null" && list.empLivingPhoto != null){
+	        					empLivingPhoto = picPath+list.empLivingPhoto;
+	        				}
+	        				var sel = 'false';
+					        if(selectUserIds.indexOf("$"+userId+"$")>-1){
+					           sel = 'true';
+					           addMult("user",userId,userName);
+					        }
+					        var itemJson = {
+			                    template:0,
+			                    onclick:'',
+			                    widgets:{
+			                        check:{id:'chek_user'+userId,checked:sel,onclick:'setSelect("user",this,"'+userId+'","'+userName+'");'},
+			                        photo:{src:empLivingPhoto},
+			                        cont:{text:userName},
+			                        phone:{text:mobilePhone}
+			                    }
+			                  }
+			                listJson.items.push(itemJson);
+	                	}
+		                $('serList').addMore(listJson);
+	                	if(parseInt(currentPage) < parseInt(pageCount)){
+                			$('sear_more').css('display','block');
+                			disp='1';
+	                	}else{
+	                		$('serCon').hideBottom();
+	                		disp='0';
+	                	}
+	                	$('serCon').hideTop();
+						flag='0';
+					}
+				}else{
+					creatNo();
+					$('serCon').hideBottom();
+					$('serCon').hideTop();
+					flag='0';
+			}
+	   		},function(error) {
+				toErro(error);
+			});
+    }
+    
+    function creatNo(){
+    	var listJson = {items:[]};
+    	var itemJson = {
+            template :num,
+            onclick : '',
+            widgets : {
+                title : {text :'暂无相关记录'}
+            }
+        }
+        listJson.items.push(itemJson);
+        $('serList').update(listJson);
+    }
+    
+   function downSear(){
+		page = parseInt(page)+15+"";
+		$('sear_more').css('display','none');
+		getSearch();
+	}
+    
+    //完成选择
+    function completeseleted(){
+        var returnfuc = selectuser_returnfuc+'(\"'+selectUserIds+'\",\"'+selectUserNames+'\")' ;
+    	$page.close(0, returnfuc);
+   	} 
+    
+    // 显示面包屑导航
+    function showHeaderHierarchy(){
+        $("header_hierarchy_item").css("display", "");
+    }
+     
+  	// 隐藏面包屑导航
+    function hideHeaderHierarchy(){
+     	$("header_hierarchy_item").css("display", "none");
+    }
+
+  	// 显示面包屑页面Title的回退按钮
+    function showTitleHierarchy(){
+        $("title_backParent_btn").onclick = function (){
+	        gotoDeptByHierarchy(deptArr[deptArr.length-2].id);
+	    }
+		$("title_backParent_btn").css("display", "");
+    }
+     
+  	// 隐藏面包屑页面Title的回退按钮
+    function hideTitleHierarchy(){
+     	$("title_backParent_btn").css("display", "none");
+    }
+    
+    function gotoDeptById(id, name, execFunc){
+		if(id == searchOrgId){
+           	hideHeaderHierarchy();
+       	}else{
+       		showHeaderHierarchy();
+        }
+       	gotoDept(id, name, function(){
+       		if(execFunc == null || execFunc != false){
+       			toFirst();
+           	}
+          	});
+     }
+      
+	//跳转到相应部门
+	function gotoDept(id, name, func){
+		$("orgId").value = id;
+		if(func != null){
+			func();
+		}
+		if(id == searchOrgId){
+			deptArr = [];
+		}
+		deptArr.push({id:id, name:name});
+		initHeader();
+	}
+	
+	// 初始化header头
+	function initHeader(){
+		var header_hierarchy = "";
+		var allOrgName="";
+		for(var i=0; i<deptArr.length; i++){
+	    	if(i == (deptArr.length-1) || i=="0"){
+	    		allOrgName += deptArr[i].name;
+	    	}else{
+	    		allOrgName += deptArr[i].name +' \> ';
+	    	}
+        }
+        if(allOrgName.length > 30){
+        	allOrgName = "..."+allOrgName.substring((allOrgName.length-30),allOrgName.length);
+        }
+        $("allOrgName").text=allOrgName;
+        storage.setItem("dptl",deptArr.length);
+		// 判断返回上级
+		$("header_backParent").remove($('header_backParent_label'));
+		if(deptArr.length>1){
+			$("header_backParent").add($C('<label style="font-size:12;color:#38adff;" id="header_backParent_label" onclick="gotoDeptByHierarchy(\''+deptArr[deptArr.length-2].id+'\')" >返回上级</label>'));
+		}
+	}
+	
+	// 通过Id直接返回到某个结点上
+	function gotoDeptByHierarchy(id){
+		var deptId = "";
+		var deptName = "";
+	    var num = -1;
+		for(var i=0; i<deptArr.length; i++){
+			if(deptArr[i].id == id){
+				num = i;
+				deptId = deptArr[i].id;
+				deptName = deptArr[i].name;
+				break;
+			}
+		}
+		if(num != -1){
+			deptArr.splice(num);
+		}
+		gotoDeptById(deptId, deptName);
+	}
+	
+	function deptClear(){
+		deptArr = [];
+		$("header_hierarchy").remove($('header_hierarchy_label'));
+		$("header_backParent").remove($('header_backParent_label'));
+	}
+
+	function toErro(error){
+		if (error == 'timeout') {
+			hint('连接服务器超时！');
+		} else if (error == '404') {
+			hint('链接超时重新登录！');
+		} else if (error == '500') {
+			hint('内部服务器错误！');
+		} else {
+			hint('访问网络错误！错误代码:' + error);
+		}
+		$page.open('../index.xml',{animation:'down-to-up'});
+	} 
+]]>
+</script>
+    <page>
+        <title style="background:#3daffe;tint-color:white">
+            <left>
+                <button id="back1" role="back"></button>
+            </left>
+            <center>
+                <label style="color:#ffffff">人员选择</label>
+            </center>
+        </title>
+        <header>
+        	 <list>
+                <item style="padding:0;">
+                    <row>
+				         <input type="search" placeholder="请输入用户名查询" id="searchUser" onclick="search();"/>
+                    </row>
+                </item>
+                <item id="header_hierarchy_item" style="col-width:*,10,60; padding:0 2; display:none;">
+                    <col>
+                    	<row style="height:40;" id="header_hierarchy">
+                    		<label style="font-size:12;color:#b8b8b8;" id="allOrgName"></label>
+                    	</row>
+                    </col>
+                    <col></col>
+                    <col>
+                        <row style="height:40;" id="header_backParent"></row>
+                    </col>
+            	</item>
+            </list>
+        </header>
+        <contents id="contents">
+	       	<content id="InnerCon" draggable="true" ondragdown="upfrsh();">
+				<input type="hidden" id="orgId" value="0"/>
+				<list id="innerList" reuse="true">
+					<item style="col-width:45,*" accessory="indicator">
+	                    <col>
+	                       <button reusekey="btn"></button>
+	                    </col>
+	                    <col>
+	                        <label reusekey="orgName" style="color:#555555;font-size:16"></label>
+	                    </col>
+	                </item>
+	                <item style="col-width:45,45,*">
+	                    <col>
+	                    	<checkbox reusekey="check"></checkbox>
+	                    </col>
+	                    <col>
+	                    	<img reusekey="photo" style="height:35;width:35;" default="login_per.png" effect="round"></img>
+	                    </col>
+	                    <col>
+	                    	<label reusekey="cont" style="color:#555555;font-size:16"></label>
+	                    	<label reusekey="phone" style="color:#b8b8b8;font-size:12"></label>
+	                    </col>
+	                </item>
+	                <item>
+	                   <col><row><label reusekey="title" style="align:center;">暂无相关记录</label></row></col>
+	                </item>
+				</list>
+				<bottom id="bottom" style="display:block">
+		            <list>
+		                <item onclick="downfrsh();" style="background:null,#DEE3E7">
+		                    <row id="bottom_more" style="display:none">
+		                        <label style="align:center;">点击加载更多...</label>
+		                        <progress id="globalProgress" style="display:hidden;align:center;"/>
+		                    </row>
+		                </item>
+		            </list>
+		        </bottom>
+			</content>
+			<content id="serCon" draggable="true" ondragdown="upfrsh();">
+				<list id="serList" reuse="true">
+	                <item style="col-width:45,45,*">
+	                    <col>
+	                    	<checkbox reusekey="check"></checkbox>
+	                    </col>
+	                    <col>
+	                    	<img reusekey="photo" style="height:35;width:35;" default="login_per.png" effect="round"></img>
+	                    </col>
+	                    <col>
+	                    	<label reusekey="cont" style="color:#555555;font-size:16"></label>
+	                    	<label reusekey="phone" style="color:#b8b8b8;font-size:12"></label>
+	                    </col>
+	                </item>
+	                <item>
+	                   <col><row><label reusekey="title" style="align:center;">暂无相关记录</label></row></col>
+	                </item>
+				</list>
+				<bottom id="bottomSer" style="display:block">
+		            <list>
+		                <item onclick="downSear();" style="background:null,#DEE3E7">
+		                    <row id="sear_more" style="display:none">
+		                        <label style="align:center;">点击加载更多...</label>
+		                        <progress id="globalProgress" style="display:hidden;align:center;"/>
+		                    </row>
+		                </item>
+		            </list>
+		        </bottom>
+			</content>
+		</contents>
+        <footer style="background:#e0e0e0;">
+			<multipleview id="multipleview" style="tint-color:#ffffff;margin-right:2;confirm-titlesize:16;height:50;" confirmBackground="#0000ff,#0000ff" onclick="completeseleted();"></multipleview>
+		</footer>
+    </page>
+</imag>

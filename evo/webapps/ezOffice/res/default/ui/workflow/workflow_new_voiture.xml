@@ -31,10 +31,15 @@
 		                    return;
 		                }
 						var result = obj.message.result;
-						if(result !='1'){
-							alert('数据获取失败！');
+						if(result =='0'){
+							alert('您尚无车辆的使用权限！');
+							$page.close();
 							return;
 						}
+						/*if(result !='1'){
+							alert('数据获取失败！');
+							return;
+						}*/
 						var fildList = obj.data.fieldList;
 						if(fildList instanceof Array){
         					for(var i=0;i<fildList.length;i++){
@@ -87,10 +92,16 @@
 							'</row></col><col style="padding:10;margin:10;">';
 				var selectContent = '<select id="voitureName" name="voitureName" onchange="setMan();">'+
        			'<option value="">请选择</option>';
-	       		for(var index=0;index<fild.dataList.length;index++){
-	        		var car = fild.dataList[index].hiddenval +'_'+fild.dataList[index].motorMan;
-	        		selectContent += '<option value="'+car+'">'+fild.dataList[index].showval+'</option>';
-	       		}
+       			var list = fild.dataList;
+       			if(list instanceof Array){
+       				for(var index=0;index<list.length;index++){
+		        		var car = list[index].hiddenval +'_'+list[index].motorMan;
+		        		selectContent += '<option value="'+car+'">'+list[index].showval+'</option>';
+		       		}
+       			}else if(list instanceof Object){
+       				var car = list.val.hiddenval +'_'+list.val.motorMan;
+		        	selectContent += '<option value="'+car+'">'+list.val.showval+'</option>';
+       			}
        			selectContent += '</select>';
 				itemContent += selectContent + '<input type="hidden" name="voitureId" id="voitureId"></input></col></item>';
 				pushMustFillArray(mustfilled,fild.voitureName,'voitureId');

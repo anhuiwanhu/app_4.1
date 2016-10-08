@@ -70,7 +70,7 @@
 							if(data.mailSign=="1"){
 								$("mailSign").checked=true;
 								var gnome = data.gnome+"";
-								if(gnome!=null || gnome!=""){
+								if(gnome!=null && gnome!=""&&gnome!="null"){
 									newcontent += '\r\n\r\n'+gnome;
 								}
 							}
@@ -79,23 +79,33 @@
 							}
 							$("mailcontent").value=newcontent;
 							var objArr = data.attachments;
+							$("accessorySize").value=obj.accessorySize;
 		                    var accessoryNameseries="";
 		                    var accessorySaveNameseries="";
+		                    var sfilenames="";
+		                	var rfileNames="";
 		                    if((objArr+"")!=null && (objArr+"")!=""){
 		                    	if(objArr instanceof Array){    //返回多条数据
 					        	    for (var i = 0; i < objArr.length; i++) {
-					        	        if(i<objArr.length-1){
-					        	            accessoryNameseries += objArr[i].name+"|";
+					        	        	accessoryNameseries += objArr[i].name+"|";
+					        	            rfileNames += objArr[i].name+"$F$";
 					        	            accessorySaveNameseries += objArr[i].savename+"|";
+					        	            sfilenames += objArr[i].saveName+"$F$";
 					        	        }else if(i==objArr.length-1){
 					        	            accessoryNameseries += objArr[i].name;
+					        	            rfileNames += objArr[i].name;
 					        	            accessorySaveNameseries += objArr[i].savename;
+					        	            sfilenames += objArr[i].saveName;
 					        	        }
 					        	    }
 					        	    viewFiles(accessoryNameseries,accessorySaveNameseries);
 					        	}else if(objArr instanceof Object){   //返回一条数据
+					        		rfileNames = objArr.file.name;
+					        		sfilenames = objArr.file.savename;
 					        	    viewFiles(objArr.file.name,objArr.file.savename);
 					        	}
+					        	$("rfileNames").value=rfileNames;
+			        	    	$("sfilenames").value=sfilenames;
 		                    }
 						}
 					},function(error) {
@@ -323,7 +333,7 @@
                         <col>
                            <input type="hidden" id="mailtoid" name="mailtoid"/>
                            <input type="hidden" id="mailtosimple" name="mailtosimple"/>
-                           <input type="text" id="mailto" name="mailto" readonly="true" placeholder="请选择" style="text-align:right;border:0 white;font-size:16;color:#555555;"/>
+                           <input type="text" id="mailto" name="mailto" readonly="true" placeholder="请选择" style="text-align:right;border:0 white;font-size:16;color:#555555;" onclick="selectMailto();"/>
                         </col>
                     </item>
                     <item style="col-width:100,*" onclick="selectMailcc();" accessory="indicator">
@@ -333,7 +343,7 @@
                         <col>
                            <input type="hidden" id="mailccid" name="mailccid"/>
                            <input type="hidden" id="mailccsimple" name="mailccsimple"/>
-                           <input type="text" id="mailcc" name="mailcc" readonly="true" placeholder="请选择" style="text-align:right;border:0 white;font-size:16;color:#555555;"/>
+                           <input type="text" id="mailcc" name="mailcc" readonly="true" placeholder="请选择" style="text-align:right;border:0 white;font-size:16;color:#555555;" onclick="selectMailcc();"/>
                         </col>
                     </item>
                     <item style="col-width:100,*">
@@ -360,6 +370,9 @@
                     <item style="col-width:100,*">
                         <col>
                            <label style="font-size:16;color:#555555;">附件：</label>
+                           <input type="hidden" id="rfileNames" name="rfileNames" value=""/>
+	                       <input type="hidden" id="sfilenames" name="sfilenames" value=""/>
+	                       <input type="hidden" id="accessorySize" name="accessorySize" value=""/>
                         </col>
                        <col id="fileCol">
 							<row id="picRow" style="margin-buttom:10;">
