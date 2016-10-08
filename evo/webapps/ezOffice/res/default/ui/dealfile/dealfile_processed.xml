@@ -29,6 +29,7 @@
         				if(!data){
         					alert('数据获取失败！');
         				}
+        				data = data.replace(/\&/g,'＆');
         				var jsonData = eval('(' + data + ')');
         				if(jsonData.logonerror &&jsonData.logonerror=='1'){
 			         		alert("该账号已在设备"+jsonData.deviceId+"上登录");
@@ -42,10 +43,6 @@
         					alert('数据获取失败！');
         				}
         				var workInfo = jsonData.data_0.data.workInfo;
-        				var dealTipsContent = workInfo.dealTipsContent;
-        				if(dealTipsContent!=null&&dealTipsContent!=''&&dealTipsContent!='[]'){
-        				   alert(dealTipsContent.replace(/(<[^>]+>)|(&nbsp;)/g,""));
-        				}
 						var detailData = jsonData.data_1.data;
         				var fieldList = detailData.fieldList.field;
         				var showType;
@@ -81,6 +78,10 @@
 						createAttachCon();
        					// 创建底部内容
        					createFootContent(workInfo);
+       					var dealTipsContent = workInfo.dealTipsContent;
+        				if(dealTipsContent!=null&&dealTipsContent!=''&&dealTipsContent!='[]'){
+        				   alert(dealTipsContent.replace(/(<[^>]+>)|(&nbsp;)/g,""));
+        				}
         			},function(error) {
 				    if (error == 'timeout') {
 						hint('连接服务器超时！');

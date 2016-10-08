@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+<script>
+	 <![CDATA[
+	 	var storage = $phone.localStorage();
+	 	var evoUrl = storage.getItem('evoUrl');
+	 	var orgName = storage.getItem('sys_orgName');
+	 	var orgId = storage.getItem('sys_orgId');
+	 	var userId = storage.getItem('sys_sys_userId');
+	 	var userName = storage.getItem('sys_userName');
+	 	var itemContent = '';
+	 	var centerTitle_str =  decodeURIComponent($param['processName']);
+    	if(centerTitle_str.length>15){
+   	      	centerTitle_str = centerTitle_str.substring(0,15)+'...';
+   	    }
+   	    //必填项数组
+	    var mustFillCon = new Array();
+		$page.onload = function(){
+			$('centerTitle').text = centerTitle_str;
+			$http.post(
+        			evoUrl + '/ezOffice/workflow/getVoitureInfo.do',function(data){
+        				if(!data){
+        					alert('数据获取失败！');
+        					return;
+        				}
+        				data = data.replace(/\&/g,'＆');
+        				var obj = JSON.parse(data);
+        				if(obj.logonerror &&obj.logonerror=='1'){
+			         		alert("该账号已在设备"+obj.deviceId+"上登录");
+		          			$page.open('../index.xml',{target:'_self'});
+		                    return;
+		                }
+						var result = obj.message.result;
+						if(result !='1'){
+							alert('数据获取失败！');
+							return;
+						}
+						var fildList = obj.data.fieldList;
+						if(fildList instanceof Array){
+        					for(var i=0;i<fildList.length;i++){
+        						createFormData(fildList[i]);
+        					}
+        				}else if(fildList instanceof Object){
+       						createFormData(fildList);
+        				}
+        				$('content_form_list').addMore('<imag><list>' + itemContent + '</list></imag>');
+        			},function(error) {
+				    	toError(error);
+				  });
+		}
+		
+		function pushMustFillArray(mustfilled,fieldName,conId){
+	       	if(mustfilled == '0'){
+	       		return false;
+	       	}
+	       	mustFillCon.push(fieldName + ';' + conId);
+        }
+		
+		//发送时验证表单
+        function checkForm(){
+        	var fieldInfoArray;
+        	var flag = true;
+        	for(var i=0,length=mustFillCon.length;i<length;i++){
+        		if(!mustFillCon[i]){
+        			return false;
+        		}
+        		fieldInfoArray = mustFillCon[i].split(';');
+        		if(!($(fieldInfoArray[1]).value)){
+        			alert(fieldInfoArray[0] + ' 不能为空！');
+		        	return false;
+        		}
+        	}
+        	return flag;
+        }
+		
+		function createFormData(fild){
+			var mustfilled = fild.mustfilled;
+        	var mustfilled_view = '';
+       	    if(mustfilled && mustfilled=='1'){
+       	       mustfilled_view = '<label style="align:left;font-size:12;color:#FF4617">*</label>';
+       	    }
+			//车辆名称
+			if(fild.voitureName !='' && fild.voitureName !=null){
+				itemContent +='<item style="col-width:100,*;padding:0;margin:0;">'+
+							'<col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+
+							'<label style="align:left;font-size:16;color:#555555">'+fild.voitureName+':</label>'+
+							'</row></col><col style="padding:10;margin:10;">';
+				var selectContent = '<select id="voitureName" name="voitureName" onchange="setMan();">'+
+       			'<option value="">请选择</option>';
+	       		for(var index=0;index<fild.dataList.length;index++){
+	        		var car = fild.dataList[index].hiddenval +'_'+fild.dataList[index].motorMan;
+	        		selectContent += '<option value="'+car+'">'+fild.dataList[index].showval+'</option>';
+	       		}
+       			selectContent += '</select>';
+				itemContent += selectContent + '<input type="hidden" name="voitureId" id="voitureId"></input></col></item>';
+				pushMustFillArray(mustfilled,fild.voitureName,'voitureId');
+			}
+			//司机
+			if(fild.motorMan !=null && fild.motorMan !=''){
+				itemContent += '<item style="col-width:100,*;padding:0;margin:0;">'+
+							  '<col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+
+							  '<label style="align:left;font-size:16;color:#555555">'+fild.motorMan+':</label>'+
+							  '</row></col><col style="padding:10;margin:10;">'+
+							  '<input type="text" name="motorMan" id="motorMan" readonly="true" style="text-align:right;font-size:16;color:#555555"></input>'+
+							  '</col></item>';
+				pushMustFillArray(mustfilled,fild.motorMan,'motorMan');
+			}
+			//申请部门
+			if(fild.orgName !=null && fild.orgName!=''){
+				itemContent += '<item style="col-width:100,*;padding:0;" onclick="selectOrg();" accessory="indicator">'+
+							  '<col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+
+							  '<label style="align:left;font-size:16;color:#555555">'+fild.orgName+':</label>'+
+							  '</row></col><col style="padding:10;margin:10;"><input type="hidden" id="orgId" name="orgId" value="'+orgId+'"/>'+
+							  '<input type="text" name="orgName" id="orgName" value="'+orgName+'" readonly="true" style="text-align:right;border:0 white;font-size:16;color:#555555"></input>'+
+							  '</col></item>';
+				pushMustFillArray(mustfilled,fild.orgName,'orgName');
+			}
+			//申请人
+			if(fild.empName !=null && fild.empName!=''){
+				itemContent += '<item style="col-width:100,*;padding:0;" onclick="selectEmp();" accessory="indicator">'+
+							  '<col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+
+							  '<label style="align:left;font-size:16;color:#555555">'+fild.empName+':</label>'+
+							  '</row></col><col style="padding:10;margin:10;"><input type="hidden" id="empId" name="empId" value="'+userId+'"/>'+
+							  '<input type="text" name="empName" id="empName" value="'+userName+'" readonly="true" style="text-align:right;border:0 white;font-size:16;color:#555555"></input>'+
+							  '</col></item>';
+				pushMustFillArray(mustfilled,fild.empName,'empName');
+			}
+			//目的地
+			if(fild.destination !=null && fild.destination !=''){
+				itemContent += '<item style="col-width:100,*;padding:0;margin:0;">'+
+							  '<col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+
+							  '<label style="align:left;font-size:16;color:#555555">'+fild.destination+':</label>'+
+							  '</row></col><col style="padding:10;margin:10;">'+
+							  '<input type="text" name="destination" id="destination" style="text-align:right;font-size:16;color:#555555"></input>'+
+							  '</col></item>';
+				pushMustFillArray(mustfilled,fild.destination,'destination');
+			}
+			//跟车人数
+			if(fild.personNum !=null && fild.personNum !=''){
+				itemContent += '<item style="col-width:100,*;padding:0;margin:0;">'+
+							  '<col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+
+							  '<label style="align:left;font-size:16;color:#555555">'+fild.personNum+':</label>'+
+							  '</row></col><col style="padding:10;margin:10;">'+
+							  '<input type="number" name="personNum" placeholder="请输入整数" onchange="checkNum(\'personNum\');" id="personNum" style="text-align:right;font-size:16;color:#555555"></input>'+
+							  '</col></item>';
+				pushMustFillArray(mustfilled,fild.personNum,'personNum');
+			}
+			//跟车人
+			if(fild.genchePerson !=null && fild.genchePerson !=''){
+				itemContent += '<item style="col-width:100,*;padding:0;margin:0;">'+
+							  '<col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+
+							  '<label style="align:left;font-size:16;color:#555555">'+fild.genchePerson+':</label>'+
+							  '</row></col><col style="padding:10;margin:10;">'+
+							  '<input type="text" name="genchePerson" id="genchePerson" style="text-align:right;font-size:16;color:#555555"></input>'+
+							  '</col></item>';
+				pushMustFillArray(mustfilled,fild.genchePerson,'genchePerson');
+			}
+			//预计开始时间
+			if(fild.startDate !=null && fild.startDate !=''){
+				itemContent += '<item style="col-width:100,*;padding:0;margin:0;">'+
+							   '<col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+
+							   '<label style="align:left;font-size:16;color:#555555">预计用车开始时间:</label>'+
+							   '</row></col><col style="padding:10;margin:10;"><row>'+
+							   '<input type="date" name="startDate" id="startDate" placeholder="日期" style="text-align:center;font-size:16;color:#555555"/>'+
+							   '<input type="time" name="startTime" id="startTime" placeholder="时间" format="HH:mm" style="text-align:center;font-size:16;color:#555555"/>'+
+							   '</row></col></item>';
+				pushMustFillArray(mustfilled,fild.startDate,'startDate');
+				pushMustFillArray(mustfilled,fild.startDate,'startTime');
+			}
+			//预计结束时间
+			if(fild.endDate !=null && fild.endDate !=''){
+				itemContent += '<item style="col-width:100,*;padding:0;margin:0;">'+
+							   '<col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+
+							   '<label style="align:left;font-size:16;color:#555555">预计用车结束时间:</label>'+
+							   '</row></col><col style="padding:10;margin:10;"><row>'+
+							   '<input type="date" name="endDate" id="endDate" placeholder="日期" style="text-align:center;font-size:16;color:#555555"/>'+
+							   '<input type="time" name="endTime" id="endTime" placeholder="时间" format="HH:mm" style="text-align:center;font-size:16;color:#555555"/>'+
+							   '</row></col></item>';
+				pushMustFillArray(mustfilled,fild.endDate,'endDate');
+				pushMustFillArray(mustfilled,fild.endDate,'endTime');
+			}
+			//用车类型
+			if(fild.voitureStyle !=null && fild.voitureStyle !=''){
+				itemContent += '<item style="col-width:100,*;padding:0;margin:0;">'+
+							   '<col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+
+							   '<label style="align:left;font-size:16;color:#555555">用车类型:</label>'+
+							   '</row></col><col style="padding:10;margin:10;">';
+					var radioCon = '<row>';
+					for(var index=0;index<fild.dataList.length;index++){
+		        		if(index==0){
+		        			radioCon +='<radio name="voitureStyle" checked="true" value="'+fild.dataList[index].hiddenval+'" style="align:right;font-size:16;color:#555555;">'+fild.dataList[index].showval+'</radio>'
+		        		}else{
+		        			radioCon +='<radio name="voitureStyle" value="'+fild.dataList[index].hiddenval+'" style="align:right;font-size:16;color:#555555;">'+fild.dataList[index].showval+'</radio>'
+		        		}
+		        		if(index %2 == 1){
+		        			radioCon +='</row><row>';
+		        		}
+		       		}
+				  itemContent += radioCon +'</row></col></item>';
+			}
+			//事由
+			if(fild.reason !=null && fild.reason !=''){
+				itemContent += '<item style="col-width:100,*;padding:0;margin:0;">'+
+							   '<col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+
+							   '<label style="align:left;font-size:16;color:#555555">'+fild.reason+':</label>'+
+							   '</row></col><col style="padding:10;margin:10;">'+
+							   '<textarea rows="5" maxrows="5" name="reason" id="reason"></textarea>'+
+							   '</col></item>';
+				pushMustFillArray(mustfilled,fild.reason,'reason');
+			}
+			//备注
+			if(fild.remark !=null && fild.remark !=''){
+				itemContent += '<item style="col-width:100,*;padding:0;margin:0;">'+
+							   '<col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+
+							   '<label style="align:left;font-size:16;color:#555555">'+fild.remark+':</label>'+
+							   '</row></col><col style="padding:10;margin:10;">'+
+							   '<textarea rows="5" maxrows="5" name="remark" id="remark"></textarea>'+
+							   '</col></item>';
+				pushMustFillArray(mustfilled,fild.remark,'remark');
+			}
+		}
+		
+		function checkNum(id){
+			var num = $(id).value;
+			if(num.indexOf('.')>0){
+				alert('跟车人数应为整数');
+				$(id).value='';
+			}
+		}
+		
+		function selectOrg(){
+		    var storage = $phone.localStorage();
+	        storage.setItem('sys_selectuser_range','*0*');
+	        storage.setItem('sys_selectuser_userids',$('orgId').value);
+	        storage.setItem('sys_selectuser_usernames',$('orgName').value);
+	        storage.setItem('sys_selectuser_returnfuc','completeOrg');
+		    $page.open('../public/selectSingleOrg.xml', {animation:'down-to-up'});
+		}
+		function completeOrg(id,name){
+		  $('orgId').value=id;
+		  $('orgName').value=name;
+		}
+		
+		function selectEmp(){
+		    var storage = $phone.localStorage();
+	        storage.setItem('sys_selectuser_range','*0*');
+	        storage.setItem('sys_selectuser_userids',$('empId').value);
+	        storage.setItem('sys_selectuser_usernames',$('empName').value);
+	        storage.setItem('sys_selectuser_returnfuc','completeEmp');
+		    $page.open('../public/selectSingleUser.xml', {animation:'down-to-up'});
+		}
+		function completeEmp(id,name){
+		  $('empId').value=id;
+		  $('empName').value=name;
+		}
+		
+		function setMan(){
+			var car = $('voitureName').value;
+			if(car==''){
+				$('motorMan').value='';
+				$('voitureId').value='';
+			}else{
+				var cars = car.split("_");
+				$('motorMan').value=cars[1];
+				$('voitureId').value=cars[0];
+			}
+		}
+		
+		// 发送流程 
+			function sendFlow(){
+				//表单验证
+				if(!checkForm()){
+					return false;
+				}
+				$('sendForm').action = evoUrl + '/ezOffice/workflow/sendVoitureApply.do';
+				$('sendForm').submit(function(data) {
+					if(!data){
+						alert('保存表单失败！');
+						return false;
+					}
+					var obj = JSON.parse(data);
+					if(obj.logonerror &&obj.logonerror=='1'){
+		         		alert("该账号已在设备"+obj.deviceId+"上登录");
+	          			$page.open('../index.xml',{target:'_self'});
+	                    return;
+	                }
+					var checkVio = obj.checkVio;
+					if(checkVio=='1'){
+						alert('您申请的车辆在此时间段已被占用！');
+						return false;
+					}
+					var result = obj.message.result;
+					if(result == '1'){
+						var infoId = obj.data.infoid;
+						var processId = decodeURIComponent($param['processId']);
+						var model = $param['model'];
+						var fromXml = $param['fromXml'];
+						var type = $param['type'];
+						var mainLinkFile = '/defaultroot/voitureApply!modi.action';
+						if(type=='0'){
+							$page.open('workflow_first_send.xml?processId='+encodeURIComponent(processId)+'&businessId='+infoId+'&model='+model+'&fromXml='+fromXml+'&mainLinkFile='+mainLinkFile,
+								{animation:'down-to-up'});
+						}else if(type=='1'){
+							$page.open('workflow_first_ezsend.xml?processId='+encodeURIComponent(processId)+'&businessId='+infoId+'&model='+model+'&fromXml='+fromXml+'&mainLinkFile='+mainLinkFile,
+								{animation:'down-to-up'});
+						}
+					}else{
+						alert('保存表单失败！');					
+					}
+	            }, function(error) {
+	                toError(error);
+	            });
+			}
+		
+		
+		function toError(error){
+			if (error == 'timeout') {
+				hint('连接服务器超时！');
+		    } else if (error == '404') {
+				hint('链接超时重新登录！');
+		    } else if (error == '500') {
+				hint('内部服务器错误！');
+		    } else {
+				hint('访问网络错误！错误代码:' + error);
+		    }
+		    $page.open('../index.xml',{animation:'down-to-up'});
+		}
+	 ]]>
+</script>
+    <page>
+        <title style="background:#3daffe;tint-color:white">
+            <left>
+            	<button role="back"></button>
+            </left>
+            <center><label id="centerTitle"></label></center>
+        </title>
+           <content style="background:white" id="content_form">
+			   <form id="sendForm" multipart="true" prompt="请稍后...">
+					<list id="content_form_list">
+						
+					</list>
+			   </form>
+           </content>
+		<footer id="footer" style="background:#F9F9F9">
+			<list type="toolbar" id="footer_list">
+				<item style="col-width: 100%">
+					<row style="height:50;">
+						<button onclick="sendFlow();" style="align:center;background:#3EAFFF,#007aff;color:#F0F9FF,white;border:0;corner-radius:3;width:300;height:38;font-size:14">发送</button>
+					</row>
+				</item>
+			</list>
+        </footer>
+    </page>
+</imag>

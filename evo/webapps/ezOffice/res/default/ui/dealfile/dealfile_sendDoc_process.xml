@@ -25,6 +25,7 @@
         	var worksubmittime = '';;   //发起时间
         	var isDossier = '';  //是否归档标识
         	var isEdit = '';
+        	var pdfFileList='';
 	        // 页面加载完后执行
         	$page.onload = function(){
 				$http.progress('正在加载，请稍后...').post(
@@ -33,6 +34,7 @@
         				if(!data){
         					alert('数据获取失败！');
         				}
+        				data = data.replace(/\&/g,'＆');
         				var jsonData = eval('(' + data + ')');
         				if(jsonData.logonerror &&jsonData.logonerror=='1'){
 			         		alert("该账号已在设备"+jsonData.deviceId+"上登录");
@@ -46,10 +48,6 @@
         					alert('数据获取失败！');
         				}
         				var workInfo = jsonData.data_0.data.workInfo;
-        				var backComment = workInfo.backComment;   //退回意见弹出
-        				if(backComment!=null&&backComment!=''&&backComment!='[]'){
-        				   alert(backComment.replace(/(<[^>]+>)|(&nbsp;)/g,""));
-        				}
         				if(workInfo.modibutton.indexOf('cmdReadtext')  > 0 ){
         					isEdit = '1';
         				}
@@ -73,10 +71,15 @@
        					// 创建附件对象
        					createDocView();
        					createAttCon();
+       					creatPdf();
        					// 创建附件内容
 						createAttachCon();
        					// 创建底部内容
        					createFootContent(workInfo);
+       					var backComment = workInfo.backComment;   //退回意见弹出
+        				if(backComment!=null&&backComment!=''&&backComment!='[]'){
+        				   alert(backComment.replace(/(<[^>]+>)|(&nbsp;)/g,""));
+        				}
         			},function(error) {
 				    if (error == 'timeout') {
 						hint('连接服务器超时！');
@@ -177,6 +180,39 @@
 				if(accessoryNameseries && accessorySaveNameseries){
 					viewFiles(accessoryNameseries,accessorySaveNameseries,'govdocumentmanager','attachments');
 				}	
+			}
+			
+			// 构建pdf批注文件
+			function creatPdf(){
+				if(workStatus!='0' && workStatus!='2'){
+					var pdfRealName='';
+					var pdfSaveName='';
+					if(pdfFileList instanceof Array){
+						for(var i=0;i<pdfFileList.length;i++){
+							var pdfsfpz = pdfFileList[i].pdfsfpz;
+							var pdfrealname = pdfFileList[i].pdfrealname;
+							var pdfsavename = pdfFileList[i].pdfsavename;
+							if(pdfsfpz=='1'){
+								if(pdfFileList.length-1 > i){
+									pdfRealName += pdfrealname + '|';
+									pdfSaveName += pdfsavename + '|';
+								}else{
+									pdfRealName += pdfrealname;
+									pdfSaveName += pdfsavename;
+								}
+							}
+						}
+					}else if(pdfFileList instanceof Object){
+						var pdfsfpz = pdfFileList.pdfdata.pdfsfpz;
+						if(pdfsfpz=='1'){
+							pdfRealName = pdfFileList.pdfdata.pdfrealname;
+							pdfSaveName = pdfFileList.pdfdata.pdfsavename;
+						}
+					}
+					if(pdfRealName && pdfSaveName){
+						viewFiles(pdfRealName,pdfSaveName,'pdffile','pdfFile');
+					}
+				}
 			}
 			
 			// 创建下载附件内容
@@ -690,6 +726,14 @@
 		        		}	
 		        	}
        			}
+       			
+       			if(workStatus!='0' && workStatus!='2'){
+		        	if(detailData.pdflist){
+		        		pdfFileList = detailData.pdflist;
+		        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">PDF批注:</label>'+
+	        				   '</row></col><col id="pdfFile" style="margin:10;padding:10;"></col></item>';
+		        	}
+		        }
        			
        			if(detailData.realFile){   //构建附件
 	        		realFiles = detailData.realFile;

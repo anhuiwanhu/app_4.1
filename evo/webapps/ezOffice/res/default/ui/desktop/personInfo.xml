@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+    <script>
+    <![CDATA[
+        var loadFlag = '0';  //函数执行置为1，提交之前进行判断，若为1，则禁止 提交，防重复提交
+        var commempsex = "";
+        var photoPath = "" ;
+        var commemplivingphoto = "";   //头像图片名称
+        var commNickname = "";        //昵称
+        var commEmpdescribe = "";     //描述
+        var commPhone = "" ;   //传递到电话修改页面参数，所有电话，以";"分割
+        var commMail = "" ;    //传递到邮箱修改页面参数，所有电话，以";"分割
+         
+        //页面家在完成后执行
+        $page.onload = function() {
+            loadFlag = '1';
+            initInfo();
+        }
+        
+        function initInfo(){
+            //获取手机缓存中的数据
+            var storage = $phone.localStorage();
+		    var evoUrl = storage.getItem('evoUrl');
+		    var sys_photoName = storage.getItem('sys_photoName');  //缓存中的图片全路径，不需要再次下载
+            $http.post(evoUrl+'/ezOffice/set/personInfo.do', function(data) {
+                 if(data){
+                //     alert(data);
+                 	 var obj =eval('('+data+')');
+                 	 if(obj.logonerror &&obj.logonerror=='1'){
+			         		alert("该账号已在设备"+obj.deviceId+"上登录");
+		          			$page.open('../index.xml',{target:'_self'});
+		                    return;
+		             }
+                 	 var setXml = obj.xmlStr;
+                 	 var serveUrl = obj.serveUrl;   //请求服务器路径
+					 var  rootPath_res = obj.rootPath_res;  //真实路径
+                 	// alert(setXml.message.result);
+                 	 if(setXml.message.result == "1"){  //返回数据正确
+                 	        var dataJson = setXml.data;  //返回data数据
+                 	        var emplivingphoto = dataJson.emplivingphoto;      //头像赋值
+                 	        if(emplivingphoto == null||emplivingphoto ==''){
+                 	        	emplivingphoto = '';
+                 	        }
+                 	        commemplivingphoto = emplivingphoto;
+                 	        
+                 	        var nickname = dataJson.nickname;			//昵称
+                 	        if(nickname == null||nickname ==''){
+                 	        	nickname = '';
+                 	        }
+                 	        commNickname  = nickname; 
+                 	        commempsex = dataJson.empsex;                 //性别
+                 	        
+                 	        var empdescribe = dataJson.empdescribe;
+                 	        if(empdescribe == null||empdescribe == ''){
+                 	        	empdescribe = '';
+                 	        }
+                 	        commEmpdescribe = empdescribe;
+                 	        
+		                    if(emplivingphoto != null&&emplivingphoto != ""){
+						    	photoPath = serveUrl + emplivingphoto;
+						    }
+						 //   $('emplivingphoto').src=photoPath;
+						    $('emplivingphoto').src = sys_photoName;
+						    
+						    var username = dataJson.username;                //中文名
+						    $('username').text=username;
+						    
+						    var empenglishname = dataJson.empenglishname;    //英文名
+						    if(empenglishname == null||empenglishname== ''){
+						        empenglishname = "";
+						    }
+						    $('empenglishname').text="   "+empenglishname;
+						    
+						    var useraccounts = dataJson.useraccounts;         //账号
+						    $('useraccounts').text=useraccounts;
+						    
+						    var orgShortName = obj.orgShortName;             //部门
+						    $('orgShortName').text=orgShortName;
+						    
+						    var empDuty = obj.empDuty;                       //职务
+						    if(empDuty == null||empDuty == ''){
+						        empDuty = '';
+						    }
+						    $('empDuty').text=empDuty;
+						    
+						    var empmobilephone = dataJson.empmobilephone;      //手机号,非空按照";"拼接成字符串显示
+						    var empmobilephone2 = dataJson.empmobilephone2;
+						    var empbusinessphone = dataJson.empbusinessphone;
+						    var empphone = dataJson.empphone;
+						    
+						    var allPhone = "";
+						    if(empmobilephone==null||empmobilephone == ''||empmobilephone == 'undefined'){
+						        empmobilephone="";
+						    }else{
+						        allPhone += empmobilephone;
+						    }
+						    if(empmobilephone2==null||empmobilephone2==''||empmobilephone2 == 'undefined'){
+						        empmobilephone2 = "";
+						    }else{
+						        if(allPhone != ''){
+						        	allPhone += ';' + empmobilephone2 ;
+						        }else{
+						            allPhone += empmobilephone2 ;
+						        }
+						    }
+						    
+						    if(empbusinessphone==null||empbusinessphone==''||empbusinessphone == 'undefined'){
+						        empbusinessphone="";
+						    }else{
+						        if(allPhone != ''){
+						        	allPhone += ';' + empbusinessphone ;
+						        }else{
+						            allPhone += empbusinessphone ;
+						        }
+						    }
+						    
+						    if(empphone==null||empphone==''||empphone == 'undefined'){
+						        empphone = "";
+						    }else{
+						        if(allPhone != ''){
+						        	allPhone += ';' + empphone ;
+						        }else{
+						            allPhone += empphone ;
+						        }
+						    }
+						    commPhone = empmobilephone +";"+ empmobilephone2 +";"+empbusinessphone+";"+empphone;  //传递到电话修改页面参数
+						    $('allPhone').text=allPhone;
+						    
+						    var empemail = dataJson.empemail;                //邮件
+						    var empemail2 = dataJson.empemail2;
+						    var empemail3 = dataJson.empemail3;
+						    var allMail="";
+						    if(empemail==null||empemail==''||empemail==undefined||empemail=='undefined'){
+						        empemail = "";
+						    }else{
+						        allMail += empemail;
+						    }
+						    if(empemail2==null||empemail2==''||empemail2==undefined||empemail2=='undefined'){
+						       empemail2 ="";
+						    }else{
+						        if(allMail != ''){
+						        	allMail += ';' + empemail2 ;
+						        }else{
+						            allMail += empemail2 ;
+						        }
+						    }
+						    if(empemail3==null||empemail3==''||empemail3==undefined||empemail3=='undefined'){ 						        
+						       empemail3="";
+						    }else{
+						        if(allMail != ''){
+						        	allMail += ';' + empemail3 ;
+						        }else{
+						            allMail += empemail3 ;
+						        }
+						    }
+						    commMail = empemail+";"+empemail2+";"+empemail3;   //传递到邮箱修改页面
+						    $('allMail').text=allMail;
+						    
+						    var waitingDocNum = dataJson.waitingDocNum;            //待办数量
+						    if(waitingDocNum==null||waitingDocNum==""){
+						       waitingDocNum = "0";
+						    }
+						    $('waitingDocNum').text="待办文件"+waitingDocNum+"件；";
+						    
+						    var launchDocNum = dataJson.launchDocNum;               //发起数量
+						    if(launchDocNum==null||launchDocNum==""){
+						        launchDocNum = "0";
+						    }
+						    $('launchDocNum').text="发起文件"+launchDocNum+"件；";
+						    
+						    var doneDocNum = dataJson.doneDocNum;                   //已办数量
+						    if(doneDocNum==null||doneDocNum==""){
+						       doneDocNum = "0";
+						    }
+						    $('doneDocNum').text="已办文件"+doneDocNum+"件；";
+						    
+						    var informationCreateNum = dataJson.informationCreateNum;             //信息创建数量
+						    if(informationCreateNum==null||informationCreateNum==""){
+						       informationCreateNum = "0";
+						    }
+						    $('informationCreateNum').text="信息创建"+informationCreateNum+"条；";
+						    
+						    
+						     var projectNum = dataJson.projectNum;             //负责项目数量
+						    if(projectNum==null||projectNum==""){
+						       projectNum = "0";
+						    }
+						    $('projectNum').text="负责项目"+projectNum+"个；";
+						    
+						    var logNum = dataJson.logNum;                 //日志数量
+						    if(logNum==null||logNum==""){
+						       logNum = "0";
+						    }
+						    $('logNum').text="填写日志"+logNum+"条；";
+						    
+						    var assetNum = dataJson.assetNum;             //资产数量
+						    if(assetNum==null||assetNum==""){
+						       assetNum = "0";
+						    }
+						    $('assetNum').text="所有资产"+assetNum+"件；";
+                 	 }
+                 }
+                 loadFlag = '0';
+            },function(error) {
+				    if (error == 'timeout') {
+				        hint('连接服务器超时！');
+				    } else if (error == '404') {
+				        hint('链接超时重新登录！');
+				    } else if (error == '500') {
+				        hint('内部服务器错误！');
+				    } else {
+				        hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+			    }
+            );
+        }
+    ]]>
+    </script> 
+	<page>
+		<title  style="background:#3daffe;tint-color:white;">
+		    <left>
+				<button  role="back" />
+			</left>
+            <center>
+                <label id="title_center_label">个人信息</label>
+            </center>
+	    </title>
+	  
+		<content id="docContent" style="background:#f0f0f3;">
+			<list id="docList" >
+			    <item style="padding:4;border:1 #f0f0f3;background:#f0f0f3;" >
+			           <col>
+					   </col>
+	            </item>
+	            <item  accessory="indicator" style="col-width:50%,*;" onclick="personInfoUpdate()">
+	                   <col>
+	                        <row><img src="" effect="round"  style="width:35;height:35;margin-left:10;" id="emplivingphoto" default="login_per.png"/></row>
+	                   </col>
+	                   <col>
+	                        <row><label style="color:#c1c1c1;align:right;" id="username"> </label><label id="empenglishname" style="align:right;"></label></row>
+	                   </col>
+	                      
+	            </item>
+	            <item style="padding:4;border:1 #f0f0f3;background:#f0f0f3;" >
+			           <col>
+					   </col>
+	            </item>
+			    <item style="col-width:50,*">
+                    <col>
+                        <row><label style="color:#555555;font-size:16;">账号：</label></row>
+                    </col>
+                    <col>
+                        <row><label style="align:right;color:#c1c1c1;" id="useraccounts"></label></row>
+                    </col>
+                </item>
+                <item style="col-width:50,*;" >
+                    <col>
+                       <row><label  style="color:#555555;font-size:16;">部门：</label></row>
+                    </col>                    
+                    <col>
+                       <row><label style="align:right;color:#c1c1c1;" id="orgShortName"></label></row>
+                    </col>
+                </item>
+                <item style="col-width:50,*">
+                    <col>
+                      <row><label  style="color:#555555;font-size:16;">职务：</label></row>
+                    </col>                    
+                    <col>
+                       <row><label style="align:right;color:#c1c1c1;" id="empDuty"></label></row>
+                    </col>
+                </item>
+                <item style="col-width:50,*;" accessory="indicator" onclick="updatePhone();">
+                    <col>
+                        <row><label  style="color:#555555;font-size:16;">电话：</label></row>
+                    </col>                    
+                    <col>
+                        <row><label style="align:right;" id="allPhone" ></label></row>
+                    </col>
+                </item>
+                <item style="col-width:50,*;" accessory="indicator" onclick="updateMail();">
+                    <col>
+                        <row><label  style="color:#555555;font-size:16;">邮件：</label></row>
+                    </col>                    
+                    <col>
+                        <row><label style="align:right;" id="allMail" ></label></row>
+                    </col>
+                </item>
+                <item style="padding:4;border:1 #f0f0f3;background:#f0f0f3;" >
+			           <col>
+					   </col>
+	            </item>
+                <item style="col-width:140,*;">
+                    <col>
+                        <row style="height:25;"><label style="color:#555555;font-size:16;">个人统计信息</label></row>
+                        <row style="height:20;"><label style="color:#c1c1c1;" id="waitingDocNum"></label></row>
+                        <row style="height:20;"><label style="color:#c1c1c1;" id="doneDocNum"></label></row>
+                        <row style="height:20;"><label style="color:#c1c1c1;" id="projectNum"></label></row>
+                        <row style="height:20;"><label style="color:#c1c1c1;" id="assetNum"></label></row>
+                    </col>                    
+                    <col>
+                        <row style="height:25;"><label></label></row>
+                        <row style="height:20;"><label style="color:#c1c1c1;" id="launchDocNum"></label></row>
+                        <row style="height:20;"><label style="color:#c1c1c1;" id="informationCreateNum"></label></row>
+                        <row style="height:20;"><label style="color:#c1c1c1;" id="logNum"></label></row>
+                        <row style="height:20;"><label></label></row>
+                     </col>
+                </item>
+			</list>
+		</content>
+	</page>
+	 <script>
+    <![CDATA[
+        function personInfoUpdate(){                      //修改个人信息
+            if(loadFlag == '1'){
+		        return false;
+	        }
+	        loadFlag = '1';
+            var storage = $phone.localStorage();
+            var username = $('username').text;
+            var empenglishname = $('empenglishname').text;
+           
+		    storage.setItem('desktopPhotoPath',photoPath);   //头像路径
+		    storage.setItem('desktopUsername',username);   //用户名
+		    
+		    var allMail = $('allMail').text;         
+		    storage.setItem('desktopMail',allMail);    //所有邮箱
+		    var allPhone = $('allPhone').text;         
+		    storage.setItem('desktopPhone',allPhone);    //所有电话
+		    storage.setItem('desktopEmplivingphoto',commemplivingphoto);  //头像名称
+		    storage.setItem('desktopEmpsex',commempsex);      //性别
+		    storage.setItem('desktopNickname',commNickname);      //昵称
+		    storage.setItem('desktopEmpenglishname',empenglishname);   //英文名
+		    storage.setItem('desktopEmpdescribe',commEmpdescribe);   //简介
+		    loadFlag = '0';
+		    $page.open('personInfoUpdate.xml');
+        } 
+    
+        function updatePhone(){           //跳转到电话修改页面
+           if(loadFlag == '1'){
+		        return false;
+	        }
+	       loadFlag = '1';
+           //alert(obj.text);
+           var storage = $phone.localStorage();
+		   storage.setItem('desktopPhone',commPhone);           //所有电话号码
+		   var empenglishname = $('empenglishname').text;    //英文名
+		   storage.setItem('desktopEmpenglishname',empenglishname);
+		   storage.setItem('desktopMail',commMail);    //所有邮箱
+		   storage.setItem('desktopEmplivingphoto',commemplivingphoto);  //头像名称
+		   storage.setItem('desktopEmpsex',commempsex);      //性别
+		   storage.setItem('desktopNickname',commNickname);      //昵称
+		   storage.setItem('desktopEmpenglishname',empenglishname);   //英文名
+		   storage.setItem('desktopEmpdescribe',commEmpdescribe);   //简介
+		   loadFlag = '0';
+           $page.open('personPhoneUpdate.xml');
+         }
+        
+         function updateMail(){           //跳转到邮箱修改页面
+           if(loadFlag == '1'){
+		        return false;
+	       }
+	       loadFlag = '1';
+           var storage = $phone.localStorage();
+		   storage.setItem('desktopMail',commMail);
+		   var empenglishname = $('empenglishname').text;    //英文名
+		   storage.setItem('desktopEmpenglishname',empenglishname);
+		   storage.setItem('desktopPhone',commPhone);    //所有电话
+		   storage.setItem('desktopEmplivingphoto',commemplivingphoto);  //头像名称
+		   storage.setItem('desktopEmpsex',commempsex);      //性别
+		   storage.setItem('desktopNickname',commNickname);      //昵称
+		   storage.setItem('desktopEmpenglishname',empenglishname);   //英文名
+		   storage.setItem('desktopEmpdescribe',commEmpdescribe);   //简介
+		   loadFlag = '0';
+           $page.open('personMailUpdate.xml', {animation:'down-to-up'});
+         }
+    ]]>
+    </script>
+</imag>

@@ -37,6 +37,7 @@
         					alert('获取催办数据失败！');
         					return false;
         				}
+        				data = data.replace(/\&/g,'＆');
         				var jsonData = eval('('+data+')');
         				if(jsonData.logonerror &&jsonData.logonerror=='1'){
 		         			alert("该账号已在设备"+jsonData.deviceId+"上登录");

@@ -22,6 +22,7 @@
         				if(!data){
         					alert('数据获取失败！');
         				}
+        				data = data.replace(/\&/g,'＆');
         				var jsonData = eval('(' + data + ')');
         				if(jsonData.logonerror && jsonData.logonerror=='1'){
 		         			alert("该账号已在设备"+jsonData.deviceId+"上登录");
@@ -34,10 +35,6 @@
         					alert('数据获取失败！');
         				}
         				var workInfo = jsonData.data_0.data.workInfo;
-        				var backComment = workInfo.backComment;   //退回意见弹出
-        				if(backComment!=null&&backComment!=''&&backComment!='[]'){
-        				   alert(backComment.replace(/(<[^>]+>)|(&nbsp;)/g,""));
-        				}
         				isDossier = workInfo.isDossier == null? '' : workInfo.isDossier;
 						var detailData = jsonData.data_1.data;
 						var $contentFormList = $('content_form_list');
@@ -55,6 +52,10 @@
 						createAttachCon();
        					// 创建底部内容
        					createFootContent(workInfo);
+       					var backComment = workInfo.backComment;   //退回意见弹出
+        				if(backComment!=null&&backComment!=''&&backComment!='[]'){
+        				   alert(backComment.replace(/(<[^>]+>)|(&nbsp;)/g,""));
+        				}
         			}
         		);
         	}

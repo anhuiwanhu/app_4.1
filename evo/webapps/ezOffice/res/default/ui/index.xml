@@ -4,7 +4,7 @@
     <![CDATA[
         var versionNumber="V4.2";
        	var dbName = "mobile_evo.db";
-       	var evoUrl = "http://192.168.7.99:8080";
+       	var evoUrl = "http://192.168.7.193:8080";
 		
 		$page.onload = function() {
 		    
@@ -94,13 +94,16 @@
 		       alert("请输入密码！");
 		       return ;
 		    }
+		    var password = $('password').value;
+		    var md5Pass = hex_md5(password);
+		    $('mdPass').value = md5Pass;
+		    var storage = $phone.localStorage();
+		    storage.setItem('sys_password',password);
 			$('loginForm').submit(function(data) {
                 var obj = JSON.parse(data);
                 if(obj.result=="1"){
                 
-				  var storage = $phone.localStorage();
                   storage.setItem('sys_userAccount',obj.userAccount);
-				  storage.setItem('sys_password',obj.password);
 				  storage.setItem('sys_sys_userId',obj.userId);
 				  storage.setItem('sys_orgId',obj.orgId);
 				  storage.setItem('sys_domainId',obj.domainId);
@@ -244,7 +247,7 @@
 	    }
     ]]>
     </script> 
-	<page>
+	<page include="md5.js">
         <title style="background:#3DAFFE">
             <left>
                 <button role="back" style="background:null" onclick=";"/>
@@ -268,9 +271,10 @@
 	                    style="background:null;font-size:16;color:#555555" id="username" name="username" remember="true" placeholder="用户名"/></row></col>
 	                </item>
 	                <item style="col-width:100,*;background:#f8f8f8;height:40">
-	                    <col><row><icon id="icon_password" src="login_psd_g.png" style="col-width:50,*;align:center;width:45;height:45;margin-right:42"/></row></col>
+	                    <col><input type="hidden" id="mdPass" name="mdPass"/>
+	                    <row><icon id="icon_password" src="login_psd_g.png" style="col-width:50,*;align:center;width:45;height:45;margin-right:42"/></row></col>
 	                    <col><row><input type="password" onfocus="getpasswordfocus();" onblur="lostpasswordfocus();" 
-	                    style="background:null;font-size:16;color:#555555" id="password" name="password" remember="true"  placeholder="密码"/></row></col>
+	                    style="background:null;font-size:16;color:#555555" id="password" remember="true"  placeholder="密码"/></row></col>
 	                </item>
 	            </list>
 				<list type="transparent">	

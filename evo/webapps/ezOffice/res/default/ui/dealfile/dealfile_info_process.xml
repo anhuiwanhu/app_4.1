@@ -33,6 +33,7 @@
         				if(!data){
         					alert('数据获取失败！');
         				}
+        				data = data.replace(/\&/g,'＆');
         				var jsonData = eval('(' + data + ')');
         				if(jsonData.logonerror && jsonData.logonerror=='1'){
 		         			alert("该账号已在设备"+jsonData.deviceId+"上登录");
@@ -45,10 +46,6 @@
         					alert('数据获取失败！');
         				}
         				var workInfo = jsonData.data_0.data.workInfo;
-        				var backComment = workInfo.backComment;   //退回意见弹出
-        				if(backComment!=null&&backComment!=''&&backComment!='[]'){
-        				   alert(backComment.replace(/(<[^>]+>)|(&nbsp;)/g,""));
-        				}
 						var detailData = jsonData.data_1.data;
 						var commentList = jsonData.data_0.data.commentList;
 						var $contentFormList = $('content_form_list');
@@ -78,6 +75,10 @@
 						});
        					// 创建底部内容
        					createFootContent(workInfo);
+       					var backComment = workInfo.backComment;   //退回意见弹出
+        				if(backComment!=null&&backComment!=''&&backComment!='[]'){
+        				   alert(backComment.replace(/(<[^>]+>)|(&nbsp;)/g,""));
+        				}
         			},function(error) {
 				    if (error == 'timeout') {
 						hint('连接服务器超时！');
@@ -167,7 +168,7 @@
 				var informationType = detailData.informationType;
 	        	var infoContent = '';
 	        	if(informationType == '0' || informationType == '1'){
-	        		infoContent = $C('<row style="margin-top:30;margin-bottem:30px;"><web id="content_web"></web></row>');
+	        		infoContent = $C('<web scalable="true" style="color:#555555;margin:10 10;" id="content_web"></web>');
 		        	$infoContent.add(infoContent);
 		        	$('content_web').html = '<article class="wh-article" ><div class="wh-article-fulltext">' +content+ '</div></article>';
 	        	}else if(informationType == '2'){
@@ -231,42 +232,6 @@
 				  });
             }
 			
-			function downFile(accessorySaveNameseries,accessoryNameseries){
-			   var path = 'html';
-	            $http.post(evoUrl+'/ezOffice/doc/dealFiles.do',
-	              {accessoryNameseries:accessoryNameseries,accessorySaveNameseries:accessorySaveNameseries,path:path},
-	              function(data) {
-		               if(data){
-		                   var obj = JSON.parse(data);
-		                   if(obj.logonerror &&obj.logonerror=='1'){
-				     		    alert("该账号已在设备"+obj.deviceId+"上登录");
-				     		    $page.open('../index.xml',{target:'_self'});
-				                return;
-				           }
-			               var attList = obj.attList;
-			               if(!attList==""){  //不为空，数据进行迭代,并为附件赋值
-			                  for(var k=0;k<attList.length;k++){
-			                 	$http.download(evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&filename='+attList[k].savename+'&uploadPath=html'+'&viewName='+attList[k].realname);
-			                  }
-			               }else{     //无附件，或者后台处理异常
-			               
-			               }
-		               }
-		               
-		            },function(error) {
-					    if (error == 'timeout') {
-						hint('连接服务器超时！');
-					    } else if (error == '404') {
-						hint('链接超时重新登录！');
-					    } else if (error == '500') {
-						hint('内部服务器错误！');
-					    } else {
-						hint('访问网络错误！错误代码:' + error);
-				    }
-				    $page.open('../index.xml',{animation:'down-to-up'});
-				  });
-            }
-			
 			function viewFiles2(filetype,name1,name2,path,fileType){
 	            $http.post(evoUrl+'/ezOffice/doc/dealFiles.do',{accessoryNameseries:name1,accessorySaveNameseries:name2,path:path},  function(data) {
 	               if(data){
@@ -279,7 +244,7 @@
 		               var attList = obj.attList;
 		               if(!attList==""){  //不为空，数据进行迭代,并为附件赋值
 		                  for(var k=0;k<attList.length;k++){
-		                      var viewName = draftPerson +worksubmittime +worktitle+"的正文"+bodyIndex+fileType;
+		                  	  var viewName = draftPerson +worksubmittime +worktitle+"的正文"+bodyIndex+fileType;
 		                      bodyIndex++;
 		                      var files = $C('<row><label style="color:#38adff;align:left;font-size:16;"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath=govdocumentmanager'+'&amp;viewName='+viewName+'\')">查看正文</label></row>')
 		                      $(filetype).add(files); 
@@ -342,7 +307,6 @@
 	        				   '</row></col><col><row><label>'+detailData.informationSummary+'</label></row></col></item>'+
 	        				   '<item style="col-width:100,*"><col><row><label style="background:#f9f9f9;margin:10;padding:10;">发布时间：</label>'+
 	        				   '</row></col><col><row><label>'+time+'</label></row></col></item>';
-	        	
 	        	// 图片附件
 	        	if(detailData.picList){
 	        		idArrays.push('picCol');
@@ -915,8 +879,8 @@
 				var commentIsNone = $('commentmustnonull').value;  //节点中的批示意见是否为空表示，若为true为不能为空
 			    if(commentIsNone == 'true'){
 			    	 if(commentCon == ''){
-			    	 	alert('批示意见不能为空！');
-			    	 	return;
+			    	 	//alert('批示意见不能为空！');
+			    	 	//return;
 			    	 }
 			    }
 				$('sendForm').action = evoUrl + '/ezOffice/workflow/sendnew.do';

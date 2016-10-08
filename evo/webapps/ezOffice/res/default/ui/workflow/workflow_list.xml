@@ -19,6 +19,7 @@
 	       			evoUrl + '/ezOffice/workflow/getTopFlowList.do',{processName : ''}, 
 			        function(data) {
 			            var jsonData = eval('(' + data + ')');
+			            data = data.replace(/\&/g,'＆');
 						if(jsonData.logonerror &&jsonData.logonerror=='1'){
 			         		alert("该账号已在设备"+jsonData.deviceId+"上登录");
 		          			$page.open('../index.xml',{target:'_self'});

@@ -172,6 +172,7 @@
         				if(!data){
         					alert('数据获取失败！');
         				}
+        				data = data.replace(/\&/g,'＆');
         				var jsonData = eval('(' + data + ')');
         				if(jsonData.logonerror &&jsonData.logonerror=='1'){
 			         		alert("该账号已在设备"+jsonData.deviceId+"上登录");

@@ -44,6 +44,7 @@
 						if(!data){
 							return false;
 						}
+						data = data.replace(/\&/g,'＆');
 						var jsonData = eval('(' + data + ')');
 						if(jsonData.logonerror &&jsonData.logonerror=='1'){
 			         		alert("该账号已在设备"+jsonData.deviceId+"上登录");
@@ -155,10 +156,23 @@
 				$('standForUserid').value = $param['standForUserid'];
 				$('isStandForWork').value = $param['isStandForWork']; 
 			}
-
+			
+			function containSpecial(s){
+				if(s!=''){
+					if(/[`~\^\&]/im.test(s)){
+						alert("退回意见不能包含特殊字符，请重新输入！");
+						return true;
+					}
+				}
+				return false;
+			}
 			// 退回
 			function backFlow(){
 				var tipsValue = $('tips').value;  //退回意见不能为空
+				if(containSpecial(tipsValue)){
+					$('tips').value='';
+					return;
+				}
 				if(tipsValue=='' || tipsValue==null){
 					alert('退回意见不能为空！');
 					return false;

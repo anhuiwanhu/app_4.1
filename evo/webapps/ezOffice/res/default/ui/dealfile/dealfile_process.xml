@@ -172,10 +172,10 @@
         		$http.progress('正在加载，请稍后...').post(
         			evoUrl + '/ezOffice/dealfile/process.do',{workId : workId},
         			function(data){
-        			  // data = data.replace('&','&amp;');
         				if(!data){
         					alert('数据获取失败！');
         				}
+        				data = data.replace(/\&/g,'＆');
         				var jsonData = eval('(' + data + ')');
         				if(jsonData.logonerror &&jsonData.logonerror=='1'){
 		         			alert("该账号已在设备"+jsonData.deviceId+"上登录");
@@ -189,10 +189,6 @@
         					alert('数据获取失败！');
         				}
         				var workInfo = jsonData.data_0.data.workInfo;
-        				var dealTipsContent = workInfo.dealTipsContent;
-        				if(dealTipsContent!=null&&dealTipsContent!=''&&dealTipsContent!='[]'){
-        				   alert(dealTipsContent.replace(/(<[^>]+>)|(&nbsp;)/g,""));
-        				}
         				flag = workInfo.isEzFlow;
         				commentmustnonull = workInfo.commentmustnonull;
         				isDossier = workInfo.isDossier == null? '' : workInfo.isDossier;
@@ -233,6 +229,10 @@
 						createAttachCon();
        					// 创建底部内容
        					createFootContent(workInfo);
+       					var dealTipsContent = workInfo.dealTipsContent;
+        				if(dealTipsContent!=null&&dealTipsContent!=''&&dealTipsContent!='[]'){
+        				   alert(dealTipsContent.replace(/(<[^>]+>)|(&nbsp;)/g,""));
+        				}
         			},function(error) {
 				    if (error == 'timeout') {
 						hint('连接服务器超时！');
@@ -1841,9 +1841,9 @@
 	        		itemContent += '<row><label style="align:right;color:#555555;font-size:16;">' + field.value + '</label></row>';
 	        	}else if(showType == '113' && readWrite == '1'){
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
-	        		//html编辑
-	        		itemContent += '<row><textarea style="color:#555555;font-size:16;" rows="5" maxrows="5" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '">' + field.value + '</textarea></row>';
-	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
+	        		//html编辑该字段暂不支持手机办理，请于电脑端操作
+	        		itemContent += '<row onclick="alert(\'该字段暂不支持手机办理，请于电脑端操作\')"><label style="align:right;color:#555555;font-size:16;"><![CDATA[' + field.value + ']]\></label></row>';
+	        		//pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
 	        	}else if(showType == '115'){
 	        		var attId = 'attachments_' + fileindex;
 	        		//附件上传

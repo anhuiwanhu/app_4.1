@@ -47,6 +47,7 @@
 	        				alert('获取下一流程节点失败！');
 	        				return false;
 	        			}
+	        			data = data.replace(/\&/g,'＆');
 	        			var jsonData = eval('('+data+')');
 	        			if(jsonData.logonerror &&jsonData.logonerror=='1'){
 			         		alert("该账号已在设备"+jsonData.deviceId+"上登录");
@@ -167,6 +168,20 @@
         		}else{
         			smsRight = nextActivityList.showSmsRemind;
         		}
+        		// 判断是否有发送短信权限
+       			if(smsRight&&smsRight == '1'){
+       				$('msRemind_message').checked = true;
+       				$('msRemind_message').css('display','block');
+       			}else  if(smsRight&&smsRight == '2'){
+       				$('msRemind_message').checked = false;
+       				$('msRemind_message').css('display','block');
+       			}else{
+       				$('msRemind_message').checked = false;
+       				$('msRemind_message').css('display','none');
+       			}
+        	}
+        	
+        	function createSmsTipSelect(smsRight){
         		// 判断是否有发送短信权限
        			if(smsRight&&smsRight == '1'){
        				$('msRemind_message').checked = true;
@@ -310,9 +325,6 @@
 		            pushMustFillArray('userId');
         		}
         		contentList.addMore('<imag><list>' + items + '</list></imag>');
-        		if($('activity')){
-	       			//$('activity').onchange = "selectActivity('" + JSON.stringify(nextActivityList) + "','" + gateType + "')";
-        		}
         	}
         	
         	function onchgRemind(id){
@@ -419,6 +431,7 @@
 			        			$userId.value = '';
 			        		}
        					}
+       					createSmsTipSelect(jsonList[i].showSmsRemind);
        				}
        			}
        			if(gateType != 'XX' && gateType != 'XAND'){
@@ -430,8 +443,8 @@
 	       					if(jsonList[i].id == $('activity').value){
 		        				scopeId = jsonList[i].scopeId;
 		        				scopeName = jsonList[i].scopeName;
+		        				isDefault_Users = jsonList[i].scopeType ;
 	       					}
-	       					isDefault_Users = jsonList[i].scopeType ;
 		       			}
 	       			}else{
         				scopeId = jsonList.scopeId;
