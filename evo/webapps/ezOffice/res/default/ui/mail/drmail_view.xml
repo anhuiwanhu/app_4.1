@@ -77,7 +77,16 @@
 							if(data.mailanonymous=="1"){
 								$("mailanonymous").checked=true;
 							}
-							$("mailcontent").value=newcontent;
+							var mailcontenttype = data.mailcontenttype;
+							if(mailcontenttype =='1'){
+								$("mailweb").html=newcontent;
+								$('mailweb').css('display', 'block');
+								$('mailcontent').css('display', 'none');
+							}else{
+								$("mailcontent").value=newcontent;
+								$('mailweb').css('display', 'none');
+								$('mailcontent').css('display', 'block');
+							}
 							var objArr = data.attachments;
 							$("accessorySize").value=obj.accessorySize;
 		                    var accessoryNameseries="";
@@ -87,6 +96,7 @@
 		                    if((objArr+"")!=null && (objArr+"")!=""){
 		                    	if(objArr instanceof Array){    //返回多条数据
 					        	    for (var i = 0; i < objArr.length; i++) {
+					        	    	if(i<objArr.length-1){
 					        	        	accessoryNameseries += objArr[i].name+"|";
 					        	            rfileNames += objArr[i].name+"$F$";
 					        	            accessorySaveNameseries += objArr[i].savename+"|";
@@ -324,7 +334,7 @@
         <content>
 	        <form id="mailFrom" action="/ezOffice/mail/mailWrite.do" progress="提交表单|正在提交表单，请稍后..." multipart="true">
 	        	<list>
-                    <item style="col-width:100,*" onclick="selectMailto();" accessory="indicator">
+                    <item style="col-width:70,*" onclick="selectMailto();" accessory="indicator">
                         <col>
                            <label style="font-size:16;color:#555555;">收件人：</label>
                            <input type="hidden" id="mailid" name="mailid"/>
@@ -333,41 +343,41 @@
                         <col>
                            <input type="hidden" id="mailtoid" name="mailtoid"/>
                            <input type="hidden" id="mailtosimple" name="mailtosimple"/>
-                           <input type="text" id="mailto" name="mailto" readonly="true" placeholder="请选择" style="text-align:right;border:0 white;font-size:16;color:#555555;" onclick="selectMailto();"/>
+                           <input type="text" id="mailto" name="mailto" readonly="true" placeholder="请选择" style="border:0 white;font-size:16;color:#555555;" onclick="selectMailto();"/>
                         </col>
                     </item>
-                    <item style="col-width:100,*" onclick="selectMailcc();" accessory="indicator">
+                    <item style="col-width:70,*" onclick="selectMailcc();" accessory="indicator">
                         <col >
                            <label style="font-size:16;color:#555555;">抄送人：</label>
                         </col>
                         <col>
                            <input type="hidden" id="mailccid" name="mailccid"/>
                            <input type="hidden" id="mailccsimple" name="mailccsimple"/>
-                           <input type="text" id="mailcc" name="mailcc" readonly="true" placeholder="请选择" style="text-align:right;border:0 white;font-size:16;color:#555555;" onclick="selectMailcc();"/>
+                           <input type="text" id="mailcc" name="mailcc" readonly="true" placeholder="请选择" style="border:0 white;font-size:16;color:#555555;" onclick="selectMailcc();"/>
                         </col>
                     </item>
-                    <item style="col-width:100,*">
+                    <item style="col-width:70,*">
                         <col>
                             <label style="font-size:16;color:#555555;">主题：</label>
                         </col>
                         <col>
-							<input type="text" id="mailsubject" name="mailsubject" placeholder="请输入" style="text-align:right;border:0 white;font-size:16;color:#555555;"/>
+							<input type="text" id="mailsubject" name="mailsubject" placeholder="请输入" style="border:0 white;font-size:16;color:#555555;"/>
                         </col>
                     </item>
-                    <item style="col-width:60,*">
+                    <item style="col-width:70,*">
                         <col>
                            <label style="font-size:16;color:#555555;">选项：</label>
                         </col>
                         <col>
                             <row>
-                               <checkbox id="maillevel" name="maillevel" value="2" style="align:right;font-size:16;color:#555555;">紧急</checkbox>
-                               <checkbox id="mailneedrevert" name="mailneedrevert" value="1" style="align:right;font-size:16;color:#555555;">回执</checkbox>
-                               <checkbox id="mailSign" name="mailSign" value="1" style="align:right;font-size:16;color:#555555;">签名</checkbox>
-                               <checkbox id="mailanonymous" name="mailanonymous" value="1" style="align:right;font-size:16;color:#555555;">匿名</checkbox>
+                               <checkbox id="maillevel" name="maillevel" value="2" style="font-size:14;color:#555555;">紧急</checkbox>
+                               <checkbox id="mailneedrevert" name="mailneedrevert" value="1" style="font-size:14;color:#555555;">回执</checkbox>
+                               <checkbox id="mailSign" name="mailSign" value="1" style="font-size:14;color:#555555;">签名</checkbox>
+                               <checkbox id="mailanonymous" name="mailanonymous" value="1" style="font-size:14;color:#555555;">匿名</checkbox>
                             </row>
                         </col>
                     </item>
-                    <item style="col-width:100,*">
+                    <item style="col-width:70,*">
                         <col>
                            <label style="font-size:16;color:#555555;">附件：</label>
                            <input type="hidden" id="rfileNames" name="rfileNames" value=""/>
@@ -383,9 +393,16 @@
                     <item id="docFiles" style="display:none;">
                     
                     </item>
+                    <item style="padding:0;margin:0;">
+	                	<col style="background:#f9f9f9;padding:10;margin:10;">
+	                		<row>
+	                			<label style="align:left;font-size:16;color:#555555">正文：</label>
+	                		</row>
+	                	</col>
+	                </item>
                     <item>
-                        <label style="margin-bottom:5;font-size:16;color:#555555;">正文：</label>
                         <textarea id="mailcontent" name="mailcontent" rows="7" placeholder="请输入" style="border:0 white;font-size:16;color:#555555;"></textarea>
+                   		<web id="mailweb" style="display:none"/>
                     </item>
                 </list>
 	        </form>

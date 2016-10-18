@@ -87,7 +87,7 @@
 				    $page.open('../index.xml',{animation:'down-to-up'});
 				  });
             }
-             
+            
             function downFile(accessorySaveNameseries,accessoryNameseries){
 			    var path = 'html';
 	            $http.post(evoUrl+'/ezOffice/doc/dealFiles.do',
@@ -123,6 +123,7 @@
 				    $page.open('../index.xml',{animation:'down-to-up'});
 				  });
             }
+            
             
             function viewFiles(accessoryNameseries,accessorySaveNameseries){
 			    $('docFiles').css('display','block');
@@ -173,72 +174,76 @@
         </title>
         <content>
             <list>
-                <item style="col-width:100,*">
-                    <col>
+                <item style="col-width:100,*;padding:0;margin:0;">
+                    <col style="background:#f9f9f9;padding:10;margin:10;">
                        <label style="font-size:16;color:#555555;">汇报类型：</label>
                     </col>
                     <col>
-                        <row><label style="align:right;font-size:16;color:#555555;">其它</label></row>
+                        <row><label style="font-size:16;color:#555555;">其它</label></row>
                     </col>
                 </item>
-                <item style="col-width:100,*">
-                    <col>
+                <item style="col-width:100,*;padding:0;margin:0;">
+                    <col style="background:#f9f9f9;padding:10;margin:10;">
                        <label style="font-size:16;color:#555555;">类型：</label>
                     </col>
                     <col>
-                        <row><label id="type" style="align:right;font-size:16;color:#555555;"></label></row>
+                        <row><label id="type" style="font-size:16;color:#555555;"></label></row>
                     </col>
                </item>
-                <item style="col-width:100,*">
-                   <col >
+                <item style="col-width:100,*;padding:0;margin:0;">
+                   <col style="background:#f9f9f9;padding:10;margin:10;">
                       <label style="font-size:16;color:#555555;">标题：</label>
                    </col>
                    <col>
-                      <row><label id="title" name="title" style="align:right;border:0 white;font-size:16;color:#555555;"></label></row>
+                      <row><label id="title" name="title" style="border:0 white;font-size:16;color:#555555;"></label></row>
                    </col>
                </item>      
-               <item style="col-width:100,*">
-                    <col>
+               <item style="col-width:100,*;padding:0;margin:0;">
+                    <col style="background:#f9f9f9;padding:10;margin:10;">
                        <label style="font-size:16;color:#555555;">被考核人：</label>
                     </col>
                     <col>
-                        <row><label id="empName" style="align:right;font-size:16;color:#555555;"></label></row>
+                        <row><label id="empName" style="font-size:16;color:#555555;"></label></row>
                     </col>
                 </item>
-                <item style="col-width:100,*">
-                    <col>
+                <item style="col-width:100,*;padding:0;margin:0;">
+                    <col style="background:#f9f9f9;padding:10;margin:10;">
                         <label style="font-size:16;color:#555555;">部门：</label>
                     </col>
                     <col>
-                        <row><label id="reDepart" style="align:right;font-size:16;color:#555555;"></label></row>
+                        <row><label id="reDepart" style="font-size:16;color:#555555;"></label></row>
                     </col>
                 </item>
-                <item style="col-width:100,*">
-                    <col>
+                <item style="col-width:100,*;padding:0;margin:0;">
+                    <col style="background:#f9f9f9;padding:10;margin:10;">
                        <label style="font-size:16;color:#555555;">提交至：</label>
                     </col>
                     <col>
-                        <row><label id="reReader" style="align:right;font-size:16;color:#555555;"></label></row>
+                        <row><label id="reReader" style="font-size:16;color:#555555;"></label></row>
                     </col>
                 </item>
-                <item style="col-width:100,*">
-                    <col>
+                <item style="col-width:100,*;padding:0;margin:0;">
+                    <col style="background:#f9f9f9;padding:10;margin:10;">
                         <label style="font-size:16;color:#555555;">汇报日期：</label>
                     </col>
                     <col>
-                        <row><label id="reDate" style="align:right;font-size:16;color:#555555;"></label></row>
+                        <row><label id="reDate" style="font-size:16;color:#555555;"></label></row>
                     </col>
                 </item>
-                <item style="col-width:100,*">
-                    <col>
+                <item style="col-width:100,*;padding:0;margin:0;">
+                    <col style="background:#f9f9f9;padding:10;margin:10;">
                        <label style="font-size:16;color:#555555;">相关附件：</label>
                     </col>
                     <col id="docFiles" style="display:none">
                     	
                     </col>
                 </item>
-                <item style="col-width:100,*">
-                    <label style="margin-bottom:8;font-size:16;color:#555555;">汇报正文：</label>
+                <item style="padding:0;margin:0;">
+                    <col style="background:#f9f9f9;padding:10;margin:10;">
+                       <label style="font-size:16;color:#555555;">汇报正文：</label>
+                    </col>
+                </item>
+                <item>
                     <web id="reCount_web" include="jquery.js">
                     			<![CDATA[
 				               		<html>
@@ -249,7 +254,7 @@
 				               			</script>
 									</html>
 									<body>
-										<articl>
+										<article>
 											<div> 
 												<table>
 													<tr>

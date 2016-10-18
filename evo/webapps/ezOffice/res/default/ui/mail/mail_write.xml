@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+	<script>
+   <![CDATA[
+        var storage = $phone.localStorage();
+		var evoUrl = storage.getItem('evoUrl');
+		$page.onload=function(){
+			$('mailFrom').action=evoUrl+"/ezOffice/mail/mailWrite.do";
+		}
+
+		function sendMail() {
+			if($('mailto').value.trim().length == 0){
+       			hint('收件人不能为空！');
+       			return false;
+   			}
+   			var subject = $('mailsubject').value.trim();
+   			if(subject.length >200){
+       			hint('主题不能过长！');
+       			return false;
+   			}
+   			if(/[\'\"#$\/&^*?\\]/.test(subject)){
+				 alert("主题内容不能输入特殊字符！");
+                 return;
+			}
+   			$("cmd").value="sendMail";
+            $('mailFrom').submit(function(data) {
+                var obj = JSON.parse(data);
+				if(obj.logonerror &&obj.logonerror=='1'){
+         		    alert("该账号已在设备"+obj.deviceId+"上登录");
+         		    $page.open('../index.xml',{target:'_self'});
+                    return;
+                }
+                hint(obj.message.description);
+                $page.close();
+            }, function(error) {
+                hint('提交失败！');
+            });
+        }
+		
+		function saveMail(){
+			if($('mailto').value.trim().length == 0 && $('mailsubject').value.trim().length == 0
+			&& $('mailcc').value.trim().length == 0 && $('mailcontent').value.trim().length == 0){
+				$page.close();
+			}else{
+		  		$("cmd").value="saveMail";
+		  		 if($('mailsubject').value.trim().length == 0){
+		  		 	$('mailsubject').value="无主题";
+		  		 }
+		  		 confirm('当前邮件已填写内容，是否将此邮件保存至草稿箱?', function(){
+           			   $('mailFrom').submit(function(data) {
+							var obj = JSON.parse(data);
+							if(obj.logonerror &&obj.logonerror=='1'){
+			         		    alert("该账号已在设备"+obj.deviceId+"上登录");
+			         		    $page.open('../index.xml',{target:'_self'});
+			                    return;
+			                }
+							hint(obj.message.description);
+							$page.close();
+						}, function(error) {
+							$page.close();
+						});
+           			} , function(){
+           			  $page.close();
+           			}
+           		);
+		  	}
+		}
+		
+	function selectMailto(){
+	    var storage = $phone.localStorage();
+        storage.setItem('sys_selectuser_range','*0*');
+        storage.setItem('sys_selectuser_userids',$('mailtoid').value);
+        storage.setItem('sys_selectuser_usernames',$('mailto').value);
+        storage.setItem('sys_selectuser_returnfuc','completeMailto');
+	    $page.open('../public/selectUserOrg.xml', {animation:'down-to-up'});
+	}
+	function completeMailto(id,name){
+	  $('mailtoid').value=id;
+	  $('mailto').value=name;
+	}
+	
+	function selectMailcc(){
+		var storage = $phone.localStorage();
+        storage.setItem('sys_selectuser_range','*0*');
+        storage.setItem('sys_selectuser_userids',$('mailccid').value);
+        storage.setItem('sys_selectuser_usernames',$('mailcc').value);
+        storage.setItem('sys_selectuser_returnfuc','completeMailcc');
+	    $page.open('../public/selectUserOrg.xml', {animation:'down-to-up'});
+	}
+	
+	function completeMailcc(id,name){
+		$('mailccid').value=id;
+	  	$('mailcc').value=name;
+	}
+    ]]>
+    </script> 
+
+<script>
+   <![CDATA[
+        var fileindex =0;    //附件最多能上传5个
+        var fileAddressArr = new Array();
+        var fileTypeArr = new Array();   //附件上传时，存储对应数组fileAddressArr中的类型。pic:图片类型，sound：声音类型，file：其他附件类型
+        
+        function getAttanchNum(){
+			if(fileindex>=5){
+				hint('上传附件不能超过5个！');
+				return false;
+			}
+			return true;
+		}
+        function doRelatedAcc(file){   //相关附件
+        	 var menu = $C('<actionmenu cancelTitle="取消">' +
+							 '<item style="text-decoration:underline;" label="拍照"     onclick="doFileCamera(this)"/>' +
+							 '<item style="text-decoration:underline;" label="相册照片" onclick="doFilePhotoAlbum(this)"/>' +
+							 '<item style="text-decoration:underline;" label="录音文件" onclick="doFileRecordSound(this)"/>' +
+							 '<item style="text-decoration:underline;" label="其他文件" onclick="doFileBrowse(this)"/>' +
+						'</actionmenu>');
+                menu.show();
+        }
+        
+        function doFileCamera(file) {  //拍照
+			if(!getAttanchNum()){
+				return;
+			}
+		    $phone.camera({
+		        success: function(path) {
+		        	var showpath = path.substring(path.lastIndexOf('/')+1,path.length);
+		        	fileAddressArr.push(path);
+		        	fileTypeArr.push('pic');
+		            uploadFileView();
+		        	fileindex++;
+		        },
+		        error: function() {
+		            hint('拍照失败！');
+		        }
+		    });
+		}
+		
+		 function doFilePhotoAlbum(file){    //上传文件选择相册
+		    if(!getAttanchNum()){
+				return;
+			}
+			$page.browseImage({
+				complete: function(path) {
+				 	var showpath = path.substring(path.lastIndexOf('/')+1,path.length);
+		            fileAddressArr.push(path);
+		        	fileTypeArr.push('pic');
+		            uploadFileView();
+		        	fileindex++;
+		        },
+		        error: function() {
+		            hint('上传图片失败！');
+		        }
+			  });
+		 }
+        
+        function doFileRecordSound(file) {
+			if(!getAttanchNum()){
+				return;
+			}
+		    $phone.recordSound({
+		        success: function(path) {
+		        	var showpath = path.substring(path.lastIndexOf('/')+1,path.length);
+		        	fileAddressArr.push(path);
+		        	fileTypeArr.push('sound');
+		            uploadFileView();
+		        	fileindex++;
+		        },
+		        error: function() {
+		            hint('录音失败！');
+		        }
+		    });
+		}
+        
+        function doFileBrowse(file) {   //附件上传
+			if(!getAttanchNum()){
+				return;
+			}
+		    $page.browse({
+		        complete: function(path){
+		            var showpath = path.substring(path.lastIndexOf('/')+1,path.length);
+		        	if(showpath.indexOf(".") == -1) {
+		        		hint("无后缀名的附件不允许上传，请重新选择");
+		        		return false;
+		        	}
+		        	var filenameExt = path.substring(path.lastIndexOf('\.')+1,path.length);
+		        	if(filenameExt == 'exe'){
+		        	    hint("后缀名为exe的附件不允许上传，请重新选择");
+		        		return false;
+		        	}
+		        	if(filenameExt == 'cmd'){
+		        	    hint("后缀名为cmd的附件不允许上传，请重新选择");
+		        		return false;
+		        	}
+		        	if(filenameExt == 'jsp'){
+		        	    hint("后缀名为jsp的附件不允许上传，请重新选择");
+		        		return false;
+		        	}
+		        	fileAddressArr.push(path);
+		        	fileTypeArr.push('file');
+		            uploadFileView();
+		        	fileindex++;
+		        }
+		    });
+		}
+		
+		function uploadFileView(){   //附件上传展示
+            $("fileRow").clear();
+            if(fileTypeArr.length == fileAddressArr.length){  //两个数组中长度一致
+            	for(var i=0;i<fileAddressArr.length;i++){
+					if(fileAddressArr[i]!=null&&fileAddressArr[i]!=""&&fileAddressArr[i]!=undefined){
+					    var path = fileAddressArr[i];
+					    var fileType = fileTypeArr[i];
+					    var iconRow = '';
+					    if(fileType == 'pic'){
+					    	iconRow = $C('<icon src="'+path+'" style="width:28;height:28;margin-right:0;" id="file_'+i+'"/>');
+					    }else if(fileType == 'sound'){
+					        iconRow = $C('<icon src="information_sound.png" style="width:28;height:28;margin-right:0;" id="file_'+i+'"/>');
+					    }else if(fileType == 'file'){
+					    	iconRow = $C('<icon src="information_file.png" style="width:28;height:28;margin-right:0;" id="file_'+i+'"/>');
+					    }
+			            $("fileRow").add(iconRow);
+			            var inputRow = $C('<input type="file" style="display:none;" value="'+path+'" name="attachment" />');
+			            $("fileRow").add(inputRow);
+			            var deleteIconRow = $C('<icon relative="file_'+i+'" position="topright" src="mail_del.png" style="width:12;height:12;margin-bottom:30;margin-right:2;" onclick="delFile(\''+i+'\');"/>');
+			            $("fileRow").add(deleteIconRow);
+					}	            
+	            }
+            }else{   //若不一致
+                 alert('上传出错！');
+            }
+            var uploadFileRow = $C('<icon src="mail_addfu.png" style="width:28;height:28;margin-left:8;"  onclick="doRelatedAcc(this)" />');
+		    $("fileRow").add(uploadFileRow);
+             	
+        }
+        
+        function delFile(index){   //删除附件
+			if(confirm('确认删除附件吗？')){
+				fileAddressArr.splice(parseInt(index),'1');
+				fileTypeArr.splice(parseInt(index),'1');
+			    uploadFileView();
+				fileindex--;
+			}
+		}
+	]]>
+</script>
+    <page onback="saveMail();">
+        <title style="background:#3daffe;tint-color:white">
+            <left>
+                <button role="back" onclick="saveMail();" icon="mail_wriback.png"></button>
+            </left>
+            <center>
+                <label>写邮件</label>
+            </center>
+            <right>
+                <button onclick="sendMail();" style="font-size:18;color:#FFFFFF;">发送</button>
+            </right>
+        </title>
+        <content>
+            <form id="mailFrom" action="" progress="提交表单|正在提交表单，请稍后..." multipart="true">
+                <list>
+                    <item style="col-width:70,*" onclick="selectMailto();" accessory="indicator">
+                        <col>
+                           <input type="hidden" id="cmd" name="cmd" value=""/>
+                           <label style="font-size:16;color:#555555;">收件人：</label>
+                        </col>
+                        <col>
+                           <input type="hidden" id="mailtoid" name="mailtoid" />
+                           <input type="text" id="mailto" name="mailto" readonly="true" placeholder="请选择" style="border:0 white;font-size:16;color:#555555" onclick="selectMailto();"/>
+                        </col>
+                    </item>
+                    <item style="col-width:70,*" onclick="selectMailcc();" accessory="indicator">
+                        <col >
+                           <label style="font-size:16;color:#555555;">抄送人：</label>
+                        </col>
+                        <col>
+                           <input type="hidden" id="mailccid" name="mailccid" />
+                           <input type="text" id="mailcc" name="mailcc" readonly="true" placeholder="请选择" style="border:0 white;font-size:16;color:#555555" onclick="selectMailcc();"/>
+                        </col>
+                    </item>
+                    <item style="col-width:70,*">
+                        <col>
+                            <label style="font-size:16;color:#555555;">主题：</label>
+                        </col>
+                        <col>
+                            <input type="text" id="mailsubject" name="mailsubject" placeholder="请输入" style="border:0 white;font-size:16;color:#555555" value="" maxlength="200"/>
+                        </col>
+                    </item>
+                    <item style="col-width:70,*">
+                        <col>
+                           <label style="font-size:16;color:#555555;">选项：</label>
+                        </col>
+                        <col>
+                            <row>
+                               <checkbox name="maillevel" id="maillevel" value="2" style="font-size:14;color:#555555">紧急</checkbox>
+                               <checkbox name="mailneedrevert" id="mailneedrevert" value="1" style="font-size:14;color:#555555">回执</checkbox>
+                               <checkbox name="mailSign" id="mailSign" value="1" style="font-size:14;color:#555555">签名</checkbox>
+                               <checkbox name="mailanonymous" id="mailanonymous" value="1" style="font-size:14;color:#555555">匿名</checkbox>
+                            </row>
+                        </col>
+                    </item>
+                    <item style="col-width:70,*">
+	                    <col>
+	                    	<row style="height:40;">
+	                    		<label style="font-size:16;color:#555555;">附件：</label>
+	                    	</row>
+	                    </col>
+	                    <col>
+	                    	<row id="fileRow">
+	                    	    <icon src="mail_addfu.png" style="width:28;height:28;" onclick="doRelatedAcc(this)"/>
+	                    	</row>
+	                    </col>
+	                </item>
+	                <item style="padding:0;margin:0;">
+	                	<col style="background:#f9f9f9;padding:10;margin:10;">
+	                		<row>
+	                			<label style="align:left;font-size:16;color:#555555">正文：</label>
+	                		</row>
+	                	</col>
+	                </item>
+                    <item>
+                        <textarea id="mailcontent" name="mailcontent" rows="15" maxrows="15" placeholder="请输入" style="border:0 white;font-size:16;color:#555555"></textarea>
+                    </item>
+                </list>
+             </form>
+        </content>
+    </page>
+</imag>
+

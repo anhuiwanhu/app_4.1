@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+    <script>
+    <![CDATA[
+        //页面家在完成后执行
+        $page.onload = function() {
+            initInfo();
+        }
+        function initInfo(){
+            //获取手机缓存中的数据
+            var storage = $phone.localStorage();
+            var desktopEmpsex = storage.getItem('desktopEmpsex');            //性别
+        //    var desktopPhotoPath = storage.getItem('desktopPhotoPath');      //头像路径
+            var desktopUsername = storage.getItem('desktopUsername');        //性别
+            var desktopEmpenglishname = storage.getItem('desktopEmpenglishname');        //英文名
+            var sys_photoName = storage.getItem('sys_photoName');  //缓存中的图片绝对路径，不是从后台获取的
+            $('emplivingphoto').src = sys_photoName;
+            $('sys_photoName_hidden').value = sys_photoName;     //传后台，上传图片后用于删除
+         // $('emplivingphoto').src = desktopPhotoPath;
+            $('username').text = desktopUsername;
+            $('empenglishname').value = desktopEmpenglishname;
+            
+            if(desktopEmpsex=="0"){
+               $('empsex').text="男";
+            }else if(desktopEmpsex=="1"){
+               $('empsex').text="女";
+            }else{
+               $('empsex').text="无";
+            }
+        }
+        
+        function doFilePhotoAlbum(file){    //上传文件选择相册
+				$page.browseImage({
+					complete: function(path) {
+					   $("picRow").remove($('emplivingphoto'));
+					   var iconRow = $C('<icon src="'+path+'" style="width:60;height:60;margin-left:10;" id="emplivingphoto"/>');
+			           $("picRow").add(iconRow);
+					   $('inputEmplivingphoto').value = path;
+			        },
+			        error: function() {
+			            hint('上传图片失败！');
+			        }
+				  });
+			}
+        
+        
+        function complete(){   //确定后，保存到数据库。
+         // var  emplivingphoto = $('emplivingphoto').src;
+            var  empenglishname = $('empenglishname').value; 
+            if(empenglishname == null||empenglishname == ''){
+            	empenglishname = '';
+            }
+            $('empenglishname_hidden').value = empenglishname;  //英文名赋值
+            
+            var  empsexName = $('empsex').text;
+            var  empsex = "";
+            if(empsexName == "男"){
+               empsex = "0";
+            }else if(empsexName == "女"){
+               empsex = "1";
+            }else{
+               empsex = "";
+            }
+            $('empsex_hidden').value = empsex ;
+            
+            var  storage = $phone.localStorage();
+		    var  desktopPhone = storage.getItem('desktopPhone');                   //所有电话
+		    var  phoneArr = desktopPhone.split(";");
+		    var empmobilephone = "";
+            var empmobilephone2 = "";
+            var empbusinessphone = "";
+            var empphone = "";
+           
+		    if(phoneArr[0]!=""&&phoneArr[0]!=null){
+		       empmobilephone=phoneArr[0];
+		    }
+		    $('empmobilephone_hidden').value = empmobilephone;
+		    if(phoneArr[1]!=""&&phoneArr[1]!=null){
+		       empmobilephone2=phoneArr[1];
+		    }
+		    $('empmobilephone2_hidden').value = empmobilephone2;
+		    if(phoneArr[2]!=""&&phoneArr[2]!=null){
+		       empbusinessphone=phoneArr[2];
+		    }
+		    $('empbusinessphone_hidden').value = empbusinessphone;
+		    if(phoneArr[3]!=""&&phoneArr[3]!=null){
+		       empphone=phoneArr[3];
+		    }
+		    $('empphone_hidden').value = empphone;
+		    
+            var  desktopMail = storage.getItem('desktopMail');                   //所有邮箱
+		    var  mailArr = desktopMail.split(";");
+            var  empemail="";   //邮箱
+		    var  empemail2="";
+		    var  empemail3="";
+		    if(mailArr[0]!=""&&mailArr[0]!=null){
+		       empemail=mailArr[0];
+		    }
+		    $('empemail_hidden').value = empemail;
+		    if(mailArr[1]!=""&&mailArr[1]!=null){
+		       empemail2=mailArr[1];
+		    }
+		    $('empemail2_hidden').value = empemail2;
+		    
+		    if(mailArr[2]!=""&&mailArr[2]!=null){
+		       empemail3=mailArr[2];
+		    }
+		    $('empemail3_hidden').value = empemail3;
+		    
+		    var  emplivingphoto = storage.getItem('desktopEmplivingphoto');  //后台获取的头像名称，若不上传新头像，用于传递到数据库
+		    $('emplivingphoto_hidden').value = emplivingphoto;
+		    var  nickname = storage.getItem('desktopNickname');   //昵称
+		    $('nickname_hidden').value = nickname;
+		    var  empdescribe = storage.getItem('desktopEmpdescribe');   //描述
+		    if(empdescribe != null&& empdescribe!= ''){
+		    	 $('empdescribe_hidden').value = empdescribe ;
+		    }else{
+		         $('empdescribe_hidden').value = '' ;
+		    }
+		   
+		    
+		    var storage = $phone.localStorage();
+            var evoUrl = storage.getItem('evoUrl');
+            $('myForm').action=evoUrl+"/ezOffice/set/updateEmpphone.do";
+            $('myForm').submit(function(data) {
+              //  alert(data);
+                if(data){
+                    var obj = JSON.parse(data);
+                    if(obj.logonerror &&obj.logonerror=='1'){
+			         		alert("该账号已在设备"+obj.deviceId+"上登录");
+		          			$page.open('../index.xml',{target:'_self'});
+		                    return;
+		            }
+                    if(obj.message.result=="1"){
+                        alert("保存信息成功！");
+                        loadFlag = '0';
+                        var emplivingphoto = obj.emplivingphoto;
+                        var storage = $phone.localStorage();
+                        storage.setItem('sys_photoName', evoUrl+'/ezOffice/imges/'+emplivingphoto);
+                        $page.close(-1);
+				        $page.open('personInfo.xml', {animation:'down-to-up',target:'_self'});
+                    }else{
+                        alert("保存信息失败！");
+                        loadFlag = '0';
+                        return;
+                    }
+                }else{
+                    alert("保存信息失败！");
+                    loadFlag = '0';
+                    return;
+                }
+            }, function(error){
+				    if (error == 'timeout') {
+				        hint('连接服务器超时！');
+				    } else if (error == '404') {
+				        hint('链接超时重新登录！');
+				    } else if (error == '500') {
+				        hint('内部服务器错误！');
+				    } else {
+				        hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+			    }
+			 );
+        }
+        
+        
+        
+        function fillInputSex(sonSex){
+            if(sonSex=="0"){
+               $('empsex').text="男";
+            }else if(sonSex=="1"){
+               $('empsex').text="女";
+            }else{
+               $('empsex').text="无";
+            }
+        }
+		
+    ]]>
+    </script> 
+	<page>
+		<title  style="background:#3daffe;tint-color:white;">
+		    <left>
+				<button role="back" />
+			</left>
+            <center>
+                <label id="title_center_label">个人资料</label>
+            </center>
+             <right>
+                <button target="_blank"  onclick="complete()" style="font-size:16;font-weight:bold;color:#ffffff;">完成</button>
+            </right>
+	    </title>
+		<content id="docContent" style="background:#f0f0f3;">
+		    <form action="" target="_self"  id="myForm" multipart="true" prompt="正在保存..">
+		        <input type="hidden" id="empenglishname_hidden"  name="empenglishname" />
+		        <input type="hidden" id="empmobilephone_hidden"  name="empmobilephone" />
+		        <input type="hidden" id="empmobilephone2_hidden"  name="empmobilephone2" />
+		        <input type="hidden" id="empbusinessphone_hidden"  name="empbusinessphone" />
+		        <input type="hidden" id="empphone_hidden"  name="empphone" />
+		        <input type="hidden" id="empemail_hidden"  name="empemail" />
+		        <input type="hidden" id="empemail2_hidden"  name="empemail2" />
+		        <input type="hidden" id="empemail3_hidden"  name="empemail3" />
+		        <input type="hidden" id="empsex_hidden"  name="empsex" />
+		        <input type="hidden" id="emplivingphoto_hidden"  name="emplivingphoto" />
+		        <input type="hidden" id="nickname_hidden"  name="nickname" />
+		        <input type="hidden" id="empdescribe_hidden"  name="empdescribe" />
+		        <input type="hidden" id="sys_photoName_hidden"  name="sys_photoName" />
+				<list id="docList" >
+				    <item style="padding:4;border:1 #f0f0f3;background:#f0f0f3;" >
+				           <col>
+						   </col>
+		            </item>
+		            <item  accessory="indicator" style="col-width:240,*;" onclick="doFilePhotoAlbum(this)">
+		                   <col>
+		                        <row id="picRow"><img src="" effect="round" style="width:60;height:60;margin-left:10;" id="emplivingphoto" default="login_per.png"/></row>
+		                   </col>
+		                   <col>
+		                        <row><label id="username" style="align:right;">修改头像 </label><input type="file" style="display:none;" value="" name="attachment"  id="inputEmplivingphoto"/></row>
+		                   </col>
+		            </item>
+				    <item style="col-width:100,*">
+	                    <col>
+	                        <row style="height:40;color:#555555;font-size:16;"><label >中文名：</label></row>
+	                    </col>
+	                    <col>
+	                         <row><label style="color:#c1c1c1;" id="username"> </label></row>
+	                    </col>
+	                </item>
+	                <item style="col-width:100,*;" >
+	                    <col>
+	                       <row style="height:40;color:#555555;font-size:16;"><label>英文名：</label></row>
+	                    </col>                    
+	                    <col>
+	                       <row><input type="text" id="empenglishname" maxlength="50" placeholder="请输入" style="placeholder-color:#c1c1c1;border:0 white;font-size:16;"/></row>
+	                    </col>
+	                    <input type="hidden" id="empenglishname_hidden"  name="empenglishname" />
+	                </item>
+	                <item style="col-width:100,*" accessory="indicator"  onclick="toSexUpdate();">
+	                    <col>
+	                       <row style="height:40;color:#555555;font-size:16;"><label>性别：</label></row>
+	                    </col>                    
+	                    <col>
+	                         <row><label id="empsex"></label></row>
+	                    </col>
+	                </item>
+				</list>
+			</form>
+		</content>
+	</page>
+	<script>
+    <![CDATA[
+        function toSexUpdate(){
+            var  empsexName = $('empsex').text;
+            var empsex = "";
+            if(empsexName == "男"){
+               empsex = "0";
+            }else if(empsexName == "女"){
+               empsex = "1";
+            }else{
+               empsex = "";
+            }
+            
+            var  storage = $phone.localStorage();
+		    storage.setItem('desktopEmpsex',empsex);  
+            $page.open('personSexUpdate.xml');
+        }
+    
+    ]]>
+    </script>
+</imag>

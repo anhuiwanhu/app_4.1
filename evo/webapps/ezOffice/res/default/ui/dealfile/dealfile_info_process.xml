@@ -175,7 +175,7 @@
 	        		// 地址连接
 	        		infoContent = $C('<row style="margin-top:30;margin-bottem:30px;"><web id="content_web"></web></row>');
 	        		$infoContent.add(infoContent);
-	        		$('content_web').html = '<div style="text-align:center;" ><a href="" >'+content+'</a></div>';
+	        		$('content_web').html = '<div style="text-align:center;" >'+content+'</div>';
 	        	}else if(informationType == '3'){
 	        		// 文件链接
 	        		var cons = content.split(":");
@@ -246,7 +246,7 @@
 		                  for(var k=0;k<attList.length;k++){
 		                  	  var viewName = draftPerson +worksubmittime +worktitle+"的正文"+bodyIndex+fileType;
 		                      bodyIndex++;
-		                      var files = $C('<row><label style="color:#38adff;align:left;font-size:16;"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath=govdocumentmanager'+'&amp;viewName='+viewName+'\')">查看正文</label></row>')
+		                      var files = $C('<row><label style="color:#38adff;font-size:16;"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath=govdocumentmanager'+'&amp;viewName='+viewName+'\')">查看正文</label></row>')
 		                      $(filetype).add(files); 
 		                  }
 		               }else{     //无附件，或者后台处理异常
@@ -275,6 +275,10 @@
 	        	if(time!=null&&time.length>20){
                     time = time.substring(0,16);
                 }
+                var informationKey = detailData.informationKey;
+                if(informationKey!=null && informationKey !=""){
+                	informationKey = informationKey.replace("|","");
+                }
 	        	itemContent += '<item style="col-width:100,*"><col><row><label style="background:#f9f9f9;margin:10;padding:10;">信息标题：</label>'+
 	        				   '</row></col><col><row><label>'+detailData.informationTitle+'</label></row></col></item>'+
 	        				   '<item style="col-width:100,*"><col><row><label style="background:#f9f9f9;margin:10;padding:10;">信息内容：</label>'+
@@ -292,7 +296,7 @@
 	        				   '<item style="col-width:100,*"><col><row><label style="background:#f9f9f9;margin:10;padding:10;">同时发布：</label>'+
 	        				   '</row></col><col><row><label>'+detailData.otherChannel+'</label></row></col></item>'+
 	        				   '<item style="col-width:100,*"><col><row><label style="background:#f9f9f9;margin:10;padding:10;">关键字：</label>'+
-	        				   '</row></col><col><row><label>'+detailData.informationKey+'</label></row></col></item>'+
+	        				   '</row></col><col><row><label>'+informationKey+'</label></row></col></item>'+
 	        				   '<item style="col-width:100,*"><col><row><label style="background:#f9f9f9;margin:10;padding:10;">作者：</label>'+
 	        				   '</row></col><col><row><label>'+detailData.informationAuthor+'</label></row></col></item>'+
 	        				   '<item style="col-width:100,*"><col><row><label style="background:#f9f9f9;margin:10;padding:10;">作者单位：</label>'+
@@ -395,8 +399,7 @@
 				if(commentList instanceof Array){
 					for(var i=0,length=commentList.length;i<length;i++){
 						step = commentList[i].step+":";
-						itemContent +='<item style="col-width:90,*"><col><row><label style="font-size:16;color:#555555;">'+step+'</label>'+
-	        				   '</row></col><col>';
+						itemContent +='<item><col><row><label style="font-size:16;color:#555555;">'+step+'</label></row></col></item><item style="padding:0;margin:0;"><col>';
 						commentType = commentList[i].type;
 						if(commentType == '4'){
 							// 手写
@@ -409,7 +412,7 @@
 							commentYuyin = webServiceUrl + 'upload/workflow_acc/' + commentList[i].content.substring(0,6) + '/' + commentList[i].content;
 							itemContent += '<row style="margin-bottom:20"><label onclick="playSound(\'' + commentYuyin + '\',\''+commentList[i].content+'\')" style="align:left;font-size:14;color:#38adff;">'+(commentList[i].content ? commentList[i].content : "")+'</label></row>';
 						}else{
-							itemContent += '<row style="margin-bottom:20"><label style="align:left;font-size:16;color:#555555">'+(commentList[i].content ? commentList[i].content : "")+'</label></row>';
+							itemContent += '<row style="margin-bottom:20"><label style="font-size:16;color:#555555;margin-left:10;">'+(commentList[i].content ? commentList[i].content : "")+'</label></row>';
 						}
 						itemContent += '<row><label style="align:right;color:#b8b8b8;font-size:12">'+commentList[i].person+'('+commentList[i].date+')</label></row></col></item>';
 					}
@@ -420,7 +423,6 @@
 					commentType = commentList.comment.type;
 					if(commentType == '4'){
 						// 手写
-					//	commentShouxie = webServiceUrl + 'upload/workflow_acc/' + commentList.comment.content.substring(0,6) + '/' + commentList.comment.content;
 						commentShouxieOaUrl = webServiceUrl + 'upload/workflow_acc/' + commentList.comment.content.substring(0,6) + '/' + commentList.comment.content;
 						commentShouxie = evoUrl+'/ezOffice/download/resizeHandSign.do?url='+commentShouxieOaUrl;
 						itemContent += '<row style="margin-bottom:20" onclick="view_sxContent(\'' + commentShouxie + '\');"><img src="'+commentShouxie+'"/></row>';
@@ -429,7 +431,7 @@
 						commentYuyin = webServiceUrl + 'upload/workflow_acc/' + commentList.comment.content.substring(0,6) + '/' + commentList.comment.content;
 						itemContent += '<row style="margin-bottom:20"><label onclick="playSound(\'' + commentYuyin + '\',\''+commentList.comment.content+'\')" style="align:left;font-size:14;color:#38adff">'+(commentList.comment.content ? commentList.comment.content : "")+'</label></row>';
 					}else{
-						itemContent += '<row style="margin-bottom:20"><label style="align:left;font-size:16;color:#555555">'+(commentList.comment.content ? commentList.comment.content : "")+'</label></row>';
+						itemContent += '<row style="margin-bottom:20"><label style="font-size:16;color:#555555;margin-left:10;">'+(commentList.comment.content ? commentList.comment.content : "")+'</label></row>';
 					}
 					itemContent += '<row><label style="align:right;color:#b8b8b8;font-size:12">'+commentList.comment.person+'('+commentList.comment.date+')</label></row></col></item>';
 				}
@@ -463,15 +465,14 @@
 				var actiCommFieldType = workInfo.actiCommFieldType;
 				if(actiCommFieldType != '-1' && (commentField == '-1' || commentField == 'nullCommentField' ||
 				   commentField == 'autoCommentField' || commentField == 'null' || commentField == null)){
-					itemContent += '<item style="col-width:90,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="align:left;font-size:16;color:#555555">办理意见:</label></row></col><col style="padding:10;margin:10;"><row>'+
+					itemContent += '<item style="padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="align:left;font-size:16;color:#555555">办理意见:</label></row></col></item><item style="padding:0;margin:0;"><col><row>'+
 								   '<textarea style="font-size:16;color:#555555" rows="5" name="comment_input" id="comment_input" maxrows="5"></textarea></row></col></item>'+
-								   '<item id="" style="col-width:*,40,40,50,40"><col><row></row></col>'+
+								   '<item id="" style="col-width:*,40,40,50,40"><col><row onclick="openUseComment(\'' + officeList + '\');"><label style="align:right;color:#C9C9C9;">选择常用语</label></row></col>'+
 								   '<col><row><icon id="shouxie" onclick="doDraft();" src="workflow_sx.png" style="display:none;width:30;height:30;"/></row></col>'+
 								   '<col><row><icon id="yuyin" onclick="doRecordSound();" src="workflow_yy.png" style="display:none;width:30;height:30;"/></row></col>'+
 								   '<col><row>'+
 								   '<icon id="commentAdd" src="deskperson_add.png" style="width:30;height:30;align:right;" onclick="openCommentMenu();"/>'+
 								   '</row></col></item>'+
-								   '<item onclick="openUseComment(\'' + officeList + '\');" accessory="indicator"><row><label style="align:right;color:#C9C9C9;">选择常用语</label></row></item>'+
 								   '<item id="comment_input_sxyy" style="display:none;col-width:40,*,40"></item>';
 				}
 			}
@@ -592,9 +593,10 @@
 	        function createFlowImg(flowGraphUrl,picRootPath){
 	        	if(!(flowGraphUrl instanceof Array)){
 	        	//	var imgPath = webServiceUrl + 'upload/workflow_acc/' + flowGraphUrl + '?rand=' + Math.random();
+	        		picRootPath = evoUrl +'/ezOffice/download/resizeHandSign.do?url=' +webServiceUrl + 'upload/workflow_acc/';
 	        		var imgPath = picRootPath+flowGraphUrl;
 		        	$('flowgraphurl').value = imgPath;
-		        	var image = $C('<img src="' + imgPath + '" id="flowImg" progress="true" style="align:center;"/>');
+		        	var image = $C('<img src="' + imgPath + '"  id="flowImg" progress="true" style="align:center;height:400;width:300"/>');
 		        	$('content_flow_pic').add(image);
 	        	}else{
 	        		$('tabbar').remove($('imgItem'));

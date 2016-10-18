@@ -112,7 +112,7 @@
 							  '<col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+
 							  '<label style="align:left;font-size:16;color:#555555">'+fild.motorMan+':</label>'+
 							  '</row></col><col style="padding:10;margin:10;">'+
-							  '<input type="text" name="motorMan" id="motorMan" readonly="true" style="text-align:right;font-size:16;color:#555555"></input>'+
+							  '<input type="text" name="motorMan" id="motorMan" readonly="true" style="font-size:16;color:#555555"></input>'+
 							  '</col></item>';
 				pushMustFillArray(mustfilled,fild.motorMan,'motorMan');
 			}
@@ -122,7 +122,7 @@
 							  '<col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+
 							  '<label style="align:left;font-size:16;color:#555555">'+fild.orgName+':</label>'+
 							  '</row></col><col style="padding:10;margin:10;"><input type="hidden" id="orgId" name="orgId" value="'+orgId+'"/>'+
-							  '<input type="text" name="orgName" id="orgName" value="'+orgName+'" readonly="true" style="text-align:right;border:0 white;font-size:16;color:#555555"></input>'+
+							  '<input type="text" name="orgName" id="orgName" value="'+orgName+'" readonly="true" style="border:0 white;font-size:16;color:#555555"></input>'+
 							  '</col></item>';
 				pushMustFillArray(mustfilled,fild.orgName,'orgName');
 			}
@@ -132,7 +132,7 @@
 							  '<col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+
 							  '<label style="align:left;font-size:16;color:#555555">'+fild.empName+':</label>'+
 							  '</row></col><col style="padding:10;margin:10;"><input type="hidden" id="empId" name="empId" value="'+userId+'"/>'+
-							  '<input type="text" name="empName" id="empName" value="'+userName+'" readonly="true" style="text-align:right;border:0 white;font-size:16;color:#555555"></input>'+
+							  '<input type="text" name="empName" id="empName" value="'+userName+'" readonly="true" style="border:0 white;font-size:16;color:#555555"></input>'+
 							  '</col></item>';
 				pushMustFillArray(mustfilled,fild.empName,'empName');
 			}
@@ -142,7 +142,7 @@
 							  '<col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+
 							  '<label style="align:left;font-size:16;color:#555555">'+fild.destination+':</label>'+
 							  '</row></col><col style="padding:10;margin:10;">'+
-							  '<input type="text" name="destination" id="destination" style="text-align:right;font-size:16;color:#555555"></input>'+
+							  '<input type="text" name="destination" id="destination" style="font-size:16;color:#555555"></input>'+
 							  '</col></item>';
 				pushMustFillArray(mustfilled,fild.destination,'destination');
 			}
@@ -152,7 +152,7 @@
 							  '<col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+
 							  '<label style="align:left;font-size:16;color:#555555">'+fild.personNum+':</label>'+
 							  '</row></col><col style="padding:10;margin:10;">'+
-							  '<input type="number" name="personNum" placeholder="请输入整数" onchange="checkNum(\'personNum\');" id="personNum" style="text-align:right;font-size:16;color:#555555"></input>'+
+							  '<input type="number" name="personNum" placeholder="请输入整数" onchange="checkNum(\'personNum\');" id="personNum" style="font-size:16;color:#555555"></input>'+
 							  '</col></item>';
 				pushMustFillArray(mustfilled,fild.personNum,'personNum');
 			}
@@ -162,7 +162,7 @@
 							  '<col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+
 							  '<label style="align:left;font-size:16;color:#555555">'+fild.genchePerson+':</label>'+
 							  '</row></col><col style="padding:10;margin:10;">'+
-							  '<input type="text" name="genchePerson" id="genchePerson" style="text-align:right;font-size:16;color:#555555"></input>'+
+							  '<input type="text" name="genchePerson" id="genchePerson" style="font-size:16;color:#555555"></input>'+
 							  '</col></item>';
 				pushMustFillArray(mustfilled,fild.genchePerson,'genchePerson');
 			}
@@ -199,9 +199,9 @@
 					var radioCon = '<row>';
 					for(var index=0;index<fild.dataList.length;index++){
 		        		if(index==0){
-		        			radioCon +='<radio name="voitureStyle" checked="true" value="'+fild.dataList[index].hiddenval+'" style="align:right;font-size:16;color:#555555;">'+fild.dataList[index].showval+'</radio>'
+		        			radioCon +='<radio name="voitureStyle" checked="true" value="'+fild.dataList[index].hiddenval+'" style="font-size:16;color:#555555;">'+fild.dataList[index].showval+'</radio>'
 		        		}else{
-		        			radioCon +='<radio name="voitureStyle" value="'+fild.dataList[index].hiddenval+'" style="align:right;font-size:16;color:#555555;">'+fild.dataList[index].showval+'</radio>'
+		        			radioCon +='<radio name="voitureStyle" value="'+fild.dataList[index].hiddenval+'" style="font-size:16;color:#555555;">'+fild.dataList[index].showval+'</radio>'
 		        		}
 		        		if(index %2 == 1){
 		        			radioCon +='</row><row>';
@@ -211,20 +211,20 @@
 			}
 			//事由
 			if(fild.reason !=null && fild.reason !=''){
-				itemContent += '<item style="col-width:100,*;padding:0;margin:0;">'+
+				itemContent += '<item style="padding:0;margin:0;">'+
 							   '<col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+
 							   '<label style="align:left;font-size:16;color:#555555">'+fild.reason+':</label>'+
-							   '</row></col><col style="padding:10;margin:10;">'+
+							   '</row></col></item><item style="padding:0;margin:0;"><col>'+
 							   '<textarea rows="5" maxrows="5" name="reason" id="reason"></textarea>'+
 							   '</col></item>';
 				pushMustFillArray(mustfilled,fild.reason,'reason');
 			}
 			//备注
 			if(fild.remark !=null && fild.remark !=''){
-				itemContent += '<item style="col-width:100,*;padding:0;margin:0;">'+
+				itemContent += '<item style="padding:0;margin:0;">'+
 							   '<col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+
 							   '<label style="align:left;font-size:16;color:#555555">'+fild.remark+':</label>'+
-							   '</row></col><col style="padding:10;margin:10;">'+
+							   '</row></col></item><item style="padding:0;margin:0;"><col>'+
 							   '<textarea rows="5" maxrows="5" name="remark" id="remark"></textarea>'+
 							   '</col></item>';
 				pushMustFillArray(mustfilled,fild.remark,'remark');

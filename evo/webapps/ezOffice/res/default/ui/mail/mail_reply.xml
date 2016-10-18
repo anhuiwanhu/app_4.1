@@ -487,47 +487,47 @@
         <content >
             <form id="mailFrom" action="" progress="提交表单|正在提交表单，请稍后..." multipart="true">
                 <list>
-                    <item style="col-width:100,*" onclick="selectMailto();" accessory="indicator">
+                    <item style="col-width:70,*" onclick="selectMailto();" accessory="indicator">
                         <col>
                            <input type="hidden" id="cmd" name="cmd" value="sendMail"/>
                            <label style="font-size:16;color:#555555;">收件人：</label>
                         </col>
                         <col>
                            <input type="hidden" id="mailtoid" name="mailtoid"/>
-                           <input type="text" id="mailto" name="mailto" readonly="true" placeholder="请选择" style="text-align:right;border:0 white;font-size:16;color:#555555;" onclick="selectMailto();"/>
+                           <input type="text" id="mailto" name="mailto" readonly="true" placeholder="请选择" style="border:0 white;font-size:16;color:#555555;" onclick="selectMailto();"/>
                         </col>
                     </item>
-                    <item style="col-width:100,*" onclick="selectMailcc();" accessory="indicator">
+                    <item style="col-width:70,*" onclick="selectMailcc();" accessory="indicator">
                         <col >
                            <label style="font-size:16;color:#555555;">抄送人：</label>
                         </col>
                         <col>
                            <input type="hidden" id="mailccid" name="mailccid" />
-                           <input type="text" id="mailcc" name="mailcc" readonly="true" placeholder="请选择" style="text-align:right;border:0 white;font-size:16;color:#555555;" onclick="selectMailcc();"/>
+                           <input type="text" id="mailcc" name="mailcc" readonly="true" placeholder="请选择" style="border:0 white;font-size:16;color:#555555;" onclick="selectMailcc();"/>
                         </col>
                     </item>
-                    <item style="col-width:100,*">
+                    <item style="col-width:70,*">
                         <col>
                             <label style="font-size:16;color:#555555;">主题：</label>
                         </col>
                         <col>
-                            <input type="text" id="mailsubject" name="mailsubject" placeholder="请输入" style="text-align:right;border:0 white;font-size:16;color:#555555;" maxlength="200"/>
+                            <input type="text" id="mailsubject" name="mailsubject" placeholder="请输入" style="border:0 white;font-size:16;color:#555555;" maxlength="200"/>
                         </col>
                     </item>
-                    <item style="col-width:60,*">
+                    <item style="col-width:70,*">
                         <col>
                            <label style="font-size:16;color:#555555;">选项：</label>
                         </col>
                         <col>
                             <row>
-                               <checkbox name="maillevel" id="maillevel" value="2" style="align:right;font-size:16;color:#555555;">紧急</checkbox>
-                               <checkbox name="mailneedrevert" id="mailneedrevert" value="1" style="align:right;font-size:16;color:#555555;">回执</checkbox>
-                               <checkbox name="mailSign" id="mailSign" value="1" style="align:right;font-size:16;color:#555555;">签名</checkbox>
-                               <checkbox name="mailanonymous" id="mailanonymous" value="1" style="align:right;font-size:16;color:#555555;">匿名</checkbox>
+                               <checkbox name="maillevel" id="maillevel" value="2" style="font-size:14;color:#555555;">紧急</checkbox>
+                               <checkbox name="mailneedrevert" id="mailneedrevert" value="1" style="font-size:14;color:#555555;">回执</checkbox>
+                               <checkbox name="mailSign" id="mailSign" value="1" style="font-size:14;color:#555555;">签名</checkbox>
+                               <checkbox name="mailanonymous" id="mailanonymous" value="1" style="font-size:14;color:#555555;">匿名</checkbox>
                             </row>
                         </col>
                     </item>
-                    <item style="col-width:80,*">
+                    <item style="col-width:70,*">
 	                    <col>
 	                    	<row style="height:40;">
 	                    		<label style="font-size:16;color:#555555;">附件：</label>
@@ -548,12 +548,18 @@
                         	
                         </col>
                     </item>
+                    <item style="padding:0;margin:0;">
+	                	<col style="background:#f9f9f9;padding:10;margin:10;">
+	                		<row>
+	                			<label style="align:left;font-size:16;color:#555555">正文：</label>
+	                		</row>
+	                	</col>
+	                </item>
                     <item>
-                        <label style="margin-bottom:5;font-size:16;color:#555555;">正文：</label>
-                         <row><textarea id="mailcontent" name="mailcontent" rows="6" maxrows="6" style="margin-bottom:5;border:0 white;font-size:16;color:#555555;"></textarea></row>
                          <row><label id="newCont" style="margin-bottom:5"></label></row>
                          <row><web id="mailweb" style="display:none"/></row>
                         <textarea id="oldCont" name="oldCont" style="display: none;"></textarea>
+                        <row><textarea id="mailcontent" name="mailcontent" rows="6" maxrows="6" style="margin-bottom:5;border:0 white;font-size:16;color:#555555;"></textarea></row>
                     </item>
                 </list>
              </form>

@@ -1265,7 +1265,7 @@
                $page.open('mail/mail_write.xml', {animation:'down-to-up'});
                $('quickAdd_popupmenu').close();
 	         }else if(id=='information'){
-	           $page.open('information/new.xml', {animation:'down-to-up'});
+	           $page.open('information/new.xml?fromPage=desktop', {animation:'down-to-up'});
 	           $('quickAdd_popupmenu').close();
 	         }else if(id=='workflow'){
 	           $page.open('workflow/workflow_list.xml?fromXml=quickadd', {animation:'down-to-up'});

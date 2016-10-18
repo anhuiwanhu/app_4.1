@@ -657,7 +657,7 @@
         		     //办理提示不能超过100个字
         		    if($('tips')){
         		    	var tipVal = $('tips').value;
-						if(tipVal!=null && tipVal!=undefined&&tipVal.length>2){
+						if(tipVal!=null && tipVal!=undefined&&tipVal.length>100){
 							alert('办理提示长度不能超过100个字');
 							return false;
 						}

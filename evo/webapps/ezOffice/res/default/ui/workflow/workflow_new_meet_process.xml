@@ -368,7 +368,7 @@
         	    	itemContent += '</col></item>';
         	    	pushMustFillArray(mustfilled,field.motif,'_main_motif');
         	    }else if(field.depict != null && field.depict != ''){  //多行文本，会议内容
-        	    	itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' +field.depict + ':</label></row></col><col style="padding:10;margin:10;">';
+        	    	itemContent += '<item style="padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' +field.depict + ':</label></row></col></item><item style="padding:0;margin:0;"><col>';
         	    	itemContent += '<row><textarea style="color:#555555;font-size:16;" rows="5" maxrows="5" id="_main_depict" name="_main_depict"></textarea></row>';
         	    	itemContent += '</col></item>';
         	    	pushMustFillArray(mustfilled,field.depict,'_main_depict');
@@ -465,7 +465,7 @@
 	        		itemContent += '</col></item>';
 	        		pushMustFillArray(mustfilled,field.attendee,'_main_attendee');
 	        	}else if(field.otherAttendeePerson != null && field.otherAttendeePerson != ''){   //其他参会人员
-	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' +field.otherAttendeePerson + ':</label></row></col><col style="padding:10;margin:10;">';
+	        		itemContent += '<item style="padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' +field.otherAttendeePerson + ':</label></row></col></item><item style="padding:0;margin:0;"><col>';
         	    	itemContent += '<row><textarea style="color:#555555;font-size:16;" rows="5" maxrows="5" id="_main_otherAttendeePerson" name="_main_otherAttendeePerson"></textarea></row>';
         	    	itemContent += '</col></item>';
         	    	pushMustFillArray(mustfilled,field.otherAttendeePerson,'_main_otherAttendeePerson');
@@ -480,13 +480,13 @@
 	        		pushMustFillArray(mustfilled,field.swPerson,'_main_swPerson');
 	        	}else if(field.applyEmpName != null && field.applyEmpName != ''){  //预订者，只读数据
         	        itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' +field.applyEmpName + ':</label></row></col><col style="padding:10;margin:10;">';
-        	    	itemContent += '<row><label style="align:right;color:#555555;font-size:16;">'+field.value+'</label>'+
+        	    	itemContent += '<row><label style="color:#555555;font-size:16;">'+field.value+'</label>'+
         	    	 '<input type="hidden" id="_main_applyEmpName" name="_main_applyEmpName" value="'+field.hiddenval+'"/></row>';
         	    	itemContent += '</col></item>';
         	    	pushMustFillArray(mustfilled,'applyEmpName','_main_applyEmpName');
         	    }else if(field.applyOrgName != null && field.applyOrgName != ''){  //预订部门，只读数据
         	        itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' +field.applyOrgName + ':</label></row></col><col style="padding:10;margin:10;">';
-        	    	itemContent += '<row><label style="align:right;color:#555555;font-size:16;">'+field.value+'</label>'+
+        	    	itemContent += '<row><label style="color:#555555;font-size:16;">'+field.value+'</label>'+
         	    	 '<input type="hidden" id="_main_applyOrgId" name="_main_applyOrgId" value="'+field.hiddenval+'"/>'+
         	    	 '<input type="hidden" id="_main_applyOrgName" name="_main_applyOrgName" value="'+field.value+'"/></row>';
         	    	itemContent += '</col></item>';
@@ -530,12 +530,12 @@
 	        		itemContent += '<input type="hidden" name="_main_remind_im" id="_main_remind_im" value=""/></col></item>';
 	        		//pushMustFillCheckboxArray(mustfilled,'提醒','_main_remind_im',remindArr.length);
 	        	}else if(field.seatcard != null && field.seatcard != ''){  //多行文本，席卡
-        	    	itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' +field.seatcard + ':</label></row></col><col style="padding:10;margin:10;">';
+        	    	itemContent += '<item style="padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' +field.seatcard + ':</label></row></col></item><item style="padding:0;margin:0;"><col>';
         	    	itemContent += '<row><textarea style="color:#555555;font-size:16;" rows="5" maxrows="5" id="_main_seatcard" name="_main_seatcard"></textarea></row>';
         	    	itemContent += '</col></item>';
         	    	pushMustFillArray(mustfilled,field.seatcard,'_main_seatcard');
         	    }else if(field.remark != null && field.remark != ''){  //多行文本，备注
-        	    	itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' +field.remark + ':</label></row></col><col style="padding:10;margin:10;">';
+        	    	itemContent += '<item style="padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' +field.remark + ':</label></row></col></item><item style="padding:0;margin:0;"><col>';
         	    	itemContent += '<row><textarea style="color:#555555;font-size:16;" rows="5" maxrows="5" id="_main_remark" name="_main_remark"></textarea></row>';
         	    	itemContent += '</col></item>';
         	    	pushMustFillArray(mustfilled,field.remark,'_main_remark');

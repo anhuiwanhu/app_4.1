@@ -320,7 +320,7 @@
 				subFieldList = subTableList;
 				fieldCount = subTableList.length;
 				itemContent = '<item id="sub" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="align:left;font-size:16;color:#555555">子表(物品信息)填写:</label></row></col><col style="padding:10;margin:10;"><row>'+
-								   '<input readonly="true" style="border:0 white;font-size:16;text-align:right;color:#555555" type="text" placeholder="" value="'+fieldCount+'条子表数据>"/></row></col></item>';
+								   '<input readonly="true" style="border:0 white;font-size:16;color:#555555" type="text" placeholder="" value="'+fieldCount+'条子表数据>"/></row></col></item>';
 				contentFormList.addMore('<imag><list>' + itemContent + '</list></imag>');
 				$('sub').onclick = "openSubTableCon('" + JSON.stringify(subFieldList) + "','" + ptMode + "')";
 			}else if(subTableList instanceof Object){
@@ -331,7 +331,7 @@
 						if(subFieldList instanceof Array){
 							fieldCount = subFieldList.length;
 							itemContent = '<item id="sub" onclick="openSubTableCon('+subFieldList+','+ptMode+');" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="align:left;font-size:16;color:#555555">子表(物品信息)填写:</label></row></col><col style="padding:10;margin:10;"><row>'+
-									   '<input readonly="true" style="border:0 white;font-size:16;text-align:right;color:#555555" type="text" value="'+fieldCount+'条子表数据>"/></row></col></item>';
+									   '<input readonly="true" style="border:0 white;font-size:16;color:#555555" type="text" value="'+fieldCount+'条子表数据>"/></row></col></item>';
 			                contentFormList.addMore('<imag><list>' + itemContent + '</list></imag>');
 							$('sub').onclick = "openSubTableCon('" + JSON.stringify(subFieldList) + "','" + ptMode + "')";
 						}else if(subFieldList instanceof Object){
@@ -340,7 +340,7 @@
 							 }else{
 							        fieldCount = 1;
 							 		itemContent = '<item id="sub" onclick="openSubTableCon('+subFieldList+','+ptMode+');" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="align:left;font-size:16;color:#555555">子表(物品信息)填写:</label></row></col><col style="padding:10;margin:10;"><row>'+
-									   '<input readonly="true" style="border:0 white;font-size:16;text-align:right;color:#555555" type="text" value="'+fieldCount+'条子表数据>"/></row></col></item>';
+									   '<input readonly="true" style="border:0 white;font-size:16;color:#555555" type="text" value="'+fieldCount+'条子表数据>"/></row></col></item>';
 					                contentFormList.addMore('<imag><list>' + itemContent + '</list></imag>');
 									$('sub').onclick = "openSubTableCon('" + JSON.stringify(subFieldList) + "','" + ptMode + "')";
 							 }
@@ -550,8 +550,8 @@
 				if(commentList instanceof Array){
 					for(var i=0,length=commentList.length;i<length;i++){
 						step = commentList[i].step+":";
-						itemContent +='<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="font-size:16;color:#555555;">'+step+'</label>'+
-	        				   '</row></col><col>';
+						itemContent +='<item style="padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="font-size:16;color:#555555;">'+step+'</label>'+
+	        				   '</row></col></item><item style="padding:0;margin:0;"><col>';
 						commentType = commentList[i].type;
 						if(commentType == '4'){
 							// 手写
@@ -564,14 +564,14 @@
 							commentYuyin = webServiceUrl + 'upload/workflow_acc/' + commentList[i].content.substring(0,6) + '/' + commentList[i].content;
 							itemContent += '<row style="margin-bottom:20"><label onclick="playSound(\'' + commentYuyin + '\',\''+commentList[i].content+'\')" style="align:left;font-size:14;color:#38adff;">'+(commentList[i].content ? commentList[i].content : "")+'</label></row>';
 						}else{
-							itemContent += '<row style="margin-bottom:20"><label style="align:left;font-size:16;color:#555555">'+(commentList[i].content ? commentList[i].content : "")+'</label></row>';
+							itemContent += '<row style="margin-bottom:20"><label style="font-size:16;color:#555555;margin-left:10;">'+(commentList[i].content ? commentList[i].content : "")+'</label></row>';
 						}
 						itemContent += '<row><label style="align:right;color:#b8b8b8;font-size:12">'+commentList[i].person+'('+commentList[i].date+')</label></row></col></item>';
 					}
 				}else if(commentList instanceof Object){
 					step = commentList.comment.step+":";
-						itemContent +='<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="font-size:16;color:#555555;">'+step+'</label>'+
-	        				   '</row></col><col>';
+						itemContent +='<item style="padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="font-size:16;color:#555555;">'+step+'</label>'+
+	        				   '</row></col></item><item style="padding:0;margin:0;"><col>';
 					commentType = commentList.comment.type;
 					if(commentType == '4'){
 						// 手写
@@ -584,7 +584,7 @@
 						commentYuyin = webServiceUrl + 'upload/workflow_acc/' + commentList.comment.content.substring(0,6) + '/' + commentList.comment.content;
 						itemContent += '<row style="margin-bottom:20"><label onclick="playSound(\'' + commentYuyin + '\',\''+commentList.comment.content+'\')" style="align:left;font-size:14;color:#38adff">'+(commentList.comment.content ? commentList.comment.content : "")+'</label></row>';
 					}else{
-						itemContent += '<row style="margin-bottom:20"><label style="align:left;font-size:16;color:#555555">'+(commentList.comment.content ? commentList.comment.content : "")+'</label></row>';
+						itemContent += '<row style="margin-bottom:20"><label style="font-size:16;color:#555555;margin-left:10;">'+(commentList.comment.content ? commentList.comment.content : "")+'</label></row>';
 					}
 					itemContent += '<row><label style="align:right;color:#b8b8b8;font-size:12">'+commentList.comment.person+'('+commentList.comment.date+')</label></row></col></item>';
 				}
@@ -619,15 +619,14 @@
 				var actiCommFieldType = workInfo.actiCommFieldType;
 				if(isEzFlow!='1' ||(actiCommFieldType != '-1' && (commentField == '-1' || commentField == 'nullCommentField' ||
 				   commentField == 'autoCommentField' || commentField == 'null' || commentField == null))){
-					itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="align:left;font-size:16;color:#555555">办理意见:</label></row></col><col style="padding:10;margin:10;"><row>'+
+					itemContent += '<item style="padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="align:left;font-size:16;color:#555555">办理意见:</label></row></col></item><item style="padding:0;margin:0;"><col><row>'+
 								   '<textarea style="font-size:16;color:#555555" rows="5" name="comment_input" id="comment_input" maxrows="5"></textarea></row></col></item>'+
-								   '<item id="" style="col-width:*,40,40,50,40"><col><row></row></col>'+
+								   '<item id="" style="col-width:*,40,40,50,40"><col><row onclick="openUseComment(\'' + officeList + '\');"><label style="align:right;color:#C9C9C9;">选择常用语</label></row></col>'+
 								   '<col><row><icon id="shouxie" onclick="doDraft();" src="workflow_sx.png" style="display:none;width:30;height:30;"/></row></col>'+
 								   '<col><row><icon id="yuyin" onclick="doRecordSound();" src="workflow_yy.png" style="display:none;width:30;height:30;"/></row></col>'+
 								   '<col><row>'+
 								   '<icon id="commentAdd" src="deskperson_add.png" style="width:30;height:30;align:right;" onclick="openCommentMenu();"/>'+
 								   '</row></col></item>'+
-								   '<item onclick="openUseComment(\'' + officeList + '\');" accessory="indicator"><row><label style="align:right;color:#C9C9C9;">选择常用语</label></row></item>'+
 								   '<item id="comment_input_sxyy" style="display:none;col-width:40,*,40"></item>';
 				}
 			}
@@ -748,9 +747,10 @@
 	        function createFlowImg(flowGraphUrl,picRootPath){
 	        	if(!(flowGraphUrl instanceof Array)){
 	        	//	var imgPath = webServiceUrl + 'upload/workflow_acc/' + flowGraphUrl + '?rand=' + Math.random();
-		        	var imgPath = picRootPath+flowGraphUrl;
+		        	picRootPath = evoUrl +'/ezOffice/download/resizeHandSign.do?url=' +webServiceUrl + 'upload/workflow_acc/';
+	        		var imgPath = picRootPath+flowGraphUrl;
 		        	$('flowgraphurl').value = imgPath;
-		        	var image = $C('<img src="' + imgPath + '" id="flowImg" progress="true" style="align:center;"/>');
+		        	var image = $C('<img src="' + imgPath + '"  id="flowImg" progress="true" style="align:center;height:400;width:300"/>');
 		        	$('content_flow_pic').add(image);
 	        	}else{
 	        		$('tabbar').remove($('imgItem'));

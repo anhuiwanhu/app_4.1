@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+    <script>
+    <![CDATA[
+        //页面家在完成后执行
+        var loadFlag = '0';  //函数执行置为1，提交之前进行判断，若为1，则禁止 提交，防重复提交
+        $page.onload = function() {
+            initPhone();
+        }
+        
+        
+        function initPhone(){
+            //获取手机缓存中的数据 ,并为页面赋值
+            var storage = $phone.localStorage();
+		    var desktopPhone = storage.getItem('desktopPhone');  //所有电话
+		    var phoneArr = desktopPhone.split(";");
+		    //为页面赋值
+		    if(phoneArr[0]!=""&&phoneArr[0]!=null){
+		       $('empmobilephone').value=phoneArr[0];
+		    }
+		    if(phoneArr[1]!=""&&phoneArr[1]!=null){
+		       $('empmobilephone2').value=phoneArr[1];
+		    }
+		    if(phoneArr[2]!=""&&phoneArr[2]!=null){
+		       $('empbusinessphone').value=phoneArr[2];
+		    }
+		    if(phoneArr[3]!=""&&phoneArr[3]!=null){
+		       $('empphone').value=phoneArr[3];
+		    }
+        }
+        
+        function complete(){   //确定后，调用父页面的方法。
+            if(loadFlag == '1'){
+	        	return false;
+	        }
+           var empmobilephone = $('empmobilephone').value;
+           var empmobilephone2 = $('empmobilephone2').value;
+           var empbusinessphone = $('empbusinessphone').value;
+           var empphone = $('empphone').value;
+           
+           var allPhone = "";
+		   if(empmobilephone==null||empmobilephone=='null'){
+		        empmobilephone="";
+		   }
+		   if(empmobilephone2==null||empmobilephone2=='null'){
+		        empmobilephone2 = "";
+		   }
+		   if(empbusinessphone==null||empbusinessphone=='null'){
+		        empbusinessphone="";
+		   }
+		   if(empphone==null||empphone=='null'){
+		        empphone = "";
+		   }
+		   
+		   var reg = /^13[0-9]{9}$|17[0-9]{9}$|15[012356789][0-9]{8}$|18[0123456789][0-9]{8}$|147[0-9]{8}$|[0-9]{11,13}$/;
+		   var regPhone = /^[0-9]{2,5}(-|\\s)?[0-9]{3,10}(-|\\s)?[0-9]{3,10}$/;
+           if (empmobilephone!=""&&!reg.test(empmobilephone)) {
+			      alert("手机1格式不正确！");
+			      return;
+		   }
+		   if (empmobilephone2!=""&&!reg.test(empmobilephone2)) {
+			      alert("手机2格式不正确！");
+			      return;
+		   }
+		   if (empbusinessphone!=""&&!regPhone.test(empbusinessphone)) {
+			      alert("商务电话格式不正确！");
+			      return;
+		   }
+		   if (empphone!=""&&!regPhone.test(empphone)) {
+			      alert("住宅电话格式不正确！");
+			      return;
+		   }
+		    loadFlag = '1';
+		    var  storage = $phone.localStorage();
+		    var  empenglishname = storage.getItem('desktopEmpenglishname');  //英文名
+		    var  desktopMail = storage.getItem('desktopMail');                   //所有邮箱
+		    var  mailArr = desktopMail.split(";");
+		    
+		    var empemail="";   //邮箱
+		    var empemail2="";
+		    var empemail3="";
+		    if(mailArr[0]!=""&&mailArr[0]!=null){
+		       empemail=mailArr[0];
+		    }
+		    if(mailArr[1]!=""&&mailArr[1]!=null){
+		       empemail2=mailArr[1];
+		    }
+		    if(mailArr[2]!=""&&mailArr[2]!=null){
+		       empemail3=mailArr[2];
+		    }
+		    var  emplivingphoto = storage.getItem('desktopEmplivingphoto');  //头像名称
+		    var  empsex = storage.getItem('desktopEmpsex');  //性别
+		    var  empenglishname =  storage.getItem('desktopEmpenglishname');   //英文名
+		    var  nickname = storage.getItem('desktopNickname');   //昵称
+		    var  empdescribe = storage.getItem('desktopEmpdescribe');   //英文名
+		    
+		    var evoUrl = storage.getItem('evoUrl');
+            $http.post(evoUrl+'/ezOffice/set/updatePersonInfo.do', {empenglishname:empenglishname,
+            empmobilephone:empmobilephone,empmobilephone2:empmobilephone2,empbusinessphone:empbusinessphone,
+            empphone:empphone,empemail:empemail,empemail2:empemail2,empemail3:empemail3,empsex:empsex,
+            nickname:nickname,empdescribe:empdescribe,emplivingphoto:emplivingphoto},function(data) {
+                if(data){
+                    var obj = JSON.parse(data);
+                    if(obj.logonerror &&obj.logonerror=='1'){
+			         		alert("该账号已在设备"+obj.deviceId+"上登录");
+		          			$page.open('../index.xml',{target:'_self'});
+		                    return;
+		            }
+                    if(obj.message.result=="1"){
+                        alert("保存信息成功！");
+                        loadFlag = '0';
+                        $page.close(-1);
+				        $page.open('personInfo.xml', {animation:'down-to-up',target:'_self'});
+                    }else{
+                        alert("保存信息失败！");
+                        loadFlag = '0';
+                        return;
+                    }
+                }else{
+                    alert("保存信息失败！");
+                    loadFlag = '0';
+                    return;
+                }
+            },function(error) {
+				    if (error == 'timeout') {
+				        hint('连接服务器超时！');
+				    } else if (error == '404') {
+				        hint('链接超时重新登录！');
+				    } else if (error == '500') {
+				        hint('内部服务器错误！');
+				    } else {
+				        hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+			    }
+            );
+		//   $page.close(0, 'fillInputPhone("'+allPhone+'")');
+        }
+        
+		
+    ]]>
+    </script> 
+	<page>
+		<title style="background:#3daffe;tint-color:white;">
+		    <left>
+				<button  role="back" />
+			</left>
+            <center>
+                <label id="title_center_label">更改手机号</label>
+            </center>
+            <right>
+                <button target="_blank"  onclick="complete()" style="font-size:18;color:#ffffff;">完成</button>
+            </right>
+	    </title>
+	  
+		<content id="docContent" style="background:#f0f0f3;">
+			<list id="docList" >
+	            <item style="padding:4;border:1 #f0f0f3;background:#f0f0f3;" >
+			           <col>
+					   </col>
+	            </item>
+                <item style="col-width:100,*;" >
+                    <col>
+                        <row><label style="height:40;color:#555555;font-size:16;">手机1：</label></row>
+                    </col>                    
+                    <col>
+                        <row><input type="text" id="empmobilephone" maxlength="11" placeholder="请输入" style="placeholder-color:#c1c1c1;border:0 white;font-size:16;"/></row>
+                    </col>
+                </item>
+                <item style="col-width:100,*;">
+                    <col>
+                        <row><label style="height:40;color:#555555;font-size:16;">手机2：</label></row>
+                    </col>                    
+                    <col>
+                        <row><input type="text" id="empmobilephone2" maxlength="11" placeholder="请输入" style="placeholder-color:#c1c1c1;border:0 white;font-size:16;"/></row>
+                    </col>
+                </item>
+                <item style="col-width:100,*" >
+                    <col>
+                        <row><label style="height:40;color:#555555;font-size:16;">商务电话：</label></row>
+                    </col>
+                    <col>
+                        <row><input type="text" id="empbusinessphone" maxlength="20" placeholder="请输入" style="placeholder-color:#c1c1c1;border:0 white;font-size:16;"/></row>
+                    </col>                    
+                </item>
+                <item style="col-width:100,*" >
+                    <col>
+                        <row><label style="height:40;color:#555555;font-size:16;">住宅电话：</label></row>
+                    </col> 
+                    <col>
+                        <row><input type="text" id="empphone" maxlength="20" placeholder="请输入" style="placeholder-color:#c1c1c1;border:0 white;font-size:16;"/></row>
+                    </col>
+                </item>
+			</list>
+		</content>
+	</page>
+</imag>

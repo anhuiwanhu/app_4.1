@@ -514,7 +514,7 @@
           </row>
 		</header>
 		<contents id="indexContent" draggable="true"  scrollable="true">
-		    <content id="weekContent" ondragdown="upWeek();">
+		    <content id="weekContent" draggable="true" ondragdown="upWeek();">
             <list id="reportList" reuse="true">
                 <item style="col-width:15%,85%">
                     <col>
@@ -545,7 +545,7 @@
                </list>
            </bottom>
            </content>
-           <content id="monthContent" ondragdown="upMonth();">
+           <content id="monthContent" draggable="true" ondragdown="upMonth();">
            		<list id="monthReportList" reuse="true">
                 <item style="col-width:15%,85%">
                     <col>
@@ -580,7 +580,7 @@
                </list>
            </bottom>
            </content>
-           <content id="otherContent" ondragdown="upOther();">
+           <content id="otherContent" draggable="true" ondragdown="upOther();">
             <list id="otherReportList" reuse="true">
                 <item style="col-width:50,*">
                     <col>

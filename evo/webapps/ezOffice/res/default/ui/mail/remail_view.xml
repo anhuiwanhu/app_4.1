@@ -15,7 +15,7 @@
 			function mailView(){
 				$http.post(evoUrl+'/ezOffice/mail/remailDetail.do', 
 					{mailuserId:mailuserId,mailId:mailId}, function(data){
-					    var obj = JSON.parse(data);
+					    var obj = JSON.parse(data.replace(/\&/g,'＆'));
 					    if(obj.logonerror &&obj.logonerror=='1'){
 		         		    alert("该账号已在设备"+obj.deviceId+"上登录");
 		         		    $page.open('../index.xml',{target:'_self'});
@@ -236,52 +236,52 @@
         </title>
         <content>
         	 <list>
-                    <item style="col-width:100,*">
+                    <item style="col-width:75,*">
                         <col>
                            <label style="font-size:16;color:#555555;">发件人：</label>
                         </col>
                         <col>
-                           <row><label id="mailpostername" style="align:right;font-size:16;color:#555555"></label></row>
+                           <row><label id="mailpostername" style="font-size:16;color:#555555"></label></row>
                         </col>
                     </item>
-                    <item style="col-width:100,*">
+                    <item style="col-width:75,*">
                         <col>
                            <label style="font-size:16;color:#555555;">收件人：</label>
                         </col>
                         <col>
-                           <row><label id="mailto" style="align:right;font-size:16;color:#555555"></label></row>
+                           <row><label id="mailto" style="font-size:16;color:#555555"></label></row>
                         </col>
                     </item>
-                    <item style="col-width:100,*">
+                    <item style="col-width:75,*">
                         <col >
                            <label style="font-size:16;color:#555555;">抄送人：</label>
                         </col>
                         <col>
-                           <row><label id="mailcc" style="align:right;font-size:16;color:#555555"></label></row>
+                           <row><label id="mailcc" style="font-size:16;color:#555555"></label></row>
                         </col>
                     </item>
-                    <item style="col-width:100,*">
+                    <item style="col-width:75,*">
                         <col>
                             <label style="font-size:16;color:#555555;">主题：</label>
                         </col>
                         <col>
-							<row><label id="mailsubject" style="align:right;font-size:16;color:#555555"></label></row>
+							<row><label id="mailsubject" style="font-size:16;color:#555555"></label></row>
                         </col>
                     </item>
-                    <item style="col-width:60,*">
+                    <item style="col-width:70,*">
                         <col>
                            <label style="font-size:16;color:#555555;">选项：</label>
                         </col>
                         <col>
                             <row>
-                               <checkbox id="maillevel" style="align:right;font-size:16;color:#555555" disabled="true">紧急</checkbox>
-                               <checkbox id="mailneedrevert" disabled="true" style="align:right;font-size:16;color:#555555">回执</checkbox>
-                               <checkbox id="mailSign" disabled="true" style="align:right;font-size:16;color:#555555">签名</checkbox>
-                               <checkbox id="mailanonymous" disabled="true" style="align:right;font-size:16;color:#555555">匿名</checkbox>
+                               <checkbox id="maillevel" style="font-size:14;color:#555555" disabled="true">紧急</checkbox>
+                               <checkbox id="mailneedrevert" disabled="true" style="font-size:14;color:#555555">回执</checkbox>
+                               <checkbox id="mailSign" disabled="true" style="font-size:14;color:#555555">签名</checkbox>
+                               <checkbox id="mailanonymous" disabled="true" style="font-size:14;color:#555555">匿名</checkbox>
                             </row>
                         </col>
                     </item>
-                    <item style="col-width:100,*">
+                    <item style="col-width:75,*">
                         <col>
                            <label style="font-size:16;color:#555555;">附件：</label>
                         </col>
@@ -289,8 +289,14 @@
                         	
                         </col>
                     </item>
+                    <item style="padding:0;margin:0;">
+	                	<col style="background:#f9f9f9;padding:10;margin:10;">
+	                		<row>
+	                			<label style="align:left;font-size:16;color:#555555">正文：</label>
+	                		</row>
+	                	</col>
+	                </item>
                     <item>
-                        <label style="margin-bottom:5;font-size:16;color:#555555;">正文：</label>
                         <label id="mailcontent" style="font-size:16;color:#555555;"></label>
                         <web id="mailweb" style="display:none"/>
                         <web id="mailSign_web" style="display:none"/>

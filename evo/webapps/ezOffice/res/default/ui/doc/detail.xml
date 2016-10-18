@@ -90,7 +90,7 @@
                  }
                  $('handOutTime').text=handOutTime;
                  var docUrl="$http.download('"+evoUrl+"/ezOffice/doc/pdf.do?url="+obj.attachurl+"&amp;filename="+filename+wordType+"&amp;id="+id+'&amp;viewName='+realname+"');";
-                 $('docLook').add($C('<label style="align:right;color:#38adff;text-decoration:underline;font-size:16;" onclick="'+docUrl+'">点击查看正文</label>'));
+                 $('docLook').add($C('<label style="color:#38adff;text-decoration:underline;font-size:16;" onclick="'+docUrl+'">点击查看正文</label>'));
                  $('title').text=realname;
                  if(accessoryName!=null&&accessoryName!=""){    //当有附件时，显示附件真实名称,并提供下载方法。
                     // alert("有附件");
@@ -202,39 +202,39 @@
 		<content id="docContent"  style="padding-top:12;" >
 			<list id="docList" >
 		
-                <item style="col-width:30%,*;">
+                <item style="col-width:100,*;">
                     <col>
                         <row><label style="align:left;color:#555555;font-size:16;">公文标题：</label></row>
                     </col>
                     <col>
-                        <row><label  id="title" style="align:right;color:#b8b8b8;font-size:16;"></label></row>
+                        <row><label  id="title" style="color:#b8b8b8;font-size:16;"></label></row>
                     </col>
                 </item>
-                <item style="col-width:30%,*">
+                <item style="col-width:100,*">
                     <col>
                        <row><label style="align:left;color:#555555;font-size:16;">拟稿单位：</label></row>
                     </col>                    
                     <col>
-                       <row><label style="align:right;color:#b8b8b8;font-size:16;" id="writeOrg"></label></row>
+                       <row><label style="color:#b8b8b8;font-size:16;" id="writeOrg"></label></row>
                     </col>
                 </item>
-                <item style="col-width:30%,*">
+                <item style="col-width:100,*">
                     <col>
                       <row><label style="align:left;color:#555555;font-size:16;">文号：</label></row>
                     </col>                    
                     <col>
-                       <row><label style="align:right;color:#b8b8b8;font-size:16;" id="byteNumber"></label></row>
+                       <row><label style="color:#b8b8b8;font-size:16;" id="byteNumber"></label></row>
                     </col>
                 </item>
-                <item style="col-width:30%,*">
+                <item style="col-width:100,*">
                     <col>
                         <row><label style="align:left;color:#555555;font-size:16;">分发日期：</label></row>
                     </col>                    
                     <col>
-                        <row><label style="align:right;color:#b8b8b8;font-size:16;" id="handOutTime"></label></row>
+                        <row><label style="color:#b8b8b8;font-size:16;" id="handOutTime"></label></row>
                     </col>
                 </item>
-                <item style="col-width:30%,*">
+                <item style="col-width:100,*">
                     <col>
                         <row><label style="align:left;color:#555555;font-size:16;">公文正文：</label></row>
                     </col>                    
@@ -242,7 +242,7 @@
                         <row id="docLook"></row>
                     </col>
                 </item>
-                <item style="col-width:30%,*">
+                <item style="col-width:100,*">
                     <col>
                         <row><label style="align:left;color:#555555;font-size:16;">公文附件：</label></row>
                     </col>                    

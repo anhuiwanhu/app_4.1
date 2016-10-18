@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+     <script>
+        <![CDATA[
+            
+			var storage = $phone.localStorage();
+			var userName = storage.getItem('sys_userName');
+			var orgName = storage.getItem('sys_orgName');
+			var evoUrl = storage.getItem('evoUrl');
+            $page.onload=function(){
+                 $('reportFrom').action=evoUrl+"/ezOffice/report/saveMonthReport.do";
+                 $http.post(evoUrl+'/ezOffice/report/getUserInfoById.do',function(data) {
+	             if(data){
+	                 var obj = JSON.parse(data);
+	                 if(obj.logonerror &&obj.logonerror=='1'){
+		     		    alert("该账号已在设备"+obj.deviceId+"上登录");
+		     		    $page.open('../index.xml',{target:'_self'});
+		                return;
+		             }
+	                 if(obj.message.result=="1"){
+	                    var leaderIds = obj.data.leaderids;
+	                    var leadernames = obj.data.leadernames;
+	                    $('readerIds').value=leaderIds;
+	  					if(leadernames != ''){
+		  			    	$('readerNames').value=leadernames;
+		  			    }
+		  			    if(leadernames != ''){
+		  					$('names').value=leadernames;
+		  				}
+		             }			          
+	             }
+	             },function(error) {
+					    if (error == 'timeout') {
+						hint('连接服务器超时！');
+					    } else if (error == '404') {
+						hint('链接超时重新登录！');
+					    } else if (error == '500') {
+						hint('内部服务器错误！');
+					    } else {
+						hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+				  });
+            	$("empName").text=userName;
+            	$("reDepart").text=orgName;
+            	getData();
+            }
+
+			function submitRe() {
+                var startDate = $('startDate').value;
+                var readerIds = $('readerIds').value;
+                var readerNames = $('readerNames').value;
+                var arr = new Array;
+                arr = startDate.split('/');
+                var selYear = arr[0];
+                var selMonth = arr[1];
+                $('selYear').value=selYear;
+                $('selMonth').value=selMonth;
+                var content = $('content').value;   
+                var dept = orgName;      
+                if(readerIds == ''){
+                	alert('请选择提交人');
+                	return false;
+                }else if(content == ''){
+                	alert('汇报内容不能为空');
+                	return false;
+                }else{//判断同一汇报区间重复汇报条数
+                	$http.post(evoUrl+'/ezOffice/report/checkReport.do',{selYear:selYear,selMonth:selMonth,reportType:"3",checkType:"2"}, function(data) {
+	                 	if(data){
+	                 	   var obj = JSON.parse(data);
+	                 	   if(obj.logonerror &&obj.logonerror=='1'){
+				     		    alert("该账号已在设备"+obj.deviceId+"上登录");
+				     		    $page.open('../index.xml',{target:'_self'});
+				                return;
+				            }
+			               if(obj.message.result=="1"){
+				               	var count = obj.data.recordCount;
+				                if(count == 0){
+					                $('reportFrom').submit(function(data) {
+						                var obj = JSON.parse(data);
+						                hint('提交成功');
+						                $page.close();
+						 				loadFlag = '0';
+						             }, function(error) {
+						                hint('提交失败！');
+						             });
+				                }else{
+				                	if(confirm('在该区间，您已提交'+count+'份汇报，确认再次提交？')){
+					                	 $('reportFrom').submit(function(data) {
+							                var obj = JSON.parse(data);
+							                hint('提交成功');
+							                $page.close();
+							 				loadFlag = '0';
+							             }, function(error) {
+							                hint('提交失败！');
+							             });
+				                	}
+				                }  
+				           }
+	                 	}	                 		      
+	                 },function(error) {
+					    if (error == 'timeout') {
+						hint('连接服务器超时！');
+					    } else if (error == '404') {
+						hint('链接超时重新登录！');
+					    } else if (error == '500') {
+						hint('内部服务器错误！');
+					    } else {
+						hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+				  });                    
+             }
+            }
+            
+            function sePerson(){
+		    	var storage = $phone.localStorage();
+		        storage.setItem('sys_selectuser_range','*0*');
+		        storage.setItem('sys_selectuser_userids',$('readerIds').value);
+		        storage.setItem('sys_selectuser_usernames',$('readerNames').value);
+		        storage.setItem('sys_selectuser_returnfuc','completeuserto');      
+		        $page.open('../public/selectUser.xml', {animation:'down-to-up'});
+			}
+			function completeuserto(id,name){
+			  $('readerIds').value=id;
+			  $('readerNames').value=name;
+			  $('names').value=name;
+			}
+            
+            function getNextMonth() {
+	            var starData = $('startDate').value;
+	            var arr = starData.split('/');
+	            var year = arr[0];
+	            var month = arr[1];
+	            if(month.length == 2 && month<10){
+	            	month = month.substring(1,2);
+	            }
+	            var year2 = year;
+	            var month2 = parseInt(month) + 1;
+	            if (month2 == 13) {
+	                year2 = parseInt(year2) + 1;
+	                month2 = 1;
+	            }
+	            if(month2 < 10){ 
+					month2 = "0" + month2; 
+				} 
+	            var beginData = year2 + '/' + month2;
+	            $("startDate").value=beginData;
+	        }
+            function getLastMonth() {
+	            var starData = $('startDate').value;
+	            var arr = starData.split('/');
+	            var year = arr[0];
+	            var month = arr[1];
+	            if(month.length == 2 && month<10){
+	            	month = month.substring(1,2);
+	            }
+	            var year2 = year;
+	            var month2 = parseInt(month) - 1;
+	            if (month2 == 0) {
+	                year2 = parseInt(year2) - 1;
+	                month2 = 12;
+	            }
+	            if(month2 < 10){ 
+					month2 = "0" + month2; 
+				} 
+	            var beginData = year2 + '/' + month2;
+	            $("startDate").value=beginData;
+	        }
+            
+            function formatDate(date) { 
+				var myyear = date.getFullYear(); 
+				var mymonth = date.getMonth()+1; 
+				if(mymonth < 10){ 
+					mymonth = "0" + mymonth; 
+				} 
+				return (myyear+"/"+mymonth); 
+			}
+            
+            function getData(){
+				var now = new Date();
+				var nowMonth = now.getMonth();
+				var nowYear = now.getYear();
+				nowYear += (nowYear < 2000) ? 1900 : 0;
+				var monthStartDate = new Date(nowYear, nowMonth, 1);
+				var beginData = formatDate(monthStartDate); 
+				$("startDate").value=beginData;
+            }
+            
+        ]]>
+    </script>
+<script>
+   <![CDATA[
+	        var fileindex =0;    //附件最多能上传5个
+	        var fileAddressArr = new Array();
+	        var fileTypeArr = new Array();   //附件上传时，存储对应数组fileAddressArr中的类型。pic:图片类型，sound：声音类型，file：其他附件类型
+	        
+	        function getAttanchNum(){
+				if(fileindex>=5){
+					hint('上传附件不能超过5个！');
+					return false;
+				}
+				return true;
+			}
+	        function doRelatedAcc(file){   //相关附件
+	        	 var menu = $C('<actionmenu cancelTitle="取消">' +
+								 '<item style="text-decoration:underline;" label="拍照"     onclick="doFileCamera(this)"/>' +
+								 '<item style="text-decoration:underline;" label="相册照片" onclick="doFilePhotoAlbum(this)"/>' +
+								 '<item style="text-decoration:underline;" label="录音文件" onclick="doFileRecordSound(this)"/>' +
+								 '<item style="text-decoration:underline;" label="其他文件" onclick="doFileBrowse(this)"/>' +
+							'</actionmenu>');
+                 menu.show();
+	        }
+	        
+	        function doFileCamera(file) {  //拍照
+				if(!getAttanchNum()){
+					return;
+				}
+			    $phone.camera({
+			        success: function(path) {
+			        	var showpath = path.substring(path.lastIndexOf('/')+1,path.length);
+			        	fileAddressArr.push(path);
+			        	fileTypeArr.push('pic');
+			            uploadFileView();
+			        	fileindex++;
+			        },
+			        error: function() {
+			            hint('拍照失败！');
+			        }
+			    });
+			}
+			
+			 function doFilePhotoAlbum(file){    //上传文件选择相册
+			    if(!getAttanchNum()){
+					return;
+				}
+				$page.browseImage({
+					complete: function(path) {
+					 	var showpath = path.substring(path.lastIndexOf('/')+1,path.length);
+			            fileAddressArr.push(path);
+			        	fileTypeArr.push('pic');
+			            uploadFileView();
+			        	fileindex++;
+			        },
+			        error: function() {
+			            hint('上传图片失败！');
+			        }
+				  });
+			 }
+	        
+	        function doFileRecordSound(file) {
+				if(!getAttanchNum()){
+					return;
+				}
+			    $phone.recordSound({
+			        success: function(path) {
+			        	var showpath = path.substring(path.lastIndexOf('/')+1,path.length);
+			        	fileAddressArr.push(path);
+			        	fileTypeArr.push('sound');
+			            uploadFileView();
+			        	fileindex++;
+			        },
+			        error: function() {
+			            hint('录音失败！');
+			        }
+			    });
+			}
+	        
+	        function doFileBrowse(file) {   //附件上传
+				if(!getAttanchNum()){
+					return;
+				}
+			    $page.browse({
+			        complete: function(path){
+			            var showpath = path.substring(path.lastIndexOf('/')+1,path.length);
+			        	if(showpath.indexOf(".") == -1) {
+			        		hint("无后缀名的附件不允许上传，请重新选择");
+			        		return false;
+			        	}
+			        	var filenameExt = path.substring(path.lastIndexOf('\.')+1,path.length);
+			        	if(filenameExt == 'exe'){
+			        	    hint("后缀名为exe的附件不允许上传，请重新选择");
+			        		return false;
+			        	}
+			        	if(filenameExt == 'cmd'){
+			        	    hint("后缀名为cmd的附件不允许上传，请重新选择");
+			        		return false;
+			        	}
+			        	if(filenameExt == 'jsp'){
+			        	    hint("后缀名为jsp的附件不允许上传，请重新选择");
+			        		return false;
+			        	}
+			        	fileAddressArr.push(path);
+			        	fileTypeArr.push('file');
+			            uploadFileView();
+			        	fileindex++;
+			        }
+			    });
+			}
+			
+			function uploadFileView(){   //附件上传展示
+	            $("fileRow").clear();
+	            if(fileTypeArr.length == fileAddressArr.length){  //两个数组中长度一致
+	            	for(var i=0;i<fileAddressArr.length;i++){
+						if(fileAddressArr[i]!=null&&fileAddressArr[i]!=""&&fileAddressArr[i]!=undefined){
+						    var path = fileAddressArr[i];
+						    var fileType = fileTypeArr[i];
+						    var iconRow = '';
+						    if(fileType == 'pic'){
+						    	iconRow = $C('<icon src="'+path+'" style="width:28;height:28;margin-right:0;" id="file_'+i+'"/>');
+						    }else if(fileType == 'sound'){
+						        iconRow = $C('<icon src="information_sound.png" style="width:28;height:28;margin-right:0;" id="file_'+i+'"/>');
+						    }else if(fileType == 'file'){
+						    	iconRow = $C('<icon src="information_file.png" style="width:28;height:28;margin-right:0;" id="file_'+i+'"/>');
+						    }
+				            $("fileRow").add(iconRow);
+				            var inputRow = $C('<input type="file" style="display:none;" value="'+path+'" name="attachment" />');
+				            $("fileRow").add(inputRow);
+				            var deleteIconRow = $C('<icon relative="file_'+i+'" position="topright" src="mail_del.png" style="width:12;height:12;margin-bottom:30;margin-right:2;" onclick="delFile(\''+i+'\');"/>');
+				            $("fileRow").add(deleteIconRow);
+						}	            
+		            }
+	            }else{   //若不一致
+	                 alert('上传出错！');
+	            }
+	            var uploadFileRow = $C('<icon src="mail_addfu.png" style="width:28;height:28;margin-left:8;"  onclick="doRelatedAcc(this)" />');
+			    $("fileRow").add(uploadFileRow);
+	             	
+	        }
+	        
+	        function delFile(index){   //删除附件
+				if(confirm('确认删除附件吗？')){
+					fileAddressArr.splice(parseInt(index),'1');
+					fileTypeArr.splice(parseInt(index),'1');
+				    uploadFileView();
+					fileindex--;
+				}
+			}
+	]]>
+</script>
+    <page>
+        <title style="background:#38adff;tint-color:white">
+            <left>
+                <button role="back"></button>
+            </left>
+            <center>
+                <label>新建汇报</label>
+            </center>
+            <right>
+                <button onclick="submitRe()" style="font-size:18;color:#FFFFFF;">提交</button>
+            </right>
+        </title>
+         <content>
+            <form id="reportFrom" action="" progress="提交表单|正在提交表单，请稍后..." multipart="true">
+                <list>
+                    <item style="col-width:100,*;padding:0;margin:0;">
+                        <col style="background:#f9f9f9;padding:15;margin:15;">
+                           <label style="font-size:16;color:#555555;">汇报类型：</label>
+                        </col>
+                        <col>
+                            <row>
+                              <radio name="reType" value="week" onclick="$page.open('reweek_new.xml',{target:'_self'});" style="font-size:16;color:#555555;">周报</radio>
+                              <radio name="reType" value="month" checked="true" style="font-size:16;color:#555555;">月报</radio>
+                              <radio name="reType" value="other" onclick="$page.open('reother_new.xml',{target:'_self'});" style="font-size:16;color:#555555;">其它</radio>
+                            </row>
+                        </col>
+                    </item>
+                    <item style="col-width:100,*;padding:0;margin:0;">
+                        <col style="background:#f9f9f9;padding:10;margin:10;">
+                           <label style="font-size:16;color:#555555;">被考核人：</label>
+                        </col>
+                        <col style="margin-left:10">
+                           <input type="hidden" id="selYear" name="selYear" />
+                           <input type="hidden" id="selMonth" name="selMonth" />
+                           <label id="empName" style="font-size:16;color:#555555;"></label>
+                        </col>
+                    </item>
+                    <item style="col-width:100,*;padding:0;margin:0;">
+                        <col style="background:#f9f9f9;padding:10;margin:10;">
+                            <label style="font-size:16;color:#555555;">部门：</label>
+                        </col>
+                        <col style="margin-left:10">
+                            <label id="reDepart" style="font-size:16;color:#555555;"></label>
+                        </col>
+                    </item>
+                    <item style="col-width:100,*;padding:0;margin:0;" onclick="sePerson();" accessory="indicator">
+                        <col style="background:#f9f9f9;padding:10;margin:10;">
+                           <label style="font-size:16;color:#555555;">提交至：</label>
+                        </col>
+                        <col>
+                           <input type="hidden" id="readerIds" name="readerIds"/>
+                           <input type="hidden" id="readerNames" name="readerNames"/>
+                           <row>
+                           	  <input type="text" id="names" name="names" readonly="true" placeholder="请选择" style="border:0 white;font-size:16;color:#555555;" onclick="sePerson();"/>
+                           </row>
+                        </col>
+                    </item>
+                    <item style="col-width:100,*;padding:0;margin:0;">
+                        <col style="background:#f9f9f9;padding:20;margin:20;">
+                            <label style="font-size:16;color:#555555;">汇报日期：</label>
+                        </col>
+                        <col>
+                            <row>
+                                <input id="startDate" type="date" name="startDate" readonly="true" format="yyyy/MM/dd" style="font-size:16;color:#555555;"/>
+                                <button style="width:50;height:35;background:#38adff;color:#ffffff;text-align:center;margin-left:5;corner-radius:8;" onclick="getLastMonth();">上月</button>
+                                <button style="width:50;height:35;background:#38adff;color:#ffffff;text-align:center;margin-left:5;corner-radius:8;" onclick="getNextMonth();">下月</button>
+                            </row>
+                        </col>
+                    </item>
+                    <item style="col-width:100,*;padding:0;margin:0;">
+		                    <col style="background:#f9f9f9;padding:10;margin:10;">
+		                    	<row style="height:40;">
+		                    		<label style="font-size:16;color:#555555;">相关附件：</label>
+		                    	</row>
+		                    </col>
+		                    <col style="margin-left:2">
+		                    	<row id="fileRow">
+		                    	    <icon src="mail_addfu.png" style="width:28;height:28;" onclick="doRelatedAcc(this)"/>
+		                    	</row>
+		                    </col>
+	                </item>
+	                <item style="padding:0;margin:0;">
+                        <col style="background:#f9f9f9;padding:10;margin:10;">
+                        	<label style="margin-bottom:5;font-size:16;color:#555555;">汇报正文：</label>
+                        </col>
+                    </item>
+                   <item>
+                        <textarea id="content" name="content" rows="15" maxrows="15" placeholder="请输入" style="border:0 white;font-size:16;color:#555555;"></textarea>
+                    </item>
+                </list>
+             </form>
+        </content>
+    </page>
+</imag>

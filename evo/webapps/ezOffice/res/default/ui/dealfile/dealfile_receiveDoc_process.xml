@@ -208,7 +208,7 @@
 						var attList = obj.attList;
 						if (!attList == '') { //不为空，数据进行迭代,并为附件赋值
 							for (var k = 0; k < attList.length; k++) {
-								var files = $C('<row><label style="color:#330000;color:blue;align:right;"  onclick="$http.download(\'' + evoUrl + '/ezOffice/download/file.do?url=' + attList[k].attachurlser + '&amp;filename=' + attList[k].savename + '&amp;viewName=' + attList[k].realname +'\')">' + attList[k].realname + '</label></row>')
+								var files = $C('<row><label style="color:#330000;color:blue;"  onclick="$http.download(\'' + evoUrl + '/ezOffice/download/file.do?url=' + attList[k].attachurlser + '&amp;filename=' + attList[k].savename + '&amp;viewName=' + attList[k].realname +'\')">' + attList[k].realname + '</label></row>')
 								$(appendId).add(files);
 							}
 						} else { //无附件，或者后台处理异常
@@ -237,7 +237,7 @@
         		if(filename){
 					if(oaPDF =='1' && isEdit =='1' && (workStatus=='0' || workStatus=='2')){
 						$('oaPdf').value = '1';
-						$('docContent').add($C('<row><label style="align:right;color:blue;text-decoration:underline;" onclick="doPdf();">PDF批注</label></row>'));
+						$('docContent').add($C('<row><label style="color:blue;text-decoration:underline;" onclick="doPdf();">PDF批注</label></row>'));
 					}else{
 						$http.post(evoUrl+'/ezOffice/doc/dealFiles.do',{accessorySaveNameseries:filename,accessoryNameseries:displayName,path: 'govdocumentmanager'},function(data) {
 			                if (data) {
@@ -250,7 +250,7 @@
 								var attList = obj.attList;
 								if (!attList == '') { //不为空，数据进行迭代,并为附件赋值
 									for (var k = 0; k < attList.length; k++) {
-										var files = $C('<row><label style="color:#330000;color:blue;align:right;"  onclick="$http.download(\'' + evoUrl + '/ezOffice/download/file.do?url=' + attList[k].attachurlser + '&amp;filename=' + attList[k].savename + '&amp;viewName='+attList[k].realname+'\')">' + attList[k].realname + '</label></row>')
+										var files = $C('<row><label style="color:#330000;color:blue;"  onclick="$http.download(\'' + evoUrl + '/ezOffice/download/file.do?url=' + attList[k].attachurlser + '&amp;filename=' + attList[k].savename + '&amp;viewName='+attList[k].realname+'\')">' + attList[k].realname + '</label></row>')
 										$('docContent').add(files);
 									}
 								} else { //无附件，或者后台处理异常
@@ -281,7 +281,7 @@
         		if(pdflist instanceof Array){
         			$('pdfList').clear();
 		            $('main_popupmenu').position='center';
-		            $('main_popupmenu').css('display:block;width:360;height:260;border:1 white;background:white;');
+		            $('main_popupmenu').style('display:block;width:360;height:260;border:1 white;background:white;');
 		            $('pdfList').css('display', 'block');
 		       	    $('popupmenu_list').css('display', 'none');
 		            var fileTitle = $C('<list-item><item><row><label style="align:center">请选择批注版本</label></row></item></list-item>');
@@ -423,7 +423,7 @@
 							var attachIdArr = attachmentInfo.split(';');  //解决异步提交时，会造成获取的attachIdArr不是请求的那个。后面的数组元素会覆盖前面的数组元素。
 							if (!attList == '') { //不为空，遍历,并为附件赋值
 								for (var k = 0; k < attList.length; k++) {
-									var files = $C('<row><label style="color:#330000;color:blue;align:right;"  onclick="$http.download(\'' + evoUrl + '/ezOffice/download/file.do?url=' + attList[k].attachurlser + '&amp;filename=' + attList[k].savename +'&amp;viewName='+attList[k].realname+ '\')">' + attList[k].realname + '</label></row>')
+									var files = $C('<row><label style="color:#330000;color:blue;"  onclick="$http.download(\'' + evoUrl + '/ezOffice/download/file.do?url=' + attList[k].attachurlser + '&amp;filename=' + attList[k].savename +'&amp;viewName='+attList[k].realname+ '\')">' + attList[k].realname + '</label></row>')
 									$(attachIdArr[2]).add(files);
 								}
 							} else { //无附件，或者后台处理异常
@@ -452,55 +452,55 @@
 	            for(var key in govDocDetail) {
 		       	 	if(key=='title'&&govDocDetail.title){
 		        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">'+govDocDetail.title.name+':</label>'+
-		        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(govDocDetail.title.text == undefined ? '' : govDocDetail.title.text)+'</label></row></col></item>';
+		        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(govDocDetail.title.text == undefined ? '' : govDocDetail.title.text)+'</label></row></col></item>';
 		        	}
 		        	if(key=='zjkySeq'&&govDocDetail.zjkySeq){
 		        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">'+govDocDetail.zjkySeq.name+':</label>'+
-		        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(govDocDetail.zjkySeq.text == undefined ? '' : govDocDetail.zjkySeq.text)+'</label></row></col></item>';
+		        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(govDocDetail.zjkySeq.text == undefined ? '' : govDocDetail.zjkySeq.text)+'</label></row></col></item>';
 		        	}
 		        	if(key=='fileUnit'&&govDocDetail.fileUnit){
 		        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">'+govDocDetail.fileUnit.name+':</label>'+
-		        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(govDocDetail.fileUnit.text == undefined ? '' : govDocDetail.fileUnit.text)+'</label></row></col></item>';
+		        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(govDocDetail.fileUnit.text == undefined ? '' : govDocDetail.fileUnit.text)+'</label></row></col></item>';
 		        	}
 		        	if(key=='fileNumber'&&govDocDetail.fileNumber){
 		        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">'+govDocDetail.fileNumber.name+':</label>'+
-		        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(govDocDetail.fileNumber.text == undefined ? '' : govDocDetail.fileNumber.text)+'</label></row></col></item>';
+		        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(govDocDetail.fileNumber.text == undefined ? '' : govDocDetail.fileNumber.text)+'</label></row></col></item>';
 		        	}
 		        	if(key=='safetyGrade'&&govDocDetail.safetyGrade){
 		        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">'+govDocDetail.safetyGrade.name+':</label>'+
-		        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(govDocDetail.safetyGrade.text == undefined ? '' : govDocDetail.safetyGrade.text)+'</label></row></col></item>';
+		        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(govDocDetail.safetyGrade.text == undefined ? '' : govDocDetail.safetyGrade.text)+'</label></row></col></item>';
 		        	}
 					if(key=='quantity'&&govDocDetail.quantity){
 		        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">'+govDocDetail.quantity.name+':</label>'+
-		        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(govDocDetail.quantity.text == undefined ? '' : govDocDetail.quantity.text)+'</label></row></col></item>';
+		        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(govDocDetail.quantity.text == undefined ? '' : govDocDetail.quantity.text)+'</label></row></col></item>';
 		        	}
 		        	if(key=='field4'&&govDocDetail.field4){
 		        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">'+govDocDetail.field4.name+':</label>'+
-		        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(govDocDetail.field4.text == undefined ? '' : govDocDetail.field4.text)+'</label></row></col></item>';
+		        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(govDocDetail.field4.text == undefined ? '' : govDocDetail.field4.text)+'</label></row></col></item>';
 		        	}
 		        	if(key=='receiveDate'&&govDocDetail.receiveDate){
 		        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">'+govDocDetail.receiveDate.name+':</label>'+
-		        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(govDocDetail.receiveDate.text == undefined ? '' : govDocDetail.receiveDate.text)+'</label></row></col></item>';
+		        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(govDocDetail.receiveDate.text == undefined ? '' : govDocDetail.receiveDate.text)+'</label></row></col></item>';
 		        	}
 		        	if(key=='fileType'&&govDocDetail.fileType){
 		        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">'+govDocDetail.fileType.name+':</label>'+
-		        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(govDocDetail.fileType.text == undefined ? '' : govDocDetail.fileType.text)+'</label></row></col></item>';
+		        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(govDocDetail.fileType.text == undefined ? '' : govDocDetail.fileType.text)+'</label></row></col></item>';
 		        	}
 		        	if(key=='zjkyType'&&govDocDetail.zjkyType){
 		        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">'+govDocDetail.zjkyType.name+':</label>'+
-		        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(govDocDetail.zjkyType.text == undefined ? '' : govDocDetail.zjkyType.text)+'</label></row></col></item>';
+		        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(govDocDetail.zjkyType.text == undefined ? '' : govDocDetail.zjkyType.text)+'</label></row></col></item>';
 		        	}
 		        	if(key=='zjkykeepTerm'&&govDocDetail.zjkykeepTerm){
 		        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">'+govDocDetail.zjkykeepTerm.name+':</label>'+
-		        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(govDocDetail.zjkykeepTerm.text == undefined ? '' : govDocDetail.zjkykeepTerm.text)+'</label></row></col></item>';
+		        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(govDocDetail.zjkykeepTerm.text == undefined ? '' : govDocDetail.zjkykeepTerm.text)+'</label></row></col></item>';
 		        	}
 		        	if(key=='doComment'&&govDocDetail.doComment){
 		        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col  style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">'+govDocDetail.doComment.name+':</label>'+
-		        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(govDocDetail.doComment.text == undefined ? '' : govDocDetail.doComment.text)+'</label></row></col></item>';
+		        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(govDocDetail.doComment.text == undefined ? '' : govDocDetail.doComment.text)+'</label></row></col></item>';
 		        	}
 		        	if(key=='createdTime'&&govDocDetail.createdTime){
 		        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">'+govDocDetail.createdTime.name+':</label>'+
-		        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(govDocDetail.createdTime.text == undefined ? '' : govDocDetail.createdTime.text)+'</label></row></col></item>';
+		        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(govDocDetail.createdTime.text == undefined ? '' : govDocDetail.createdTime.text)+'</label></row></col></item>';
 		        	}
 		        	// 备用字段
 		        	if(key=='field1'&&govDocDetail.field1){
@@ -513,7 +513,7 @@
 		        			}
 		        			itemContent += '<col id="field1" style="margin:10;padding:10;"></col></item>';
 		        		}else{
-		        			itemContent += '<col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(govDocDetail.field1.text == undefined ? '' : govDocDetail.field1.text)+'</label>'+
+		        			itemContent += '<col style="margin:10;padding:10;"><row><label style="color:#555555">'+(govDocDetail.field1.text == undefined ? '' : govDocDetail.field1.text)+'</label>'+
 		        				   		   '</row></col></item>';
 		        		}
 		        	}
@@ -527,7 +527,7 @@
 		        			}
 		        			itemContent += '<col id="field2" style="margin:10;padding:10;"></col></item>';
 		        		}else{
-		        			itemContent += '<col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(govDocDetail.field2.text == undefined ? '' : govDocDetail.field2.text)+'</label>'+
+		        			itemContent += '<col style="margin:10;padding:10;"><row><label style="color:#555555">'+(govDocDetail.field2.text == undefined ? '' : govDocDetail.field2.text)+'</label>'+
 		        				   		   '</row></col></item>';
 		        		}
 		        	}
@@ -541,7 +541,7 @@
 		        			}
 		        			itemContent += '<col id="field3" style="margin:10;padding:10;"></col></item>';
 		        		}else{
-		        			itemContent += '<col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(govDocDetail.field3.text == undefined ? '' : govDocDetail.field3.text)+'</label>'+
+		        			itemContent += '<col style="margin:10;padding:10;"><row><label style="color:#555555">'+(govDocDetail.field3.text == undefined ? '' : govDocDetail.field3.text)+'</label>'+
 		        				   		   '</row></col></item>';
 		        		}
 		        	}
@@ -555,7 +555,7 @@
 		        			}
 		        			itemContent += '<col id="field5" style="margin:10;padding:10;"></col></item>';
 		        		}else{
-		        			itemContent += '<col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(govDocDetail.field5.text == undefined ? '' : govDocDetail.field5.text)+'</label>'+
+		        			itemContent += '<col style="margin:10;padding:10;"><row><label style="color:#555555">'+(govDocDetail.field5.text == undefined ? '' : govDocDetail.field5.text)+'</label>'+
 		        				   		   '</row></col></item>';
 		        		}
 		        	}
@@ -569,7 +569,7 @@
 		        			}
 		        			itemContent += '<col id="field6" style="margin:10;padding:10;"></col></item>';
 		        		}else{
-		        			itemContent += '<col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(govDocDetail.field6.text == undefined ? '' : govDocDetail.field6.text)+'</label>'+
+		        			itemContent += '<col style="margin:10;padding:10;"><row><label style="color:#555555">'+(govDocDetail.field6.text == undefined ? '' : govDocDetail.field6.text)+'</label>'+
 		        				   		   '</row></col></item>';
 		        		}
 		        	}
@@ -583,7 +583,7 @@
 		        			}
 		        			itemContent += '<col id="field7" style="margin:10;padding:10;"></col></item>';
 		        		}else{
-		        			itemContent += '<col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(govDocDetail.field7.text == undefined ? '' : govDocDetail.field7.text)+'</label>'+
+		        			itemContent += '<col style="margin:10;padding:10;"><row><label style="color:#555555">'+(govDocDetail.field7.text == undefined ? '' : govDocDetail.field7.text)+'</label>'+
 		        				   		   '</row></col></item>';
 		        		}
 		        	}
@@ -597,7 +597,7 @@
 		        			}
 		        			itemContent += '<col id="field8"  style="margin:10;padding:10;"></col></item>';
 		        		}else{
-		        			itemContent += '<col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(govDocDetail.field8.text == undefined ? '' : govDocDetail.field8.text)+'</label>'+
+		        			itemContent += '<col style="margin:10;padding:10;"><row><label style="color:#555555">'+(govDocDetail.field8.text == undefined ? '' : govDocDetail.field8.text)+'</label>'+
 		        				   		   '</row></col></item>';
 		        		}
 		        	}
@@ -611,7 +611,7 @@
 		        			}
 		        			itemContent += '<col id="field9" style="margin:10;padding:10;"></col></item>';
 		        		}else{
-		        			itemContent += '<col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(govDocDetail.field9.text == undefined ? '' : govDocDetail.field9.text)+'</label>'+
+		        			itemContent += '<col style="margin:10;padding:10;"><row><label style="color:#555555">'+(govDocDetail.field9.text == undefined ? '' : govDocDetail.field9.text)+'</label>'+
 		        				   		   '</row></col></item>';
 		        		}
 		        	}
@@ -625,7 +625,7 @@
 		        			}
 		        			itemContent += '<col id="field10" style="margin:10;padding:10;"></col></item>';
 		        		}else{
-		        			itemContent += '<col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(govDocDetail.field10.text == undefined ? '' : govDocDetail.field10.text)+'</label>'+
+		        			itemContent += '<col style="margin:10;padding:10;"><row><label style="color:#555555">'+(govDocDetail.field10.text == undefined ? '' : govDocDetail.field10.text)+'</label>'+
 		        				   		   '</row></col></item>';
 		        		}	
 		        	}
@@ -713,8 +713,8 @@
 				    }else{
 				    	commentViewName = passRoundCommFieldName;
 				    }
-			    	itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;">';
-	        	    itemContent += '<row><label style="align:left;font-size:16;color:#555555">'+commentViewName+':</label></row></col><col style="margin:10;padding:10;">';
+			    	itemContent += '<item style="padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;">';
+	        	    itemContent += '<row><label style="align:left;font-size:16;color:#555555">'+commentViewName+':</label></row></col></item><item style="padding:0;margin:0;"><col>';
 	        		itemContent += '<row><textarea rows="5" maxrows="5" name="comment_input" id="comment_input"></textarea></row>'+
 	        			          '<row><label style=""></label><radio name="commentradio" value="1" checked="false" onclick="$(\'comment_input\').value=\'同意。\'">同意</radio><label style="width:10"></label><label style=""></label><radio onclick="$(\'comment_input\').value=\'已阅。\'" name="commentradio" value="0">已阅</radio></row>';
 	        	    itemContent += '</col></item>';
@@ -729,18 +729,12 @@
 				    }else{
 				    	commentViewName = commentFieldName;
 				    }
-	        	    itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;">';
-	        	    itemContent += '<row><label style="align:left;font-size:16;color:#555555">'+commentViewName+':</label></row></col><col style="margin:10;padding:10;">';
+	        	    itemContent += '<item style="padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;">';
+	        	    itemContent += '<row><label style="align:left;font-size:16;color:#555555">'+commentViewName+':</label></row></col></item><item style="padding:0;margin:0;"><col>';
 	        		itemContent += '<row><textarea rows="5" maxrows="5" name="comment_input" id="comment_input"></textarea></row>'+
 	        			          '<row><label style=""></label><radio name="commentradio" value="1" checked="false" onclick="$(\'comment_input\').value=\'同意。\'">同意</radio><label style="width:10"></label><label style=""></label><radio onclick="$(\'comment_input\').value=\'已阅。\'" name="commentradio" value="0">已阅</radio></row>';
 	        	    itemContent += '</col></item>';
 	        	} 
-	        	// 退回意见
-	        	/*
-	        	if(detailData.backComment){
-	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">退回意见:</label></row></col>'+
-	        					   '<col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+detailData.backComment+'</label></row></col></item>';
-	        	} */
 	        }
 	        
 	        // 构建自定义字段内容
@@ -753,12 +747,12 @@
 				    || fieldDisplayType=='212' || fieldDisplayType=='211' || fieldDisplayType=='210'){
 				    if(content){
 				    	var cons = content.split(";");
-				    	custemCon += '<row><label style="align:right;color:#555555">'+cons[0]+'</label></row>';
+				    	custemCon += '<row><label style="color:#555555">'+cons[0]+'</label></row>';
 				    }
 				    
 				}else{
 					if(content && fieldDisplayType){
-						custemCon += '<row><label style="align:right;color:#555555">'+content+'</label></row>';
+						custemCon += '<row><label style="color:#555555">'+content+'</label></row>';
 					}
 				}
 				custemCon += '</col></item>';
@@ -855,22 +849,17 @@
 	       // 构建批示意见内容
 	        function createCommentCon(comment){
 	        //	var isCurrent = comment.current;
-	        	var commentCon = '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;">';
-	        	commentCon += '<row><label style="align:left;font-size:16;color:#555555">'+comment.step+':</label></row></col><col style="margin:10;padding:10;">';
-	        //	if(commentField && '-1' != commentField && 'nullCommentField' != commentField && workStatus != '102' && workStatus != '101'){
-	        //		commentCon += '<row><textarea rows="5" maxrows="5" name="comment_input" id="comment_input"></textarea></row>'+
-	        //			          '<row><label style=""></label><radio name="commentradio" value="1" checked="false" onclick="$(\'comment_input\').value=\'同意。\'">同意</radio><label style="width:10"></label><label style=""></label><radio onclick="$(\'comment_input\').value=\'已阅。\'" name="commentradio" value="0">已阅</radio></row>';
-	        //	}
-	        //	var commentContent = commentList.commentContent;
-	        	if(comment){
-	        		if(comment instanceof Array){
+	        	var commentCon = '<item style="padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;">';
+	        	commentCon += '<row><label style="align:left;font-size:16;color:#555555">'+comment.step+':</label></row></col></item><item style="padding:0;margin:0;"><col>';
+	        	if(comment instanceof Array){
 	        			for(var i=0,length=commentContent.length;i<length;i++){
-				        	commentCon += '<row><label style="align:right;color:#555555">'+comment[i].content + ' ' + comment[i].person + ' (' + comment[i].date +')</label></row>';
+	        			    commentCon += '<row><label style="color:#555555;margin-left:10;">'+comment[i].content +'</label></row>';
+				        	commentCon += '<row><label style="align:right;color:#555555">' + comment[i].person + ' (' + comment[i].date +')</label></row>';
 	        			}
 	        		}else if(comment instanceof Object){
-			        	commentCon += '<row><label style="align:right;color:#555555">'+comment.content + ' ' +comment.person + ' (' + comment.date +')</label></row>';
+	        		    commentCon += '<row><label style="color:#555555;margin-left:10;">'+comment.content + '</label></row>';
+			        	commentCon += '<row><label style="align:right;color:#555555">' +comment.person + ' (' + comment.date +')</label></row>';
 	        		}
-	        	}
 	        	commentCon += '</col></item>';
 	        	return commentCon;
 	        }
@@ -879,9 +868,10 @@
 	        function createFlowImg(flowGraphUrl,picRootPath){
 	        	if(!(flowGraphUrl instanceof Array)){
 	        	//	var imgPath = webServiceUrl + 'upload/workflow_acc/' + flowGraphUrl + '?rand=' + Math.random();
+	        		picRootPath = evoUrl +'/ezOffice/download/resizeHandSign.do?url=' +webServiceUrl + 'upload/workflow_acc/';
 	        		var imgPath = picRootPath+flowGraphUrl;
 		        	$('flowgraphurl').value = imgPath;
-		        	var image = $C('<img src="' + imgPath + '" id="flowImg" progress="true" style="align:center;"/>');
+		        	var image = $C('<img src="' + imgPath + '"  id="flowImg" progress="true" style="align:center;height:400;width:300"/>');
 		        	$('content_flow_pic').add(image);
 	        	}else{
 	        		$('tabbar').remove($('imgItem'));
@@ -1278,7 +1268,20 @@
 			// 转办发送
 			function tranInfo(){
 				$('main_popupmenu').close();
-				$page.open('../workflow/workflow_tranInfo.xml?workId='+workId+'&workcurstep='+encodeURIComponent($('workcurstep').value),
+				var commentType = $('commentType').value;
+				commentType = '';
+				var $comment = $('comment_input');
+				var commentCon = '';
+				if(commentType == '4'){
+					commentCon = $('comment_input_shouxie').value;
+				}else if(commentType == '5'){
+					commentCon = $('comment_input_yuyin').value;
+				}else{
+					if($comment){
+						commentCon = $comment.value;
+					}
+				}
+				$page.open('../workflow/workflow_tranInfo.xml?fromXml='+fromXml+'&workId='+workId+'&workcurstep='+encodeURIComponent($('workcurstep').value)+'&commentType='+commentType+'&comment='+encodeURIComponent(commentCon),
 				{animation:'down-to-up'});
 			}
 			

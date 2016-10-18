@@ -82,7 +82,7 @@
 		               if(!attList==""){  //不为空，数据进行迭代,并为附件赋值
 		                  for(var k=0;k<attList.length;k++){
 		                 // alert(attList[k].savename);
-		                      var files = $C('<row><icon src="mail_fujian.png" style="align:left;margin-right:5;"/><label style="color:#38adff;align:left;font-size:16;"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath='+path+'&amp;viewName=' + attList[k].realname +'\')">'+attList[k].realname+'</label></row>')
+		                      var files = $C('<row><icon src="mail_fujian.png" style="align:left;margin-right:5;"/><label style="color:#38adff;font-size:16;"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath='+path+'&amp;viewName=' + attList[k].realname +'\')">'+attList[k].realname+'</label></row>')
 		                      $('meetFilesId').add(files); 
 		                  }
 		               }else{     //无附件，或者后台处理异常
@@ -195,7 +195,7 @@
 						var attList = obj.attList;
 						if (!attList == '') { //不为空，数据进行迭代,并为附件赋值
 							for (var k = 0; k < attList.length; k++) {
-								var files = $C('<row><label style="color:#330000;color:blue;align:right;"  onclick="$http.download(\'' + evoUrl + '/ezOffice/download/file.do?url=' + attList[k].attachurlser + '&amp;filename=' + attList[k].savename + '&amp;viewName=' + attList[k].realname +'\')">' + attList[k].realname + '</label></row>')
+								var files = $C('<row><label style="color:#330000;color:blue;"  onclick="$http.download(\'' + evoUrl + '/ezOffice/download/file.do?url=' + attList[k].attachurlser + '&amp;filename=' + attList[k].savename + '&amp;viewName=' + attList[k].realname +'\')">' + attList[k].realname + '</label></row>')
 								$(appendId).add(files);
 							}
 						} else { //无附件，或者后台处理异常
@@ -247,7 +247,7 @@
 							var attList = obj.attList;
 							if (!attList == '') { //不为空，遍历,并为附件赋值
 								for (var k = 0; k < attList.length; k++) {
-									var files = $C('<row><label style="color:#330000;color:blue;align:right;"  onclick="$http.download(\'' + evoUrl + '/ezOffice/download/file.do?url=' + attList[k].attachurlser + '&amp;filename=' + attList[k].savename +'&amp;viewName=' + attList[k].realname + '\')">' + attList[k].realname + '</label></row>')
+									var files = $C('<row><label style="color:#330000;color:blue;"  onclick="$http.download(\'' + evoUrl + '/ezOffice/download/file.do?url=' + attList[k].attachurlser + '&amp;filename=' + attList[k].savename +'&amp;viewName=' + attList[k].realname + '\')">' + attList[k].realname + '</label></row>')
 									$(attachIdArr[2]).add(files);
 								}
 							} else { //无附件，或者后台处理异常
@@ -270,33 +270,33 @@
 	        }
         
         	//初始化会议申请表单数据
-	        function createFormData(detailData,workInfo,workInfoData,officelist){
+	        function createFormData(detailData,workInfo,workInfoData,officeList){
 	            var commentList = workInfoData.commentList;   //已办审批意见列表
 	            var workcurstep = workInfoData.workInfo.workcurstep;    //当前审批意见名称
 	        	if(detailData.boardroomCode){
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">会议编号:</label>'+
-	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.boardroomCode == undefined ? '' : detailData.boardroomCode)+'</label></row></col></item>';
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(detailData.boardroomCode == undefined ? '' : detailData.boardroomCode)+'</label></row></col></item>';
 	        	}
 	        	if(detailData.boardroomApplyType){
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">会议类型:</label>'+
-	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.boardroomApplyType == undefined ? '' : detailData.boardroomApplyType)+'</label></row></col></item>';
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(detailData.boardroomApplyType == undefined ? '' : detailData.boardroomApplyType)+'</label></row></col></item>';
 	        	}
 	        	if(detailData.motif){
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">主题:</label>'+
-	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.motif == undefined ? '' : detailData.motif)+'</label></row></col></item>';
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(detailData.motif == undefined ? '' : detailData.motif)+'</label></row></col></item>';
 	        	}
 	        	if(detailData.emceeName){
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">主持人:</label>'+
-	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.emceeName == undefined ? '' : detailData.emceeName)+'</label></row></col></item>';
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(detailData.emceeName == undefined ? '' : detailData.emceeName)+'</label></row></col></item>';
 	        	}
 	        	
 	        	if(detailData.personNum){
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">出席人数:</label>'+
-	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.personNum == null ? '' : detailData.personNum)+'</label></row></col></item>';
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(detailData.personNum == null ? '' : detailData.personNum)+'</label></row></col></item>';
 	        	}
 	        	if(detailData.attendeeLeader){
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">出席领导:</label>'+
-	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.attendeeLeader == undefined ? '' : detailData.attendeeLeader)+'</label></row></col></item>';
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(detailData.attendeeLeader == undefined ? '' : detailData.attendeeLeader)+'</label></row></col></item>';
 	        	}
 	        	if(detailData.meetingTimeList){
 	        	    var itemContentDate = '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">日期:</label>'+
@@ -308,7 +308,7 @@
 	        	    var meetingData = detailData.meetingTimeList;
 	        	    if(meetingData instanceof Array){
 	        	         for(var i=0;i<meetingData.length;i++){
-	        	         	itemContentDate +='<row><label style="align:right;color:#555555">'+(meetingData[i].destineDate == undefined ? '' : meetingData[i].destineDate)+'</label></row>';
+	        	         	itemContentDate +='<row><label style="color:#555555">'+(meetingData[i].destineDate == undefined ? '' : meetingData[i].destineDate)+'</label></row>';
 	        	         	var  startHour = meetingData[i].startHour;  //开始时
 	        	         	var  startMinute = meetingData[i].startMinute;  //开始分
 	        	         	var  endHour = meetingData[i].endHour;  
@@ -325,11 +325,11 @@
 	        	         	if(endMinute <10){
 	        	         	    endMinute = '0'+endMinute;
 	        	         	}
-	        	            itemContentHour +='<row><label style="align:right;color:#555555">'+startHour+':'+startMinute+'</label></row>';
-	        	        	itemContentMinu +='<row><label style="align:right;color:#555555">'+endHour+':'+endMinute+'</label></row>';
+	        	            itemContentHour +='<row><label style="color:#555555">'+startHour+':'+startMinute+'</label></row>';
+	        	        	itemContentMinu +='<row><label style="color:#555555">'+endHour+':'+endMinute+'</label></row>';
 	        	         }
 	        	    }else if(meetingData instanceof Object){
-	        	    	itemContentDate +='<row><label style="align:right;color:#555555">'+(meetingData.destineDate == undefined ? '' : meetingData.destineDate)+'</label></row>';
+	        	    	itemContentDate +='<row><label style="color:#555555">'+(meetingData.destineDate == undefined ? '' : meetingData.destineDate)+'</label></row>';
 	        	         	var  startHour = meetingData.startHour;  //开始时
 	        	         	var  startMinute = meetingData.startMinute;  //开始分
 	        	         	var  endHour = meetingData.endHour;  
@@ -346,8 +346,8 @@
 	        	         	if(endMinute <10){
 	        	         	    endMinute = '0'+endMinute;
 	        	         	}
-	        	            itemContentHour +='<row><label style="align:right;color:#555555">'+startHour+':'+startMinute+'</label></row>';
-	        	        	itemContentMinu +='<row><label style="align:right;color:#555555">'+endHour+':'+endMinute+'</label></row>';
+	        	            itemContentHour +='<row><label style="color:#555555">'+startHour+':'+startMinute+'</label></row>';
+	        	        	itemContentMinu +='<row><label style="color:#555555">'+endHour+':'+endMinute+'</label></row>';
 	        	    }
 	        		itemContentDate += '</col></item>';
 	        		itemContentHour += '</col></item>';
@@ -356,55 +356,55 @@
 	        	}
 	        	if(detailData.boardroomName){
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">会议室名称:</label>'+
-	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.boardroomName == undefined ? '' : detailData.boardroomName)+'</label></row></col></item>';
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(detailData.boardroomName == undefined ? '' : detailData.boardroomName)+'</label></row></col></item>';
 	        	}
 	        	if(detailData.addr){
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">地点:</label>'+
-	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.addr == undefined ? '' : detailData.addr)+'</label></row></col></item>';
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(detailData.addr == undefined ? '' : detailData.addr)+'</label></row></col></item>';
 	        	}
 	        	if(detailData.points){
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">点数:</label>'+
-	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.points == undefined ? '' : detailData.points)+'</label></row></col></item>';
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(detailData.points == undefined ? '' : detailData.points)+'</label></row></col></item>';
 	        	}
 	        	if(detailData.attendee){
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">会议出席人:</label>'+
-	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.attendee == undefined ? '' : detailData.attendee)+'</label></row></col></item>';
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(detailData.attendee == undefined ? '' : detailData.attendee)+'</label></row></col></item>';
 	        	}
 	        	if(detailData.nonvoting){
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">会议列席人:</label>'+
-	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.nonvoting == undefined ? '' : detailData.nonvoting)+'</label></row></col></item>';
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(detailData.nonvoting == undefined ? '' : detailData.nonvoting)+'</label></row></col></item>';
 	        	}
 	        	if(detailData.otherAttendeePerson){
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">其他参会人员:</label>'+
-	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.otherAttendeePerson == undefined ? '' : detailData.otherAttendeePerson)+'</label></row></col></item>';
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(detailData.otherAttendeePerson == undefined ? '' : detailData.otherAttendeePerson)+'</label></row></col></item>';
 	        	}
 	        	if(detailData.swPerson){
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">单位收文员:</label>'+
-	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.swPerson == undefined ? '' : detailData.swPerson)+'</label></row></col></item>';
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(detailData.swPerson == undefined ? '' : detailData.swPerson)+'</label></row></col></item>';
 	        	}
 	        	if(detailData.applyEmpName){
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">预定者:</label>'+
-	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.applyEmpName == undefined ? '' : detailData.applyEmpName)+'</label></row></col></item>';
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(detailData.applyEmpName == undefined ? '' : detailData.applyEmpName)+'</label></row></col></item>';
 	        	}
 	        	if(detailData.applyOrgName){
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">预定部门:</label>'+
-	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.applyOrgName == undefined ? '' : detailData.applyOrgName)+'</label></row></col></item>';
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(detailData.applyOrgName == undefined ? '' : detailData.applyOrgName)+'</label></row></col></item>';
 	        	}
 	        	if(detailData.applyDate){
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">预定日期:</label>'+
-	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.applyDate == undefined ? '' : detailData.applyDate.substring(0,10))+'</label></row></col></item>';
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(detailData.applyDate == undefined ? '' : detailData.applyDate.substring(0,10))+'</label></row></col></item>';
 	        	}
 	        	if(detailData.linkTelephone){
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">联系电话:</label>'+
-	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.linkTelephone == undefined ? '' : detailData.linkTelephone)+'</label></row></col></item>';
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(detailData.linkTelephone == undefined ? '' : detailData.linkTelephone)+'</label></row></col></item>';
 	        	}
 	        	if(detailData.seatcard){
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">席卡:</label>'+
-	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.seatcard == undefined ? '' : detailData.seatcard)+'</label></row></col></item>';
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(detailData.seatcard == undefined ? '' : detailData.seatcard)+'</label></row></col></item>';
 	        	}
 	        	if(detailData.remark){
-	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">备注:</label>'+
-	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="align:right;color:#555555">'+(detailData.remark == undefined ? '' : detailData.remark)+'</label></row></col></item>';
+	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="font-size:16;color:#555555">备注:</label>'+
+	        				   '</row></col><col style="margin:10;padding:10;"><row><label style="color:#555555">'+(detailData.remark == undefined ? '' : detailData.remark)+'</label></row></col></item>';
 	        	}
 	        	if(detailData.boardroomFileList){   // 附件下载
 	        	    var boardroomFileData = detailData.boardroomFileList;
@@ -417,75 +417,69 @@
 	        	    		fileNameArr.push(boardroomFileData.boardroomFileName);
 	        	    		fileSaveNameArr.push(boardroomFileData.boardroomSaveName);
 	        	    }
-	        	    itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">附件:</label>'+
+	        	    itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="font-size:16;color:#555555">附件:</label>'+
 	        				   '</row></col><col style="margin:10;padding:10;" id="meetFilesId"></col></item>';
-	        	
-	        	
 	        	}
 	        	//已经批示的意见
 	        	if(commentList){
-	        	    createCommList(commentList);
-	        	}
-	        	
-	        function createCommList(commentList){
-				var commentShouxie = '';
-				var commentYuyin = '';
-				if(commentList instanceof Array){
-					for(var i=0,length=commentList.length;i<length;i++){
-						step = commentList[i].step+":";
-						itemContent +='<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="font-size:16;color:#555555;">'+step+'</label>'+
-	        				   '</row></col><col>';
-						commentType = commentList[i].type;
+	        	    var commentShouxie = '';
+					var commentYuyin = '';
+					if(commentList instanceof Array){
+						for(var i=0,length=commentList.length;i<length;i++){
+							step = commentList[i].step+":";
+							itemContent +='<item style="padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="font-size:16;color:#555555;">'+step+'</label>'+
+		        				   '</row></col></item><item style="padding:0;margin:0;"><col>';
+							commentType = commentList[i].type;
+							if(commentType == '4'){
+								// 手写
+								commentShouxieOaUrl = webServiceUrl + 'upload/workflow_acc/' + commentList[i].content.substring(0,6) + '/' + commentList[i].content;
+								commentShouxie = evoUrl+'/ezOffice/download/resizeHandSign.do?url='+commentShouxieOaUrl;
+								itemContent += '<row style="margin-bottom:20" onclick="view_sxContent(\'' + commentShouxie + '\');"><img src="'+commentShouxie+'"/></row>';
+							}else if(commentType == '5'){
+								// 语音
+								commentYuyin = webServiceUrl + 'upload/workflow_acc/' + commentList[i].content.substring(0,6) + '/' + commentList[i].content;
+								itemContent += '<row style="margin-bottom:20"><label onclick="playSound(\'' + commentYuyin + '\',\''+commentList[i].content+'\')" style="align:left;font-size:14;color:#38adff;">'+(commentList[i].content ? commentList[i].content : "")+'</label></row>';
+							}else{
+								itemContent += '<row style="margin-bottom:20"><label style="font-size:16;color:#555555;margin-left:10;">'+(commentList[i].content ? commentList[i].content : "")+'</label></row>';
+							}
+							itemContent += '<row><label style="align:right;color:#b8b8b8;font-size:12">'+commentList[i].person+'('+commentList[i].date+')</label></row></col></item>';
+						}
+					}else if(commentList instanceof Object){
+						step = commentList.comment.step+":";
+							itemContent +='<item style="padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="font-size:16;color:#555555;">'+step+'</label>'+
+		        				   '</row></col></item><item style="padding:0;margin:0;"><col>';
+						commentType = commentList.comment.type;
 						if(commentType == '4'){
 							// 手写
-							commentShouxieOaUrl = webServiceUrl + 'upload/workflow_acc/' + commentList[i].content.substring(0,6) + '/' + commentList[i].content;
+							//commentShouxie = webServiceUrl + 'upload/workflow_acc/' + (commentList.comment.content==''? '' : commentList.comment.content.substring(0,6)) + '/' + commentList.comment.content;
+							commentShouxieOaUrl = webServiceUrl + 'upload/workflow_acc/' + commentList.comment.content.substring(0,6) + '/' + commentList.comment.content;
 							commentShouxie = evoUrl+'/ezOffice/download/resizeHandSign.do?url='+commentShouxieOaUrl;
 							itemContent += '<row style="margin-bottom:20" onclick="view_sxContent(\'' + commentShouxie + '\');"><img src="'+commentShouxie+'"/></row>';
 						}else if(commentType == '5'){
 							// 语音
-							commentYuyin = webServiceUrl + 'upload/workflow_acc/' + commentList[i].content.substring(0,6) + '/' + commentList[i].content;
-							itemContent += '<row style="margin-bottom:20"><label onclick="playSound(\'' + commentYuyin + '\',\''+commentList[i].content+'\')" style="align:left;font-size:14;color:#38adff;">'+(commentList[i].content ? commentList[i].content : "")+'</label></row>';
+							commentYuyin = webServiceUrl + 'upload/workflow_acc/' + commentList.comment.content.substring(0,6) + '/' + commentList.comment.content;
+							itemContent += '<row style="margin-bottom:20"><label onclick="playSound(\'' + commentYuyin + '\',\''+commentList.comment.content+'\')" style="align:left;font-size:14;color:#38adff">'+(commentList.comment.content ? commentList.comment.content : "")+'</label></row>';
 						}else{
-							itemContent += '<row style="margin-bottom:20"><label style="align:left;font-size:16;color:#555555">'+(commentList[i].content ? commentList[i].content : "")+'</label></row>';
+							itemContent += '<row style="margin-bottom:20"><label style="font-size:16;color:#555555;margin-left:10;">'+(commentList.comment.content ? commentList.comment.content : "")+'</label></row>';
 						}
-						itemContent += '<row><label style="align:right;color:#b8b8b8;font-size:12">'+commentList[i].person+'('+commentList[i].date+')</label></row></col></item>';
+						itemContent += '<row><label style="align:right;color:#b8b8b8;font-size:12">'+commentList.comment.person+'('+commentList.comment.date+')</label></row></col></item>';
 					}
-				}else if(commentList instanceof Object){
-					step = commentList.comment.step+":";
-						itemContent +='<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="font-size:16;color:#555555;">'+step+'</label>'+
-	        				   '</row></col><col>';
-					commentType = commentList.comment.type;
-					if(commentType == '4'){
-						// 手写
-						//commentShouxie = webServiceUrl + 'upload/workflow_acc/' + (commentList.comment.content==''? '' : commentList.comment.content.substring(0,6)) + '/' + commentList.comment.content;
-						commentShouxieOaUrl = webServiceUrl + 'upload/workflow_acc/' + commentList.comment.content.substring(0,6) + '/' + commentList.comment.content;
-						commentShouxie = evoUrl+'/ezOffice/download/resizeHandSign.do?url='+commentShouxieOaUrl;
-						itemContent += '<row style="margin-bottom:20" onclick="view_sxContent(\'' + commentShouxie + '\');"><img src="'+commentShouxie+'"/></row>';
-					}else if(commentType == '5'){
-						// 语音
-						commentYuyin = webServiceUrl + 'upload/workflow_acc/' + commentList.comment.content.substring(0,6) + '/' + commentList.comment.content;
-						itemContent += '<row style="margin-bottom:20"><label onclick="playSound(\'' + commentYuyin + '\',\''+commentList.comment.content+'\')" style="align:left;font-size:14;color:#38adff">'+(commentList.comment.content ? commentList.comment.content : "")+'</label></row>';
-					}else{
-						itemContent += '<row style="margin-bottom:20"><label style="align:left;font-size:16;color:#555555">'+(commentList.comment.content ? commentList.comment.content : "")+'</label></row>';
-					}
-					itemContent += '<row><label style="align:right;color:#b8b8b8;font-size:12">'+commentList.comment.person+'('+commentList.comment.date+')</label></row></col></item>';
-				}
-			}
-	        	
-	        	// 批示意见对应字段workInfo.commentField
-	        	if(workInfo.commentField != '' && workInfo.commentField != 'nullCommentField'){
-	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">办理意见:</label></row></col>'+
-		        				   '<col  style="margin:10;padding:10;"><row><textarea name="comment_input" rows="5" id="comment_input" maxrows="5"></textarea></row></col></item>'+
-		        				   '<item id="" style="col-width:*,40,40,50,40"><col><row></row></col>'+
-								   '<col><row><icon id="shouxie" onclick="doDraft();" src="workflow_sx.png" style="display:none;width:30;height:30;"/></row></col>'+
-								   '<col><row><icon id="yuyin" onclick="doRecordSound();" src="workflow_yy.png" style="display:none;width:30;height:30;"/></row></col>'+
-								   '<col><row>'+
-								   '<icon id="commentAdd" src="deskperson_add.png" style="width:30;height:30;align:right;" onclick="openCommentMenu();"/>'+
-								   '</row></col></item>'+
-								   '<item onclick="openUseComment(\'' + officelist + '\');" accessory="indicator"><row><label style="align:right;color:#C9C9C9;">选择常用语</label></row></item>'+
-								   '<item id="comment_input_sxyy" style="display:none;col-width:40,*,40"></item>';
+		        	
+		        	// 批示意见对应字段workInfo.commentField
+		        	if(workInfo.commentField != '' && workInfo.commentField != 'nullCommentField'){
+		        		itemContent += '<item style="padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">办理意见:</label></row></col></item><item style="padding:0;margin:0;">'+
+			        				   '<col><row><textarea name="comment_input" rows="5" id="comment_input" maxrows="5"></textarea></row></col></item>'+
+			        				   '<item id="" style="col-width:*,40,40,50,40"><col><row onclick="openUseComment(\'' + officeList + '\');"><label style="align:right;color:#C9C9C9;">选择常用语</label></row></col>'+
+									   '<col><row><icon id="shouxie" onclick="doDraft();" src="workflow_sx.png" style="display:none;width:30;height:30;"/></row></col>'+
+									   '<col><row><icon id="yuyin" onclick="doRecordSound();" src="workflow_yy.png" style="display:none;width:30;height:30;"/></row></col>'+
+									   '<col><row>'+
+									   '<icon id="commentAdd" src="deskperson_add.png" style="width:30;height:30;align:right;" onclick="openCommentMenu();"/>'+
+									   '</row></col></item>'+
+									   '<item id="comment_input_sxyy" style="display:none;col-width:40,*,40"></item>';
+		        	}
 	        	}
 	        }
+	        	
 	        
 	        //播放语音
 			function playSound(path,filename){
@@ -641,9 +635,10 @@
 	        function createFlowImg(flowGraphUrl,picRootPath){
 	        	if(!(flowGraphUrl instanceof Array)){
 	        		//var imgPath = webServiceUrl + 'upload/workflow_acc/' + flowGraphUrl + '?rand=' + Math.random();
+	        		picRootPath = evoUrl +'/ezOffice/download/resizeHandSign.do?url=' +webServiceUrl + 'upload/workflow_acc/';
 	        		var imgPath = picRootPath+flowGraphUrl;
 		        	$('flowgraphurl').value = imgPath;
-		        	var image = $C('<img src="' + imgPath + '" id="flowImg" progress="true" style="align:center;"/>');
+		        	var image = $C('<img src="' + imgPath + '"  id="flowImg" progress="true" style="align:center;height:400;width:300"/>');
 		        	$('content_flow_pic').add(image);
 	        	}else{
 	        		$('tabbar').remove($('imgItem'));

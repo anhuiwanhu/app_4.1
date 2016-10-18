@@ -246,44 +246,44 @@
 			           <col>
 					   </col>
 	            </item>
-			    <item style="col-width:50,*">
+			    <item style="col-width:100,*">
                     <col>
                         <row><label style="color:#555555;font-size:16;">账号：</label></row>
                     </col>
                     <col>
-                        <row><label style="align:right;color:#c1c1c1;" id="useraccounts"></label></row>
+                        <row><label style="color:#c1c1c1;" id="useraccounts"></label></row>
                     </col>
                 </item>
-                <item style="col-width:50,*;" >
+                <item style="col-width:100,*;" >
                     <col>
                        <row><label  style="color:#555555;font-size:16;">部门：</label></row>
                     </col>                    
                     <col>
-                       <row><label style="align:right;color:#c1c1c1;" id="orgShortName"></label></row>
+                       <row><label style="color:#c1c1c1;" id="orgShortName"></label></row>
                     </col>
                 </item>
-                <item style="col-width:50,*">
+                <item style="col-width:100,*">
                     <col>
                       <row><label  style="color:#555555;font-size:16;">职务：</label></row>
                     </col>                    
                     <col>
-                       <row><label style="align:right;color:#c1c1c1;" id="empDuty"></label></row>
+                       <row><label style="color:#c1c1c1;" id="empDuty"></label></row>
                     </col>
                 </item>
-                <item style="col-width:50,*;" accessory="indicator" onclick="updatePhone();">
+                <item style="col-width:100,*;" accessory="indicator" onclick="updatePhone();">
                     <col>
                         <row><label  style="color:#555555;font-size:16;">电话：</label></row>
                     </col>                    
                     <col>
-                        <row><label style="align:right;" id="allPhone" ></label></row>
+                        <row><label style="" id="allPhone" ></label></row>
                     </col>
                 </item>
-                <item style="col-width:50,*;" accessory="indicator" onclick="updateMail();">
+                <item style="col-width:100,*;" accessory="indicator" onclick="updateMail();">
                     <col>
                         <row><label  style="color:#555555;font-size:16;">邮件：</label></row>
                     </col>                    
                     <col>
-                        <row><label style="align:right;" id="allMail" ></label></row>
+                        <row><label style="" id="allMail" ></label></row>
                     </col>
                 </item>
                 <item style="padding:4;border:1 #f0f0f3;background:#f0f0f3;" >

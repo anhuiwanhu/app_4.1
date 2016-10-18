@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+<script>
+        <![CDATA[
+			var loadFlag = '0';  //函数执行置为1，提交之前进行判断，若为1，则禁止 提交，防重复提交
+	        var pagerOffset=0;
+	        
+	         //页面家在完成后执行
+	        $page.onload = function() {
+	            var storage = $phone.localStorage();
+	            var informationId = storage.getItem('information_informationId');
+	            var info_informationTitle =  storage.getItem('information_informationTitle');
+	            loadConetent(info_informationTitle);
+	            initList("add",informationId);
+	        }
+	        
+	        function loadConetent(info_informationTitle){   //加载内容
+		         var   itemJson = {
+	                         template :0,
+	                         widgets : {
+	                             info_informationTitle : {text :info_informationTitle}
+	                         }
+	                    };
+	              var listJson = {items:[]};
+				  listJson.items.push(itemJson);
+				  $('docList').update(listJson);
+	        }
+	        
+
+	        function initList(loadType,informationId){
+	            if(loadFlag == '1'){
+		        	return false;
+		        }
+		        loadFlag = '1';
+		        $('bottom_load').css('display','');
+		        $('indexContent').showBottom();
+		        var storage = $phone.localStorage();
+				var evoUrl = storage.getItem('evoUrl');
+	            $http.post(evoUrl+'/ezOffice/information/comment.do',{pagerOffset:pagerOffset,informationId:informationId },  function(data) {
+	                if(data){
+		                var res = JSON.parse(data);
+		                if(res.logonerror &&res.logonerror=='1'){
+				            alert("该账号已在设备"+res.deviceId+"上登录");
+			          		$page.open('../index.xml',{target:'_self'});
+			                return;
+			            }
+		                var  serveUrl = res.serveUrl;   //请求服务器路径
+					    var rootPath_res = res.rootPath_res;  //真实路径
+		                var docXml = res.docXml;
+		                var obj = JSON.parse(docXml);
+		                var result = obj.message.result;
+		                var listJson = {items:[]};   //存储返回数据列表信息
+			            var itemJson;
+					    if(result =="1"){
+					        var objArr = obj.data; //返回列表数组
+				        	if(objArr instanceof Array){    //返回多条数据
+					                for (var i = 0; i < objArr.length; i++) {
+					                       //显示头像
+					                    var empLivingPhoto = objArr[i].empLivingPhoto;
+					                    var photoPath ;
+					                    
+					                    if(empLivingPhoto!=null&&empLivingPhoto!=""){
+									    	photoPath = serveUrl + empLivingPhoto;
+									    }else{
+									    	photoPath = rootPath_res + "person_ico.png";
+									    }
+									    var commentIssuerName= objArr[i].commentIssuerName;
+									    var commentIssueTime = objArr[i].commentIssueTime;
+									    if(commentIssueTime!=null&&commentIssueTime.length>20){
+					                        commentIssueTime = commentIssueTime.substring(0,19);
+					                    }
+					                    var nameAndDate = commentIssuerName + "("+commentIssueTime+")";
+					                    var commentContent =objArr[i].commentContent;
+					                     
+					                    var    itemJson_null = {         //用于显示棕色空行
+									                        template : 1,
+									                        widgets : {
+									                        }
+									                  };
+									    listJson.items.push(itemJson_null);
+									    
+				                        itemJson = {
+					                         template :2,
+					                         widgets : {
+					                             photoPath : {src :photoPath },
+					                             nameAndDate : {text :nameAndDate},
+					                             commentContent : {text :commentContent}
+					                         }
+					                    };
+					                    listJson.items.push(itemJson);
+					                }
+				        	}else if(objArr instanceof Object){   //返回一条数据
+			                             //显示头像
+			                            objArr = objArr.informationComment;
+					                    var empLivingPhoto = objArr.empLivingPhoto;
+					                    var photoPath ;
+					                    
+					                    if(empLivingPhoto!=null&&empLivingPhoto!=""){
+									    	photoPath = serveUrl + empLivingPhoto;
+									    }else{
+									    	photoPath = rootPath_res + "person_ico.png";
+									    }
+									    var commentIssuerName= objArr.commentIssuerName;
+									    var commentIssueTime = objArr.commentIssueTime;
+									    if(commentIssueTime!=null&&commentIssueTime.length>20){
+					                        commentIssueTime = commentIssueTime.substring(0,19);
+					                    }
+					                    var nameAndDate = commentIssuerName + "("+commentIssueTime+")";
+					                    var commentContent =objArr.commentContent;
+					                    
+					                     var    itemJson_null = {         //用于显示棕色空行
+									                        template : 1,
+									                        widgets : {
+									                        }
+									                  };
+									    listJson.items.push(itemJson_null);
+									    
+				                        itemJson = {
+					                         template :2,
+					                         onclick : '',
+					                         widgets : {
+					                             photoPath : {src :photoPath },
+					                             nameAndDate : {text :nameAndDate},
+					                             commentContent : {text :commentContent}
+					                         }
+					                    };
+					                    listJson.items.push(itemJson);
+			               	}else{   //没有返回数据
+			               	   itemJson = {
+				                    template : 3,
+				                    onclick : '',
+	                                widgets : {
+				                             title : {text :'暂无相关记录' },
+				                         }
+				                }
+				                listJson.items.push(itemJson); 
+				            }
+		                }else{       //查询异常
+		                    itemJson = {
+				                    template : 3,
+				                    onclick : '',
+				                    widgets : {
+				                    title : {text : '暂无相关记录'}
+	                                }
+				                }
+				            listJson.items.push(itemJson); 
+		                }
+		                
+	        			if(loadType == 'add'){
+		        			$('docList').addMore(listJson);
+	        			}else if(loadType == 'update'){
+		        			$('docList').update(listJson);
+	        			}
+		            }
+		            $('bottom_load').css('display','none');
+		            $('indexContent').hideBottom();
+		        	loadFlag = '0';
+		         },function(error) {
+					    if (error == 'timeout') {
+					        hint('连接服务器超时！');
+					    } else if (error == '404') {
+					        hint('链接超时重新登录！');
+					    } else if (error == '500') {
+					        hint('内部服务器错误！');
+					    } else {
+					        hint('访问网络错误！错误代码:' + error);
+					    }
+					    $page.open('../index.xml',{animation:'down-to-up'});
+				    }
+		         );
+	        }
+	        
+	        function refreshPage(){
+	           $('indexContent').hideTop();
+	           var storage = $phone.localStorage();
+	           var informationId = storage.getItem('information_informationId');
+	           var info_informationTitle =  storage.getItem('information_informationTitle');
+	           loadConetent(info_informationTitle);
+	           initList("add",informationId);
+	        }    
+        ]]>
+</script>
+	<page >
+		<title style="background:#3daffe;tint-color:white;">
+		    <left>
+				<button role="back" />
+			</left>
+            <center>
+                <label>评论</label>
+            </center>
+	    </title>
+	    <content draggable="true" id="indexContent" ondragdown="refreshPage()" >
+               <list  id="docList"  reuse="true" >
+	                 <item>  
+		                    <col>
+					            <row>
+									<label  reusekey="info_informationTitle" style="align:center;padding:0 20;"></label>
+						        </row>
+					        </col>
+			        </item>
+			        <item style="background:#f0eff5;padding:2;border:1 #f0eff5;" >
+			           <col>
+					   </col>
+	                </item>
+					<item style="col-width:40,*;">
+					        <col>
+							     <row><img src="" effect="round" reusekey="photoPath" style="width:35;height:35" default="login_per.png"/></row>
+						    </col>
+				            <col>
+								  <row>
+								      <label style="font-size:12;" reusekey="nameAndDate"></label>
+								 </row>
+								 <row>
+								     <label style="font-size:12;"  reusekey="commentContent"></label>
+								 </row>
+						   </col>
+	                </item>
+	                <item>
+	                    <col>
+	                    	<row>
+	                    		<label reusekey="title" style="align:center;"></label>
+	                    	</row>
+	                    </col>
+	                </item>
+	        </list>
+	        <bottom id="content_bottom">
+                <list>
+                    <item onclick="loadList('add')">
+                        <row id="bottom_load"><label style="align:center;">正在加载...</label><progress style="align:center"/></row>
+	                </item>
+                </list>
+             </bottom>
+           </content>
+           <footer id="test_footer" style="background:#f8f8f8;" >
+               <list>
+	               <item style="col-width:70%,*;">
+	                   <col>
+	                   		<row>
+			                  <input type="text" id="commentContent" maxlength="200" placeholder="请输入评论" style="border:1 #3DAFFE;corner-radius:6;placeholder-color:gray;font-size:16;margin-left:10;margin-right:2;text-align:left;padding:0 0;"/>
+			               </row>
+	                   </col>
+	                   <col>
+	                   		<row>
+			                  <button style="corner-radius:6;font-size:16;width:70;height:35;align:right;margin-right:10;background:#3DAFFE;padding:0 0;" onclick="sumbitComment()" >提交</button>
+			               </row>
+	                   </col>
+	               </item>
+               </list>
+          </footer>
+	</page>
+	<script>
+        <![CDATA[
+     //发表评论
+     function sumbitComment(){
+        var commentContent = $('commentContent').value;     //评论内容
+        if(commentContent==null||commentContent.trim()==""){
+            alert("请输入评论");
+            return;
+        }
+        if(/[(\\)(\/)(\?)(\#)(\&)(\')(\")]/.test(commentContent)){
+           alert("评论内容不能输入特殊字符！");
+           return;
+        }
+        var storage = $phone.localStorage();
+	    var channelId = storage.getItem('information_channelId');   //获取栏目id
+	    var informationId = storage.getItem('information_informationId');       //信息id
+	  //  alert(commentContent); 
+	  //  alert(channelId);alert(informationId);
+	    if(loadFlag == '1'){
+		    return false;
+		}
+        loadFlag = '1';
+        var storage = $phone.localStorage();
+		var evoUrl = storage.getItem('evoUrl');
+        $http.post(evoUrl+'/ezOffice/information/saveComment.do',{channelId:channelId,informationId:informationId,commentContent:commentContent },  function(data) {
+           if(data){
+               var obj = JSON.parse(data);
+               if(obj.logonerror &&obj.logonerror=='1'){
+         		   alert("该账号已在设备"+obj.deviceId+"上登录");
+         		   $page.open('../index.xml',{target:'_self'});
+                   return;
+               }
+               if(obj.message.result=="1"){
+                   alert("评论成功！");
+                   $page.open('comment.xml',{target:'_self'});
+               }else{
+                   alert("评论失败 ！");
+               }
+           }else{
+               alert("评论失败");
+           }
+           loadFlag = '0';
+        });
+     }
+
+	]]>
+	</script>
+</imag>

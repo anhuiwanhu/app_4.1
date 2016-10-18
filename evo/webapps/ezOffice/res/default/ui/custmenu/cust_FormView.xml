@@ -62,8 +62,16 @@
 	        	readWrite = field.readwrite;
 	        	fieldType = field.fieldtype;
 	        	var attId = 'attachments_' + field.sysname;
-	        	itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>' + field.name + ':</label>'+
+	        	if(showType == '115'){
+	        			itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>' + field.name + ':</label>'+
 	        				   '</row></col><col style="padding:10;margin:10;" id="'+attId+'">';
+	        	}else if((showType == '110' && readWrite == '1')||(showType == '113' && readWrite == '1')||(showType == '401')){
+	        			itemContent += '<item style="padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>' + field.name + ':</label>'+
+	        				   '</row>';
+	        	}else{
+	        			itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>' + field.name + ':</label>'+
+	        				   '</row></col><col style="padding:10;margin:10;" >';
+	        	}
 	        	if(showType == '101' && readWrite == '1'){
 	        		//单行文本
 	        		if(fieldType == '1000000'){
@@ -99,12 +107,12 @@
 	        		for(var index=0,size=field.dataList.length;index<size;index++){
 		        		if(field.hiddenval){
 							if((field.hiddenval + ',').indexOf(field.dataList[index].hiddenval + ',') > -1){
-			        			selectContent += '<checkbox style="align:right;" checked="true" name="_main_' + field.sysname + '" value="'+field.dataList[index].hiddenval+',">'+field.dataList[index].showval+'</checkbox>';
+			        			selectContent += '<checkbox  checked="true" name="_main_' + field.sysname + '" value="'+field.dataList[index].hiddenval+',">'+field.dataList[index].showval+'</checkbox>';
 			        		}else{
-			        			selectContent += '<checkbox style="align:right;" name="_main_' + field.sysname + '" value="'+field.dataList[index].hiddenval+',">'+field.dataList[index].showval+'</checkbox>';
+			        			selectContent += '<checkbox name="_main_' + field.sysname + '" value="'+field.dataList[index].hiddenval+',">'+field.dataList[index].showval+'</checkbox>';
 			        		}
 		        		}else{
-		        			selectContent += '<checkbox style="align:right;" name="_main_' + field.sysname + '" value="'+field.dataList[index].hiddenval+',">'+field.dataList[index].shownval+'</checkbox>';
+		        			selectContent += '<checkbox name="_main_' + field.sysname + '" value="'+field.dataList[index].hiddenval+',">'+field.dataList[index].shownval+'</checkbox>';
 		        		}
 	        		}
 	        		itemContent += selectContent + '</row>';
@@ -136,13 +144,13 @@
 	        		itemContent += '<row><input type="text" name="_main_' + field.sysname + '" value="' + field.value + '"/></row>';
 	        	}else if(showType == '110' && readWrite == '1'){
 	        		//多行文本
-	        		itemContent += '<row><textarea rows="5" maxrows="5" name="_main_' + field.sysname + '">' + field.value + '</textarea></row>';
+	        		itemContent += '</col></item><item style="padding:0;margin:0;"><col><row><textarea rows="5" maxrows="5" name="_main_' + field.sysname + '">' + field.value + '</textarea></row>';
 	        	}else if(showType == '111' && readWrite == '1'){
 	        		//自动编号
-	        		itemContent += '<row><label style="align:right;">' + field.value + '</label></row>';
+	        		itemContent += '<row><label>' + field.value + '</label></row>';
 	        	}else if(showType == '113' && readWrite == '1'){
 	        		//html编辑
-	        		itemContent += '<row><textarea rows="5" maxrows="5" name="_main_' + field.sysname + '">' + field.value + '</textarea></row>';
+	        		itemContent += '</col></item><item style="padding:0;margin:0;"><col><row><textarea rows="5" maxrows="5" name="_main_' + field.sysname + '">' + field.value + '</textarea></row>';
 	        	}else if(( showType =='201'||showType == '202' ||  showType =='207' || showType == '213' || showType == '215'|| showType =='406'|| showType =='601'|| showType =='602'|| showType =='603'|| showType =='604'||showType == '605'|| showType =='607'|| showType =='701'||showType =='702' ) && readWrite == '1'){
 	        		//登录人信息
 	        		var  labelVal = '';
@@ -154,7 +162,7 @@
 	        		if(labelVal == '' || labelVal== null){
 	        			labelVal = '';
 	        		}
-	        		itemContent += '<row><label style="align:right;">' +labelVal + '</label><input type="hidden" name="_main_' + field.sysname + '" value="' + labelVal + '"/></row>';
+	        		itemContent += '<row><label>' +labelVal + '</label><input type="hidden" name="_main_' + field.sysname + '" value="' + labelVal + '"/></row>';
 	        	}else if(showType == '302' && readWrite == '1'){
 	        		//金额
         			itemContent += '<row><input type="text" name="_main_' + field.sysname + '" value="' + field.value + '" maxlength="18"/></row>';
@@ -179,9 +187,9 @@
 	        			fileNameArr.push(accessoryNameseries.substring(0,accessoryNameseries.length-1));   //附件名称，需要显示的名称
 	        			fileSaveNameArr.push(accessorySaveNameseries.substring(0,accessorySaveNameseries.length-1));
 	        		}else{
-	        			itemContent += '<row><label style="align:right;">' + field.value + '</label></row>';
+	        			itemContent += '<row><label>' + field.value + '</label></row>';
 	        		}
-	        		//itemContent += '<row><label style="align:right;">' + field.value + '</label></row>';
+	        		//itemContent += '<row><label>' + field.value + '</label></row>';
 	        	}else if(showType == '211' && readWrite == '1'){
 	        		//多选人 全部
 	        		itemContent += '<row onclick="selectUser(\'_main_' + field.sysname +'\',\'_mainShow_' + field.sysname +'\',\'*0*\',\'1\')">'+
@@ -202,13 +210,13 @@
 	        					   '<input type="hidden" id="_main_' + field.sysname +'" name="_main_' + field.sysname +'" value="' + field.hiddenval + '"/></row>';
 	        	}else if(showType == '401'){
 	        		//批示意见
-	        		if(field.dataList.comment){
+	        		if(field.dataList&&field.dataList.comment){
 	        			for(var j = 0,comLen = field.dataList.comment.length;j < comLen;j ++){
-		        			itemContent += '<row><label style="align:right;">' + field.dataList.comment[j].content + '</label></row>';
+		        			itemContent += '<row><label>' + field.dataList.comment[j].content + '</label></row>';
 	        			}
 	        		}
 	        		if(readWrite == '1'){
-	        			itemContent += '<row><textarea rows="5" maxrows="5" name="comment_input" id="comment_input"></textarea></row>';
+	        			itemContent += '</col></item><item style="padding:0;margin:0;"><col><row><textarea rows="5" maxrows="5" name="comment_input" id="comment_input"></textarea></row>';
 	        		}
 	        	}else if(showType == '704' && readWrite == '1'){
 	        		//单选人 本组织
@@ -224,13 +232,13 @@
 	        					   '<input type="hidden" id="_main_' + field.sysname +'" name="_main_' + field.sysname +'" value="' + field.hiddenval + '"/></row>';
 	        	}else if(showType == '708' && readWrite == '1'){
 	        		//流程发起人
-	        		itemContent += '<row><label style="align:right;">' + field.value + '</label><input type="hidden" name="_main_' + field.sysname + '" value="' + field.value + '"/></row>';
+	        		itemContent += '<row><label>' + field.value + '</label><input type="hidden" name="_main_' + field.sysname + '" value="' + field.value + '"/></row>';
 	        	}else if(showType == '808' && readWrite == '1'){
-	        		itemContent += '<row><label style="align:right;">该字段暂不支持手机办理，请于电脑端操作。</label></row>';
+	        		itemContent += '<row><label>该字段暂不支持手机办理，请于电脑端操作。</label></row>';
 	        	}
 	        	// 只读数据
 	        	else{
-	        		itemContent += '<row><label style="align:right;">' + field.value + '</label></row>';
+	        		itemContent += '<row><label>' + field.value + '</label></row>';
 	        	}
 	        	itemContent += '</col></item>';
 	        }

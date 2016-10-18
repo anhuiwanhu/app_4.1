@@ -134,63 +134,63 @@
 			if(fild.voitureName !='' && fild.voitureName !=null){
 				itemContent +='<item style="col-width:100,*;padding:0;margin:0;">'+
 							'<col style="background:#f9f9f9;margin:10;padding:10;"><row>'+
-							'<label style="align:left;font-size:16;color:#555555">'+fild.voitureName+':</label>'+
+							'<label style="align:left;font-size:16;color:#555555">'+(fild.voitureName=='null'?'' : fild.voitureName)+':</label>'+
 							'</row></col><col style="padding:10;margin:10;">'+
-							'<label>'+fild.value+'</label>'+
+							'<label>'+(fild.value==null?'' : fild.value)+'</label>'+
 							'</col></item>';
 			}
 			//司机
 			if(fild.motorMan !=null && fild.motorMan !=''){
 				itemContent += '<item style="col-width:100,*;padding:0;margin:0;">'+
 							  '<col style="background:#f9f9f9;margin:10;padding:10;"><row>'+
-							  '<label style="align:left;font-size:16;color:#555555">'+fild.motorMan+':</label>'+
+							  '<label style="align:left;font-size:16;color:#555555">'+(fild.motorMan=='null'?'' : fild.motorMan)+':</label>'+
 							  '</row></col><col style="padding:10;margin:10;">'+
-							  '<label>'+fild.value+'</label>'+
+							  '<label>'+(fild.value==null?'' : fild.value)+'</label>'+
 							  '</col></item>';
 			}
 			//申请部门
 			if(fild.orgName !=null && fild.orgName!=''){
 				itemContent += '<item style="col-width:100,*;padding:0;">'+
 							  '<col style="background:#f9f9f9;margin:10;padding:10;"><row>'+
-							  '<label style="align:left;font-size:16;color:#555555">'+fild.orgName+':</label>'+
+							  '<label style="align:left;font-size:16;color:#555555">'+(fild.orgName=='null'?'' : fild.orgName)+':</label>'+
 							  '</row></col><col style="padding:10;margin:10;">'+
-							  '<label>'+fild.value+'</label>'+
+							  '<label>'+(fild.value==null?'' : fild.value)+'</label>'+
 							  '</col></item>';
 			}
 			//申请人
 			if(fild.empName !=null && fild.empName!=''){
 				itemContent += '<item style="col-width:100,*;padding:0;">'+
 							  '<col style="background:#f9f9f9;margin:10;padding:10;"><row>'+
-							  '<label style="align:left;font-size:16;color:#555555">'+fild.empName+':</label>'+
+							  '<label style="align:left;font-size:16;color:#555555">'+(fild.empName=='null'?'' : fild.empName)+':</label>'+
 							  '</row></col><col style="padding:10;margin:10;">'+
-							  '<label>'+fild.value+'</label>'+
+							  '<label>'+(fild.value==null?'' : fild.value)+'</label>'+
 							  '</col></item>';
 			}
 			//目的地
 			if(fild.destination !=null && fild.destination !=''){
 				itemContent += '<item style="col-width:100,*;padding:0;margin:0;">'+
 							  '<col style="background:#f9f9f9;margin:10;padding:10;"><row>'+
-							  '<label style="align:left;font-size:16;color:#555555">'+fild.destination+':</label>'+
+							  '<label style="align:left;font-size:16;color:#555555">'+(fild.destination=='null'?'' : fild.destination)+':</label>'+
 							  '</row></col><col style="padding:10;margin:10;">'+
-							  '<label>'+fild.value+'</label>'+
+							  '<label>'+(fild.value==null?'' : fild.value)+'</label>'+
 							  '</col></item>';
 			}
 			//跟车人数
 			if(fild.personNum !=null && fild.personNum !=''){
 				itemContent += '<item style="col-width:100,*;padding:0;margin:0;">'+
 							  '<col style="background:#f9f9f9;margin:10;padding:10;"><row>'+
-							  '<label style="align:left;font-size:16;color:#555555">'+fild.personNum+':</label>'+
+							  '<label style="align:left;font-size:16;color:#555555">'+(fild.personNum=='null'?'' : fild.personNum)+':</label>'+
 							  '</row></col><col style="padding:10;margin:10;">'+
-							  '<label>'+fild.value+'</label>'+
+							  '<label>'+(fild.value==null?'' : fild.value)+'</label>'+
 							  '</col></item>';
 			}
 			//跟车人
 			if(fild.genchePerson !=null && fild.genchePerson !=''){
 				itemContent += '<item style="col-width:100,*;padding:0;margin:0;">'+
 							  '<col style="background:#f9f9f9;margin:10;padding:10;"><row>'+
-							  '<label style="align:left;font-size:16;color:#555555">'+fild.genchePerson+':</label>'+
+							  '<label style="align:left;font-size:16;color:#555555">'+(fild.genchePerson=='null'?'' : fild.genchePerson)+':</label>'+
 							  '</row></col><col style="padding:10;margin:10;">'+
-							  '<label>'+fild.value+'</label>'+
+							  '<label>'+(fild.value==null?'' : fild.value)+'</label>'+
 							  '</col></item>';
 			}
 			//预计开始时间
@@ -199,8 +199,7 @@
 							   '<col style="background:#f9f9f9;margin:10;padding:10;"><row>'+
 							   '<label style="align:left;font-size:16;color:#555555">预计用车开始时间:</label>'+
 							   '</row></col><col style="padding:10;margin:10;"><row>'+
-							   '<label>'+fild.value+'</label>'+
-							   //'<input type="time" name="startTime" id="startTime" placeholder="时间" format="HH:mm" style="text-align:center;font-size:16;color:#555555"/>'+
+							   '<label>'+(fild.value==null?'' : fild.value)+'</label>'+
 							   '</row></col></item>';
 			}
 			//预计结束时间
@@ -209,7 +208,7 @@
 							   '<col style="background:#f9f9f9;margin:10;padding:10;"><row>'+
 							   '<label style="align:left;font-size:16;color:#555555">预计用车结束时间:</label>'+
 							   '</row></col><col style="padding:10;margin:10;"><row>'+
-							   '<label>'+fild.value+'</label>'+
+							   '<label>'+(fild.value=='null'?'' : fild.value)+'</label>'+
 							   //'<input type="time" name="endTime" id="endTime" placeholder="时间" format="HH:mm" style="text-align:center;font-size:16;color:#555555"/>'+
 							   '</row></col></item>';
 			}
@@ -223,9 +222,9 @@
 					var radioCon = '<row>';
 					for(var index=0;index<fild.dataList.length;index++){
 		        		if(type==fild.dataList[index].hiddenval){
-		        			radioCon +='<radio name="voitureStyle" checked="true" disabled="true" value="'+fild.dataList[index].hiddenval+'" style="align:right;font-size:16;color:#555555;">'+fild.dataList[index].showval+'</radio>'
+		        			radioCon +='<radio name="voitureStyle" checked="true" disabled="true" value="'+fild.dataList[index].hiddenval+'" style="font-size:16;color:#555555;">'+fild.dataList[index].showval+'</radio>'
 		        		}else{
-		        			radioCon +='<radio name="voitureStyle" disabled="true" value="'+fild.dataList[index].hiddenval+'" style="align:right;font-size:16;color:#555555;">'+fild.dataList[index].showval+'</radio>'
+		        			radioCon +='<radio name="voitureStyle" disabled="true" value="'+fild.dataList[index].hiddenval+'" style="font-size:16;color:#555555;">'+fild.dataList[index].showval+'</radio>'
 		        		}
 		        		if(index %2 == 1){
 		        			radioCon +='</row><row>';
@@ -237,18 +236,18 @@
 			if(fild.reason !=null && fild.reason !=''){
 				itemContent += '<item style="col-width:100,*;padding:0;margin:0;">'+
 							   '<col style="background:#f9f9f9;margin:10;padding:10;"><row>'+
-							   '<label style="align:left;font-size:16;color:#555555">'+fild.reason+':</label>'+
+							   '<label style="align:left;font-size:16;color:#555555">'+(fild.reason=='null'?'' : fild.reason)+':</label>'+
 							   '</row></col><col style="padding:10;margin:10;">'+
-							   '<label>'+fild.value+'</label>'+
+							   '<label>'+(fild.value==null?'' : fild.value)+'</label>'+
 							   '</col></item>';
 			}
 			//备注
 			if(fild.remark !=null && fild.remark !=''){
 				itemContent += '<item style="col-width:100,*;padding:0;margin:0;">'+
 							   '<col style="background:#f9f9f9;margin:10;padding:10;"><row>'+
-							   '<label style="align:left;font-size:16;color:#555555">'+fild.remark+':</label>'+
+							   '<label style="align:left;font-size:16;color:#555555">'+(fild.remark=='null'?'' : fild.remark)+':</label>'+
 							   '</row></col><col style="padding:10;margin:10;">'+
-							   '<label>'+fild.value+'</label>'+
+							   '<label>'+(fild.value==null?'' : fild.value)+'</label>'+
 							   '</col></item>';
 			}
         	
@@ -260,8 +259,8 @@
 				if(commentList instanceof Array){
 					for(var i=0,length=commentList.length;i<length;i++){
 						step = commentList[i].step+":";
-						itemContent +='<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="font-size:16;color:#555555;">'+step+'</label>'+
-	        				   '</row></col><col>';
+						itemContent +='<item style="padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="font-size:16;color:#555555;">'+step+'</label>'+
+	        				   '</row></col></item><item style="padding:0;margin:0 0 20 0;"><col>';
 						commentType = commentList[i].type;
 						if(commentType == '4'){
 							// 手写
@@ -273,14 +272,14 @@
 							commentYuyin = webServiceUrl + 'upload/workflow_acc/' + commentList[i].content.substring(0,6) + '/' + commentList[i].content;
 							itemContent += '<row style="margin-bottom:20"><label onclick="playSound(\'' + commentYuyin + '\',\''+commentList[i].content+'\')" style="align:left;font-size:14;color:#38adff;">'+(commentList[i].content ? commentList[i].content : "")+'</label></row>';
 						}else{
-							itemContent += '<row style="margin-bottom:20"><label style="align:left;font-size:16;color:#555555">'+(commentList[i].content ? commentList[i].content : "")+'</label></row>';
+							itemContent += '<row style="margin-bottom:20"><label style="align:left;font-size:16;color:#555555;margin-left:10;">'+(commentList[i].content ? commentList[i].content : "")+'</label></row>';
 						}
 						itemContent += '<row><label style="align:right;color:#b8b8b8;font-size:12">'+commentList[i].person+'('+commentList[i].date+')</label></row></col></item>';
 					}
 				}else if(commentList instanceof Object){
 					step = commentList.comment.step+":";
-						itemContent +='<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="font-size:16;color:#555555;">'+step+'</label>'+
-	        				   '</row></col><col>';
+						itemContent +='<item style="padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="font-size:16;color:#555555;">'+step+'</label>'+
+	        				   '</row></col></item><item style="padding:0;margin:0 0 20 0;"><col>';
 					commentType = commentList.comment.type;
 					if(commentType == '4'){
 						// 手写
@@ -292,7 +291,7 @@
 						commentYuyin = webServiceUrl + 'upload/workflow_acc/' + commentList.comment.content.substring(0,6) + '/' + commentList.comment.content;
 						itemContent += '<row style="margin-bottom:20"><label onclick="playSound(\'' + commentYuyin + '\',\''+commentList.comment.content+'\')" style="align:left;font-size:14;color:#38adff">'+(commentList.comment.content ? commentList.comment.content : "")+'</label></row>';
 					}else{
-						itemContent += '<row style="margin-bottom:20"><label style="align:left;font-size:16;color:#555555">'+(commentList.comment.content ? commentList.comment.content : "")+'</label></row>';
+						itemContent += '<row style="margin-bottom:20"><label style="align:left;font-size:16;color:#555555;margin-left:10;">'+(commentList.comment.content ? commentList.comment.content : "")+'</label></row>';
 					}
 					itemContent += '<row><label style="align:right;color:#b8b8b8;font-size:12">'+commentList.comment.person+'('+commentList.comment.date+')</label></row></col></item>';
 				}
@@ -456,9 +455,10 @@
 	        function createFlowImg(flowGraphUrl,picRootPath){
 	        	if(!(flowGraphUrl instanceof Array)){
 	        		//var imgPath = webServiceUrl + 'upload/workflow_acc/' + flowGraphUrl + '?rand=' + Math.random();
-	        		var imgPath =picRootPath + flowGraphUrl;
+	        		picRootPath = evoUrl +'/ezOffice/download/resizeHandSign.do?url=' +webServiceUrl + 'upload/workflow_acc/';
+	        		var imgPath = picRootPath+flowGraphUrl;
 		        	$('flowgraphurl').value = imgPath;
-		        	var image = $C('<img src="' + imgPath + '" id="flowImg" progress="true" style="align:center;"/>');
+		        	var image = $C('<img src="' + imgPath + '"  id="flowImg" progress="true" style="align:center;height:400;width:300"/>');
 		        	$('content_flow_pic').add(image);
 	        	}else{
 	        		$('tabbar').remove($('imgItem'));

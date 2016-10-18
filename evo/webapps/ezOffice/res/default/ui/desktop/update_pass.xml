@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+    <script>
+        <![CDATA[
+            var storage = $phone.localStorage();
+            var pass = storage.getItem('sys_password');
+            var evoUrl = storage.getItem('evoUrl');
+            $page.onload=function(){
+            	$('passFrom').action=evoUrl+"/ezOffice/set/updatePass.do";
+            }
+            function submitForm(){
+            	if($('oldPass').value.trim().length == 0) {
+					hint("原密码不得为空");
+					return false;
+				}
+				if($('newPass').value.trim().length == 0) {
+					hint("新密码不得为空");
+					return false;
+				}
+				if($('confirmPass').value.trim().length == 0) {
+					hint("密码确认不得为空");
+					return false;
+				}
+				if($('oldPass').value != pass) {
+					hint("原密码不正确");
+					return false;
+				}
+				if($('newPass').value != $('confirmPass').value) {
+					hint("两次输入的密码不相同，请重新输入");
+					return false;
+				}
+				if($('newPass').value.trim().length < 6) {
+					hint("密码至少要6位");
+					return false;
+				}
+				$('passFrom').submit(function(data) {
+	                var obj = JSON.parse(data);
+					if(obj.logonerror &&obj.logonerror=='1'){
+			            alert("该账号已在设备"+obj.deviceId+"上登录");
+		          		$page.open('../index.xml',{target:'_self'});
+		                return;
+		            }
+					var result = obj.message.result;
+					if(result=='0'){
+						hint(obj.message.description);
+					}else{
+						hint('密码修改成功！');
+						$page.close();
+					}
+	            }, function(error) {
+	                hint('密码修改失败！');
+	            });
+            }
+        ]]>
+    </script>
+   
+    <page>
+       <title style="background:#3daffe;tint-color:white">
+            <left>
+                <button role="back"></button>
+            </left>
+            <center>
+                <label>更改密码</label>
+            </center>
+            <right>
+                <button onclick="submitForm();" style="font-size:18;font-weight:bold">保存</button>
+            </right>
+        </title>
+        <content>
+            <form id="passFrom" action="" progress="修改密码|正在修改密码，请稍后..." multipart="true">
+            	<list>
+	                <item style="background:#f0eff5;"></item>
+	                <item style="col-width:20%,*">
+                        <col>
+                           <label style="font-color:#555555;font-size:16;">原密码</label>
+                        </col>
+                        <col>
+                           <input type="password" id="oldPass" name="oldPass" style="border:0 white;font-color:#555555;font-size:16;"/>
+                        </col>
+                    </item>
+	                <item style="col-width:20%,*">
+                        <col>
+                           <label style="font-color:#555555;font-size:16;">更改密码</label>
+                        </col>
+                        <col>
+                           <input type="password" id="newPass" name="newPass" placeholder="密码长度最低6位" maxlength="20"  style="border:0 white;font-color:#555555;font-size:16;"/>
+                        </col>
+                    </item>
+	                <item style="col-width:20%,*">
+                        <col>
+                            <label style="font-color:#555555;font-size:16;">确认输入</label>
+                        </col>
+                        <col>
+                            <input type="password" id="confirmPass" name="confirmPass" placeholder="再次输入新密码" maxlength="20" style="border:0 white;font-color:#555555;font-size:16;"/>
+                        </col>
+                    </item>
+	            </list>
+            </form>
+        </content>
+    </page>
+</imag>
