@@ -219,8 +219,8 @@
 										'<item id="'+channelId+'" collapsed="true" indent="30"  onclick="'+hasacc+';">'+
 											'<row>'+
 												'<radio style="align:left;font-size:18" id="radio'+channelId+'" name="selectChannel" value="'+channelName+'" onclick="getNameAndId(\''+channelName+'\',\''+channelId+'\',\''+channelNeedCheckup+'\')" '+hasChek+'/>'+
-												'<button style="width:40;height:40;font-size:16;align:left;color:#ffffff;background:'+btncolor+'" onclick=";">'+firstname+'</button>'+
-												'<label style="align:left;margin:10">'+channelName+'</label>'+
+												'<button style="height:40;font-size:16;align:left;color:#ffffff;background:'+btncolor+'" onclick=";">'+firstname+'</button>'+
+												'<label style="height:40;align:left;margin:0 10 20 15;font-size:16;">'+channelName+'</label>'+
 												'<icon id="icon_'+channelId+'" role="accessory" src="'+acc+'" style="align:right;margin:2"/>'+
 											'</row>'+
 										'</item>'+
@@ -231,7 +231,7 @@
 											'<row>'+
 											    '<radio style="align:left;display:hidden;" />'+
 												'<button style="width:40;height:40;font-size:16;align:left;color:#ffffff;background:'+btncolor+'" onclick=";">'+firstname+'</button>'+
-												'<label style="align:left;margin:10">'+channelName+'</label>'+
+												'<label style="height:40;align:left;margin:0 10 20 15;font-size:16;">'+channelName+'</label>'+
 												'<icon id="icon_'+channelId+'" role="accessory" src="'+acc+'" style="align:right;margin:2"/>'+
 											'</row>'+
 										'</item>'+
@@ -278,7 +278,7 @@
 											'<row>'+
 												'<radio style="align:left;font-size:18" id="radio'+channelId+'" name="selectChannel" value="'+channelName+'" onclick="getNameAndId(\''+channelName+'\',\''+channelId+'\',\''+channelNeedCheckup+'\')" '+hasChek+'/>'+
 												'<button style="width:40;height:40;font-size:16;align:left;color:#ffffff;background:'+btncolor+'" onclick=";">'+firstname+'</button>'+
-												'<label style="align:left;margin:10">'+channelName+'</label>'+
+												'<label style="height:40;align:left;margin:0 10 20 15;font-size:16;">'+channelName+'</label>'+
 												'<icon id="icon_'+channelId+'" role="accessory" src="'+acc+'" style="align:right;margin:2"/>'+
 											'</row>'+
 										'</item>'+
@@ -288,7 +288,7 @@
 										'<row>'+
 										    '<radio style="align:left;display:hidden;" />'+
 											'<button style="width:40;height:40;font-size:16;align:left;color:#ffffff;background:'+btncolor+'" onclick=";">'+firstname+'</button>'+
-											'<label style="align:left;margin:10">'+channelName+'</label>'+
+											'<label style="height:40;align:left;margin:0 10 20 15;font-size:16;">'+channelName+'</label>'+
 											'<icon id="icon_'+channelId+'" role="accessory" src="'+acc+'" style="align:right;margin:2"/>'+
 										'</row>'+
 									'</list-item>'));
@@ -384,7 +384,7 @@
 										 itemStr += '<row>'+
 													'<radio style="align:left;font-size:18" id="radio'+channelId+'" name="selectChannel" value="'+channelName+'" onclick="getNameAndId(\''+channelName+'\',\''+channelId+'\',\''+channelNeedCheckup+'\')" '+hasChek+'/>'+
 													'<button style="width:120;width:40;height:40;align:left;color:#ffffff;font-size:16;background:'+btncolor+'" onclick=";">'+firstname+'</button>'+
-													'<label style="align:left;margin:10 10;color:#555555;font-size:16;">'+channelName+'</label>'+
+													'<label style="height:40;align:left;margin:0 10 20 15;font-size:16;">'+channelName+'</label>'+
 													'<icon id="icon_'+channelId+'" role="accessory" src="'+acc+'" style="align:right;margin:2 5%;"/>'+
 												'</row>'+
 					                     '</item>';
@@ -392,7 +392,7 @@
 					                 	 itemStr += '<row>'+
 					                 	            '<radio style="align:left;display:hidden;" />'+
 													'<button style="width:120;width:40;height:40;align:left;color:#ffffff;font-size:16;background:'+btncolor+'" onclick=";">'+firstname+'</button>'+
-													'<label style="align:left;margin:10 10;color:#555555;font-size:16;">'+channelName+'</label>'+
+													'<label style="height:40;align:left;margin:0 10 20 15;font-size:16;">'+channelName+'</label>'+
 													'<icon id="icon_'+channelId+'" role="accessory" src="'+acc+'" style="align:right;margin:2 5%;"/>'+
 												'</row>'+
 					                    '</item>';
@@ -447,7 +447,7 @@
 										  itemStr += '<row>'+
 													'<radio style="align:left;font-size:18" id="radio'+channelId+'" name="selectChannel" value="'+channelName+'" onclick="getNameAndId(\''+channelName+'\',\''+channelId+'\',\''+channelNeedCheckup+'\')" '+hasChek+'/>'+
 													'<button style="width:120;width:40;height:40;align:left;color:#ffffff;font-size:16;background:'+btncolor+'" onclick=";">'+firstname+'</button>'+
-													'<label style="align:left;margin:10 10;color:#555555;font-size:16;">'+channelName+'</label>'+
+													'<label style="height:40;align:left;margin:0 10 20 15;font-size:16;">'+channelName+'</label>'+
 													'<icon id="icon_'+channelId+'" role="accessory" src="'+acc+'" style="align:right;margin:2 5%;"/>'+
 												'</row>'+
 					                      '</item>';
@@ -455,7 +455,7 @@
 					                 	    itemStr += '<row>'+
 					                 	            '<radio style="align:left;display:hidden;" />'+
 													'<button style="width:120;width:40;height:40;align:left;color:#ffffff;font-size:16;background:'+btncolor+'" onclick=";">'+firstname+'</button>'+
-													'<label style="align:left;margin:10 10;color:#555555;font-size:16;">'+channelName+'</label>'+
+													'<label style="height:40;align:left;margin:0 10 20 15;font-size:16;">'+channelName+'</label>'+
 													'<icon id="icon_'+channelId+'" role="accessory" src="'+acc+'" style="align:right;margin:2 5%;"/>'+
 												'</row>'+
 					                    '</item>';
@@ -564,7 +564,7 @@
 											'<row>'+
 		                                       '<radio style="align:left;font-size:18" id="radio'+channelId+'" name="selectChannel" value="'+channelName+'" onclick="getNameAndId(\''+channelName+'\',\''+channelId+'\',\''+channelNeedCheckup+'\')" '+hasChek+' />'+
 												'<button style="'+style+'" onclick="">'+firstname+'</button>'+
-												'<label style="align:left;margin:5;font-size:16;color:#555555;">'+channelName+'</label>'+
+												'<label style="height:40;align:left;margin:0 10 20 15;font-size:16;">'+channelName+'</label>'+
 											'</row>'+
 										'</item>'+
 									'</list-item>'));
@@ -595,7 +595,7 @@
 									'<row>'+
                                         '<radio style="align:left;font-size:18" id="radio'+channelId+'" name="selectChannel" value="'+channelName+'" onclick="getNameAndId(\''+channelName+'\',\''+channelId+'\',\''+channelNeedCheckup+'\')" '+hasChek+' />'+
 										'<button style="'+style+'" onclick=";">'+firstname+'</button>'+
-										'<label style="align:left;margin:5;font-size:16;color:#555555;">'+channelName+'</label>'+
+										'<label style="height:40;align:left;margin:0 10 20 15;font-size:16;">'+channelName+'</label>'+
 									'</row>'+
 								'</item>'+
 							'</list-item>'));

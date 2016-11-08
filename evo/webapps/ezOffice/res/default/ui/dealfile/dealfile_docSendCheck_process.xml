@@ -12,7 +12,7 @@
 	        var realFiles;
 	        var saveFiles;
 	        var isDossier = '';  //是否归档标识
-	        
+	        var commentAttitudeType = '0';  // 意见态度设置0：默认 1：同意 2：不同意 3；已阅
 	        var itemContent = '';
 	        // 页面加载完后执行
         	$page.onload = function(){
@@ -44,7 +44,7 @@
        					// 创建工作流程信息隐藏域
 						createWorkInfoHiddenArea(workInfo);
        					// 初始化表单数据
-       					createFormData(detailData.baseData,detailData,workInfo,jsonData.data_0.data);
+       					createFormData(detailData.baseData,detailData,workInfo,jsonData.data_0.data,workInfo.commentAttitudeTypeSet);
        					$contentFormList.addMore('<imag><list>' + itemContent + '</list></imag>');
        					// 创建附件对象
        					createAttCon();
@@ -226,7 +226,7 @@
 	        }
         
         	//初始化送审签表单数据
-	        function createFormData(govDocDetail,detailData,workInfo,workInfoData){
+	        function createFormData(govDocDetail,detailData,workInfo,workInfoData,commentAttitudeTypeSet){
 	            var commentList = workInfoData.commentList;   //已办审批意见列表
 	            var workcurstep = workInfoData.workInfo.workcurstep;    //当前审批意见名称
 	            for(var key in govDocDetail) {
@@ -479,8 +479,12 @@
 				    }
 	        	    itemContent += '<item style="padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;">';
 	        	    itemContent += '<row><label style="align:left;font-size:16;color:#555555">'+commentViewName+':</label></row></col></item><item style="padding:0;margin:0;"><col>';
-	        		itemContent += '<row><textarea rows="5" maxrows="5" name="comment_input" id="comment_input"></textarea></row>'+
-	        			          '<row><label style=""></label><radio name="commentradio" value="1" checked="false" onclick="$(\'comment_input\').value=\'同意。\'">同意</radio><label style="width:10"></label><label style=""></label><radio onclick="$(\'comment_input\').value=\'已阅。\'" name="commentradio" value="0">已阅</radio></row>';
+	        		itemContent += '<row><textarea rows="5" maxrows="5" name="comment_input" id="comment_input"></textarea></row>';
+	        		if(commentAttitudeTypeSet&&commentAttitudeTypeSet=='1'){   
+						itemContent +='<row><label style=""></label><radio name="commentradio" value="1" checked="false" onclick="commentAttitudeType = \'1\';">同意</radio><label style="width:10"></label><radio onclick="commentAttitudeType = \'2\';" name="commentradio" value="0">不同意</radio></row>';
+					}else if(commentAttitudeTypeSet&&commentAttitudeTypeSet=='2'){
+						itemContent +='<row><label style=""></label><radio onclick="commentAttitudeType = \'3\';" name="commentradio" value="0">已阅</radio><label style="width:10"></label><radio name="commentradio" value="1" checked="false" onclick="commentAttitudeType = \'1\';">同意</radio><label style="width:10"></label><radio onclick="commentAttitudeType = \'2\';" name="commentradio" value="0">不同意</radio></row>';
+					}
 	        	    itemContent += '</col></item>';
 	        	}
 	        }
@@ -842,7 +846,7 @@
 						'../workflow/workflow_sendnew.xml?fromXml='+fromXml+'&model='+model+'&smsRight='+smsRight+'&workTitle='+encodeURIComponent(workTitle)+
 						'&workSubmitTime='+encodeURIComponent(workSubmitTime)+'&empLivingPhoto='+empLivingPhoto+
 						'&isForkTask='+isForkTask+'&commentType='+commentType+'&comment='+encodeURIComponent(commentCon)+
-						'&commentShouxie_backName='+commentShouxie_backName+'&commentYuyin_backName='+commentYuyin_backName+'&isDossier='+isDossier,
+						'&commentShouxie_backName='+commentShouxie_backName+'&commentYuyin_backName='+commentYuyin_backName+'&isDossier='+isDossier+'&commentAttitudeType='+commentAttitudeType,
 						{animation:'down-to-up'});
 					}else{
 						alert('保存表单失败！');					

@@ -12,11 +12,13 @@
 	        var activityNameList = new Array();
         	var model = $param['model'];
         	var fromXml = $param['fromXml'];
+        	var g_scopeId = '';  //用来选择人员信息使用，公共参数
         	var mainLinkFile = $param['mainLinkFile'];
         	if(mainLinkFile!=null){
         	   $('mainLinkFile').value = mainLinkFile;
         	}
         	var g_gateType="";
+        	var g_nextActivityList = '';   //下一活动节点
           	//页面加载完成后执行
         	$page.onload = function() {
         		getNextActivity();
@@ -47,13 +49,12 @@
 	        			}
 	        			var data = jsonData.data_0.data;
 	        			var nextActivityList = data.activityList;
+	        			g_nextActivityList = nextActivityList;
 	        			// 节点类型
 	        			var gateType = data.gateType;
 	        			var gateNum = data.gateNum;
-	        		  //var smsRight = $param['smsRight'];
 	        			$('gateType').value = gateType;
 	        			g_gateType = gateType;
-	        			
 	        			$('gateNum').value = gateNum;
 	        			$('businessId').value = $param['businessId'];
 	        			$('processId').value = $param['processId'];
@@ -62,9 +63,8 @@
 	        			createActivityListContent($contentList,nextActivityList,gateType);
 	        			// 创建固定ITEM
 	        			createOtherItem($contentList);
-	        			//选择办理环节时的事件
-        		        selectActivity(JSON.stringify(nextActivityList),gateType);
-	        			createSmsTip(nextActivityList);
+        		        selectActivity(gateType);    //选择办理环节时的事件
+	        			createSmsTip(nextActivityList);   							  //创建短息提醒
 	        	},function(error) {
 				    if (error == 'timeout') {
 						hint('连接服务器超时！');
@@ -109,7 +109,6 @@
         		var scopeId = '';
         		var scopeType = '';
         		var scopeName = '';
-       			var activityRow = $('activityRow');
        			var items = '';
        			var scopeNameArrayLen = 0;
        			var scopeNameArray;
@@ -147,13 +146,11 @@
 		        				scopeType = nextActivityList[i].scopeType;
 	        					scopeName = nextActivityList[i].scopeName;
 	        					activityId = nextActivityList[i].id;
-	        					
 	       					}else{
 		        				option += '<option value="'+ nextActivityList[i].activityId +'">'+ nextActivityList[i].activityName +'</option>';
 	       					}
 		       			}
 	       			}else{
-						
 	       				option += '<option value="'+ nextActivityList.activity.activityId +'" selected="true">'+ nextActivityList.activity.activityName +'</option>';
         				scopeId = nextActivityList.activity.scopeId;
         				if(scopeId==''||scopeId=='[]'){
@@ -184,12 +181,12 @@
 	     				userId = scopeId;
 	     			}
         			items += '<item style="col-width: 90,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>下一活动：</label></row></col>'+
-		                     '<col style="padding:10;margin:10;"><row><select id="activity" name="activity">'+option+'</select>'+
+		                     '<col style="padding:10;margin:10;"><row><select id="activity" name="activity" onchange="selectActivity(\''+gateType+'\')">'+option+'</select>'+
 		                     '<input type="hidden" id="activityName" name="activityName" value=""/>'+
 				         	 '<input type="hidden" id="activityType" name="activityType" value=""/>'+
 		                     '</row></col></item>'+
-		                     '<item onclick="selectUser(\'userId\',\'userName\',\''+scopeId+'\',\'1\')" id="personItem" style="col-width: 90,*;padding:0;margin:0;' + isDisplay + '"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>下一办理人：</label></row></col>'+
-		                     '<col style="padding:10;margin:10;"><row><input style="border:0 white;font-size:16;text-align:right;" type="text" placeholder="请选择>" id="userName" name="userName" readonly="true" value="' + userName + '"  onclick="selectUser(\'userId\',\'userName\',\''+scopeId+'\',\'1\')" />'+
+		                     '<item onclick="selectUser(\'userId\',\'userName\',\'1\')" id="personItem" style="col-width: 90,*;padding:0;margin:0;' + isDisplay + '"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label>下一办理人：</label></row></col>'+
+		                     '<col style="padding:10;margin:10;"><row><input style="border:0 white;font-size:16;text-align:right;" type="text" placeholder="请选择>" id="userName" name="userName" readonly="true" value="' + userName + '"  onclick="selectUser(\'userId\',\'userName\',\'1\')" />'+
 		                     '<input type="hidden" name="scopeId" id="scopeId" value="' + scopeId + '"/>'+
 		                     '<input type="hidden" name="scopeType" id="scopeType" value="' + scopeType + '"/>'+
 		                     '<input type="hidden" name="userId" id="userId" value="' + userId + '"/>'+
@@ -197,18 +194,15 @@
 		            pushMustFillArray('userId');
         		}
         		contentList.addMore('<imag><list>' + items + '</list></imag>');
-        		if($('activity')){
-	       			$('activity').onchange = "selectActivity('" + JSON.stringify(nextActivityList) + "','" + gateType + "')";
-        		}
         	}
         	
         	// 选择办理环节时的事件
-        	function selectActivity(nextActivityList,gateType){
+        	function selectActivity(gateType){
         		var $activity = $('activity');
         		if(!$activity){
         			return false;
         		}
-        		var jsonList = JSON.parse(nextActivityList);
+        		var jsonList =g_nextActivityList;
         		var activity = $activity.value;
         		var $scopeId = $('scopeId');
         		var $scopeType = $('scopeType');
@@ -272,6 +266,41 @@
        					}
        				}
        			}
+     		   if(gateType != 'XX' && gateType != 'XAND'){
+      			    var scopeId = '';
+      			    var scopeName = '';
+      			    var isArray = jsonList instanceof Array;
+      			    if(isArray){
+		       			for(var i = 0,length = jsonList.length;i < length;i++){
+	       					if(jsonList[i].activityId == $('activity').value){
+		        				scopeId = jsonList[i].scopeId;
+		        				scopeName = jsonList[i].scopeName;
+		        				isDefault_Users = jsonList[i].scopeType ;
+	       					}
+		       			}
+	       			}else{
+	       				scopeId = jsonList.scopeId;
+	       				scopeName = jsonList.scopeName;
+	       				isDefault_Users = jsonList.scopeType ;
+	       			}
+	      			var userId = '';
+	        		var userName='';
+	        		if(scopeId instanceof String){
+		        		var scopeId_s = scopeId.substring(0,1);
+		                var scopeId_e = scopeId.substring(scopeId.length-1);
+		                var scopeId_m = scopeId.substring(1, scopeId.length-1);
+		                if(scopeId_s=='$'&&scopeId_e=='$'&&!isNaN(scopeId_m)){
+		     				   userId=scopeId;
+		     				   userName=scopeName;
+		     			}
+			     		if(userIdConIdVal!=null && userIdConIdVal!=''){   
+	       					$(userIdConIdVal).value = userId;
+		        	    	$(userNameConIdVal).value = scopeName;
+	       				}
+		     			
+	     			}
+	      			g_scopeId = scopeId;
+      			}
         	}
         	
         	// 创建固定ITEM内容
@@ -373,7 +402,7 @@
         	// 选择用户
 	        var userIdConIdVal;
 	        var userNameConIdVal;
-	        function selectUser(userIdConId,userNameConId,range,type){
+	        function selectUser(userIdConId,userNameConId,type){
 	            if(g_gateType != 'XX' && 
 	               g_gateType != 'XAND'){
 	               if($('scopeType').value=='scopes_user' && $('scopeId').value==''){
@@ -383,14 +412,14 @@
 	            }
 	        	userIdConIdVal = userIdConId;
 	        	userNameConIdVal = userNameConId;
-		        storage.setItem('sys_selectuser_range',range);
+		        storage.setItem('sys_selectuser_range',g_scopeId);
 		        storage.setItem('sys_selectuser_userids',$(userIdConIdVal).value);
 		        storage.setItem('sys_selectuser_usernames',$(userNameConIdVal).value);
 		        storage.setItem('sys_selectuser_returnfuc','setUserInfo');
 		        if('0' == type){
 				    $page.open('../public/selectSingleUser.xml', {animation:'down-to-up'});
 		        }else if('1' == type){
-		            if(range == '*0*'){
+		            if(g_scopeId == '*0*'){
 		            	 $page.open('../public/selectUserByOrg.xml', {animation:'down-to-up'});
 		            }else{
 		            	 $page.open('../public/selectUser.xml', {animation:'down-to-up'});

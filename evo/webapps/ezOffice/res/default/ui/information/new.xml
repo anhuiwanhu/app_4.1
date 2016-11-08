@@ -349,7 +349,7 @@
 			                    </col>
 			                    <col>
 			                    	<row>
-			                    		<input type="text" id="infoTitle" name="infoTitle" maxlength="200" placeholder="请输入" style="placeholder-color:#b8b8b8;border:0 white;font-size:16;"/>
+			                    		<input type="text" id="infoTitle" name="infoTitle" maxlength="150" placeholder="请输入" style="placeholder-color:#b8b8b8;border:0 white;font-size:16;"/>
 			                    	</row>
 			                    </col>
 		                </item>

@@ -159,6 +159,7 @@
         	var sub_canComputeField = new Array();  //子表可进行计算的数据表字段名
         	var main_totalComputeFieldExpre = new Array();  //子表字段值赋值到主表字段；
         	var main_totalComputeFieldId = new Array();  //子表字段值赋值到主表字段id；
+        	var commentAttitudeType = '0';  // 意见态度设置0：默认 1：同意 2：不同意 3；已阅
         	(function(){
         		storage = $phone.localStorage();
 	           	workStatus = storage.getItem('workflow_workStatus');
@@ -206,10 +207,10 @@
        					var officeList = jsonData.data_0.data.officelist;
         				if(fieldList instanceof Array){
         					for(var i=0,length=fieldList.length;i<length;i++){
-        						createFormData(fieldList[i],showType,readWrite,fieldType,selectContent,officeList);
+        						createFormData(fieldList[i],showType,readWrite,fieldType,selectContent,officeList,workInfo.commentAttitudeTypeSet);
         					}
         				}else if(fieldList instanceof Object){
-       						createFormData(fieldList,showType,readWrite,fieldType,selectContent,officeList);
+       						createFormData(fieldList,showType,readWrite,fieldType,selectContent,officeList,workInfo.commentAttitudeTypeSet);
         				}
        					$contentFormList.addMore('<imag><list>' + itemContent + '</list></imag>');
        					// 创建子表节点
@@ -223,7 +224,7 @@
 						//创建编辑正文附件名称
 						createBodyFileName(workInfo);
 						// 创建附件内容
-						createAttachCon();
+						createAttachCon(attachmentArray);
        					// 创建底部内容
        					createFootContent(workInfo);
        					var dealTipsContent = workInfo.dealTipsContent;
@@ -391,7 +392,6 @@
 			        $('tabbar').add(flowRecord);
 	        		$('contents').remove($('content_flow_pic'));
 	        	}
-	        	
 	        }
 	        
 			//创建工作流程信息隐藏域
@@ -527,7 +527,6 @@
 								fieldCount = 0;
 							}
 						}
-
 						//设置子表
 						$('save_subformname').value = tableName+',';
 						
@@ -555,28 +554,29 @@
 					    global_subDatalen_cur = subFieldList.length;  //子表全局数量赋值。删除时没有保存返回后再次进入无法删除。
 						for(var i=0,length=subFieldList.length;i<length;i++){
 						    var subdataId = subFieldList[i].dataId;
-						    if(global_subTableUpdate=='0'){
-						       subTabelItemContent += '<item id="item_subbutton_'+global_subTableName+i+'" onclick="deleteIteminList(\''+i+'\');"><col><row><label style="align:left;font-size:14;">表'+eval(i+1)+'</label></row></col><col><row><label style="align:right;font-size:14;color:red">删除</label><input type="hidden" id="sub_dataId'+i+'" name="sub_dataId'+i+'" style="display:none;" value="'+subdataId+'"/></row></col></item>';
-					        }else{
+						 //   if(global_subTableUpdate=='0'){
+						   //    subTabelItemContent += '<item id="item_subbutton_'+global_subTableName+i+'" onclick="deleteIteminList(\''+i+'\');"><col><row><label style="align:left;font-size:14;">表'+eval(i+1)+'</label></row></col><col><row><label style="align:right;font-size:14;color:red">删除</label><input type="hidden" id="sub_dataId'+i+'" name="sub_dataId'+i+'" style="display:none;" value="'+subdataId+'"/></row></col></item>';
+					       // }else{
 					            subTabelItemContent += '<item id="item_subbutton_'+global_subTableName+i+'" ><col><row><label style="align:left;font-size:14;">表'+eval(i+1)+'</label></row></col></item>';
 					         //  subTabelItemContent += '<item id="item_subbutton_'+global_subTableName+i+'"><col><row></row></col></item>';
-					        }
+					       // }
 							createSubTableField(subFieldList[i].field,i);
 							global_subDatalen = length;
 						}
 					}else if(subFieldList instanceof Object){
 					    var subdataId = subFieldList.dataId;
-					    if(global_subTableUpdate=='0'){
-					       subTabelItemContent += '<item id="item_subbutton_'+global_subTableName+'0" onclick="deleteIteminList(\'0\');"><col><row><label style="align:left;font-size:14;">表1</label></row></col><col><row><label style="align:right;font-size:14;color:red">删除</label><input type="hidden" id="sub_dataId0" name="sub_dataId0" style="display:none;" value="'+subdataId+'"/></row></col></item>';
-					    }else{
+					 //   if(global_subTableUpdate=='0'){
+					   //    subTabelItemContent += '<item id="item_subbutton_'+global_subTableName+'0" onclick="deleteIteminList(\'0\');"><col><row><label style="align:left;font-size:14;">表1</label></row></col><col><row><label style="align:right;font-size:14;color:red">删除</label><input type="hidden" id="sub_dataId0" name="sub_dataId0" style="display:none;" value="'+subdataId+'"/></row></col></item>';
+					   // }else{
 					       subTabelItemContent += '<item id="item_subbutton_'+global_subTableName+'0"><col><row><label style="align:left;font-size:14;">表1</label></row></col></item>';
-					    }
+					   // }
 						createSubTableField(subFieldList.field,0);
 						global_subDatalen = 1;
 					}
 				}
 				
 				$('subTabel_form_list').update('<imag><list>' + subTabelItemContent + '</list></imag>');
+				createAttachCon(subAttachmentArray);  //附件显示
                 $('content_form').scrollToTop();  //显示到顶部
 				$('subTabel_form_list').css('display','');
 				$('content_form_list').css('display','none');
@@ -794,6 +794,19 @@
 	        		//多行文本
 	        		subTabelItemContent += '<row><textarea style="color:#555555;font-size:16;" rows="5" maxrows="5" id="_sub_' + field.sysname +i+ '" name="_sub_' + field.sysname +i+ '">' + field.value + '</textarea></row>';
 	        		pushMustFillArray(mustfilled,field.name,'_sub_' + field.sysname+i);
+	            }else if(showType == '115'){
+	        		var attId = 'attachments_' + fileindex;
+	        		//附件上传
+	        		var fileValue = field.value.length>0 ? field.value : '';
+	        		if(field.value && field.value.length > 0){
+		        		subAttachmentArray.push(field.value + ';attachments_' + fileindex);
+	        		}
+	        		subTabelItemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label>'+
+	        		'<input type="hidden" name="_subfile_' + field.sysname + '" value="' + fileValue.replace(/&/g,'&amp;') + '"/></row></col><col id="' + attId + '" style="padding:10;margin:10;">';
+	        	/*	if(readWrite == '1'){
+	        		    itemContent += '<row id="fileRow" onclick="doRelatedAcc(this,\'' + attId + '\',\'' + field.sysname + '\')"><icon src="mail_addfu.png" style="width:28;height:28;" onclick="doRelatedAcc(this,\'' + attId + '\',\'' + field.sysname + '\')"/></row>';
+	        		} */
+	        		fileindex++;
 	        	}else if(( showType == '213' || showType == '215'|| showType =='406'|| showType =='601'|| showType =='602'|| showType =='603'|| showType =='604'|| showType =='605'|| showType =='607'|| showType =='701'|| showType =='702'|| showType =='201'|| showType =='202' || showType =='207'  ) && readWrite == '1'){
 	        		subTabelItemContent += '<item id="item_subfield_'+global_subTableName+i+j+'" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
 	        		var  labelVal = '';
@@ -1089,9 +1102,24 @@
 	        	
 	        	return itemContent;
 			}
-
+			
 			// 创建打开子表时的底部按钮
 			function createSubTableFoot(){
+				$('subTable_footer_list').clear();
+				var footContent = 			
+			        	'<item>'+
+							'<col>'+
+								'<row style="height:50;">'+
+									'<button onclick="goBack();" '+
+									'style="align:center;background:#3EAFFF,#007aff;color:#F0F9FF,white;border:0;corner-radius:3;width:400;height:38;font-size:14">返回</button>'+
+								'</row>'+
+							'</col>'+
+						'</item>';
+				$('subTable_footer_list').addMore('<imag><list>' + footContent + '</list></imag>');
+			}
+
+			// 备份数据 创建打开子表时的底部按钮
+			function createSubTableFootOld(){
 				$('subTable_footer_list').clear();
 				var footContent = '';
 				if(global_subTableUpdate=='0'){
@@ -1461,6 +1489,9 @@
 				var commentType = '';
 				var commentShouxie = '';
 				var commentYuyin = '';
+				var commentAttitudeTypeSet = workInfo.commentAttitudeTypeSet; //态度意见设置0：无 1：显示同意、不同意2：显示已阅、同意、不同意
+			//	alert(commentAttitudeTypeSet);
+		     //	commentAttitudeTypeSet = '2';
 				if(actiCommFieldType != '-1' && (commentField == '-1' || commentField == 'nullCommentField' ||
 				   commentField == 'autoCommentField' || commentField == 'null' || commentField == null)){
 				    var commentFieldName = workInfo.commentFieldName;
@@ -1472,8 +1503,14 @@
 				    	commentViewName = commentFieldName;
 				    }
 					itemContent += '<item style="padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="align:left;font-size:16;color:#555555">'+commentViewName+':</label></row></col></item><item style="padding:0;margin:0;"><col><row>'+
-								   '<textarea rows="5" name="comment_input" id="comment_input" maxrows="5"></textarea></row></col></item>'+
-								   '<item id="" style="col-width:*,40,40,50,40;"><col><row onclick="openUseComment(\'' + officeList + '\');" ><label style="align:right;color:#C9C9C9;">选择常用语</label></row></col>'+
+								   '<textarea rows="5" name="comment_input" id="comment_input" maxrows="5"></textarea></row>';
+					if(commentAttitudeTypeSet&&commentAttitudeTypeSet=='1'){   
+						itemContent +='<row><label style=""></label><radio name="commentradio" value="1" checked="false" onclick="commentAttitudeType = \'1\';">同意</radio><label style="width:10"></label><radio onclick="commentAttitudeType = \'2\';" name="commentradio" value="0">不同意</radio></row>';
+					}else if(commentAttitudeTypeSet&&commentAttitudeTypeSet=='2'){
+						itemContent +='<row><label style=""></label><radio onclick="commentAttitudeType = \'3\';" name="commentradio" value="0">已阅</radio><label style="width:10"></label><radio name="commentradio" value="1" checked="false" onclick="commentAttitudeType = \'1\';">同意</radio><label style="width:10"></label><radio onclick="commentAttitudeType = \'2\';" name="commentradio" value="0">不同意</radio></row>';
+					}
+					itemContent +=  '</col></item>'
+					itemContent +='<item id="" style="col-width:*,40,40,50,40;"><col><row onclick="openUseComment(\'' + officeList + '\');" ><label style="align:right;color:#C9C9C9;">选择常用语</label></row></col>'+
 								   '<col><row><icon id="shouxie" onclick="doDraft();" src="workflow_sx.png" style="display:none;width:30;height:30;"/></row></col>'+
 								   '<col><row><icon id="yuyin" onclick="doRecordSound();" src="workflow_yy.png" style="display:none;width:30;height:30;"/></row></col>'+
 								   '<col><row>'+
@@ -1598,11 +1635,13 @@
 	        
 	        // 需要创建附件下载内容的数组
 	        var attachmentArray = new Array();
+	        var subAttachmentArray = new Array();  //子表
+	        
 	        
 	        // 创建附件下载内容
-	        function createAttachCon(){
+	        function createAttachCon(attachArray){
 	        	var attachments;
-	        	attachmentArray.map(function(attachmentInfo){
+	        	attachArray.map(function(attachmentInfo){
 	        		attachments = attachmentInfo.split(';');
 					$http.post(evoUrl + '/ezOffice/doc/dealFiles.do', {
 						accessoryNameseries : attachments[1].replace(/,/g,'|'),
@@ -1621,7 +1660,9 @@
 							if (!attList == '') { //不为空，遍历,并为附件赋值
 								for (var k = 0; k < attList.length; k++) {
 									var files = $C('<row><label style="color:#330000;color:blue;"  onclick="$http.download(\'' +  evoUrl + '/ezOffice/download/file.do?url=' + attList[k].attachurlser + '&amp;filename=' + attList[k].savename +'&amp;viewName='+attList[k].realname.replace(/\&/g,'%26')+ '\')"><![CDATA[' + attList[k].realname + ']]\></label></row>');
-									$(attachIdArr[2]).add(files);
+									if($(attachIdArr[2])){
+										$(attachIdArr[2]).add(files);
+									}
 								}
 							} else { //无附件，或者后台处理异常
 								alert('附件下载失败！');
@@ -1726,7 +1767,7 @@
 	        }
 	        
 	        //初始化表单数据
-	        function createFormData(field,showType,readWrite,fieldType,selectContent,officeList){
+	        function createFormData(field,showType,readWrite,fieldType,selectContent,officeList,commentAttitudeTypeSet){
 	        	showType = field.showtype;
 	        	readWrite = field.readwrite;
 	        	fieldType = field.fieldtype;
@@ -1990,8 +2031,14 @@
 	        		}
 	        		if(readWrite == '1'){
 	        			//officeList 
-	        			itemContent += '<row><textarea rows="5" maxrows="5" name="comment_input" id="comment_input"></textarea></row></col></item>'+
-		        					   '<item id="" style="col-width:*,40,40,50,40">'+
+	        			itemContent += '<row><textarea rows="5" name="comment_input" id="comment_input" maxrows="5"></textarea></row>';
+					    if(commentAttitudeTypeSet&&commentAttitudeTypeSet=='1'){   
+							itemContent +='<row><label style=""></label><radio name="commentradio" value="1" checked="false" onclick="commentAttitudeType = \'1\';">同意</radio><label style="width:10"></label><radio onclick="commentAttitudeType = \'2\';" name="commentradio" value="0">不同意</radio></row>';
+						}else if(commentAttitudeTypeSet&&commentAttitudeTypeSet=='2'){
+							itemContent +='<row><label style=""></label><radio onclick="commentAttitudeType = \'3\';" name="commentradio" value="0">已阅</radio><label style="width:10"></label><radio name="commentradio" value="1" checked="false" onclick="commentAttitudeType = \'1\';">同意</radio><label style="width:10"></label><radio onclick="commentAttitudeType = \'2\';" name="commentradio" value="0">不同意</radio></row>';
+						}
+	        			itemContent += '</col></item>';
+		        		itemContent +=	'<item id="" style="col-width:*,40,40,50,40">'+
 									   '<col><row onclick="openUseComment(\'' + officeList + '\');"><label style="align:right;color:#C9C9C9;">选择常用语</label></row></col>'+
 									   '<col><row><icon id="shouxie" onclick="doDraft();" src="workflow_sx.png" style="display:none;width:30;height:30;"/></row></col>'+
 									   '<col><row><icon id="yuyin" onclick="doRecordSound();" src="workflow_yy.png" style="display:none;width:30;height:30;"/></row></col>'+
@@ -2309,7 +2356,7 @@
 						'&workSubmitTime='+encodeURIComponent(workSubmitTime)+'&empLivingPhoto='+empLivingPhoto+
 						'&isForkTask='+isForkTask+'&commentType='+commentType+'&comment='+encodeURIComponent(commentCon)+
 						'&commentShouxie_backName='+commentShouxie_backName+'&commentYuyin_backName='+commentYuyin_backName+
-						'&flag='+flag+'&isDossier='+isDossier+'&workType='+workType,
+						'&flag='+flag+'&isDossier='+isDossier+'&workType='+workType+'&commentAttitudeType='+commentAttitudeType,
 						{animation:'down-to-up'});
 					}else{
 						alert('保存表单失败！');					

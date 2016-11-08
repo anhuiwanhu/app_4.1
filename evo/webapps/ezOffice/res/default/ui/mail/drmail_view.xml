@@ -69,8 +69,8 @@
 							}
 							if(data.mailSign=="1"){
 								$("mailSign").checked=true;
-								var gnome = data.gnome+"";
-								if(gnome!=null && gnome!=""&&gnome!="null"){
+								var gnome = obj.gnome+"";
+								if(gnome!=null && gnome!=""&&gnome!="null"&&gnome!="undefined"){
 									newcontent += '\r\n\r\n'+gnome;
 								}
 							}
@@ -87,8 +87,8 @@
 								$('mailweb').css('display', 'none');
 								$('mailcontent').css('display', 'block');
 							}
-							var objArr = data.attachments;
 							$("accessorySize").value=obj.accessorySize;
+							var objArr = data.attachments;
 		                    var accessoryNameseries="";
 		                    var accessorySaveNameseries="";
 		                    var sfilenames="";
@@ -96,8 +96,8 @@
 		                    if((objArr+"")!=null && (objArr+"")!=""){
 		                    	if(objArr instanceof Array){    //返回多条数据
 					        	    for (var i = 0; i < objArr.length; i++) {
-					        	    	if(i<objArr.length-1){
-					        	        	accessoryNameseries += objArr[i].name+"|";
+					        	        if(i<objArr.length-1){
+					        	            accessoryNameseries += objArr[i].name+"|";
 					        	            rfileNames += objArr[i].name+"$F$";
 					        	            accessorySaveNameseries += objArr[i].savename+"|";
 					        	            sfilenames += objArr[i].saveName+"$F$";
@@ -402,7 +402,7 @@
 	                </item>
                     <item>
                         <textarea id="mailcontent" name="mailcontent" rows="7" placeholder="请输入" style="border:0 white;font-size:16;color:#555555;"></textarea>
-                   		<web id="mailweb" style="display:none"/>
+                    	<web id="mailweb" style="display:none"/>
                     </item>
                 </list>
 	        </form>

@@ -38,7 +38,7 @@
 						    '<label id="attachmentId' + fileindex + '" style="color:blue;'+fujianwidth+'">' + showpath + '</label>'+
 						    '<icon id="imageId" src="mail_del.png" style="width:12;height:12;" onclick="delrow(\'' + fileindex + '\',\'' + appendId + '\');"/></row>');
 						    $(appendId).add(row);
-						    $('content_form_list').addMore('<imag><list><item><row><input type="file" style="display:none;" value="' + path + '" name="attachment_main_' + sysname + '"  id="input_file' + fileindex + '"/></row></item></list></imag>');
+						    $('content_form_list').addMore('<imag><list><item style="display:none;"><row><input type="file" style="display:none;" value="' + path + '" name="attachment_main_' + sysname + '"  id="input_file' + fileindex + '"/></row></item></list></imag>');
 				        	fileindex++;
 				        	fileTotle++;
 				        },
@@ -59,7 +59,7 @@
 							    '<label id="attachmentId' + fileindex + '" style="color:blue;'+fujianwidth+'">' + showpath + '</label>'+
 							    '<icon id="imageId" src="mail_del.png" style="width:12;height:12;" onclick="delrow(\'' + fileindex + '\',\'' + appendId + '\');"/></row>');
 							    $(appendId).add(row);
-							    $('content_form_list').addMore('<imag><list><item><row><input type="file" style="display:none;" value="' + path + '" name="attachment_main_' + sysname + '"  id="input_file' + fileindex + '"/></row></item></list></imag>');
+							    $('content_form_list').addMore('<imag><list><item style="display:none;"><row><input type="file" style="display:none;" value="' + path + '" name="attachment_main_' + sysname + '"  id="input_file' + fileindex + '"/></row></item></list></imag>');
 					      
 			        	fileindex++;
 			        	fileTotle++;
@@ -81,7 +81,7 @@
 							    '<label id="attachmentId' + fileindex + '" style="color:blue;'+fujianwidth+'">' + showpath + '</label>'+
 							    '<icon id="imageId" src="mail_del.png" style="width:12;height:12;" onclick="delrow(\'' + fileindex + '\',\'' + appendId + '\');"/></row>');
 							    $(appendId).add(row);
-							    $('content_form_list').addMore('<imag><list><item><row><input type="file" style="display:none;" value="' + path + '" name="attachment_main_' + sysname + '"  id="input_file' + fileindex + '"/></row></item></list></imag>');
+							    $('content_form_list').addMore('<imag><list><item style="display:none;"><row><input type="file" style="display:none;" value="' + path + '" name="attachment_main_' + sysname + '"  id="input_file' + fileindex + '"/></row></item></list></imag>');
 					      
 			        	fileindex++;
 			        	fileTotle++;
@@ -120,7 +120,7 @@
 							'<icon id="imageId" src="mail_del.png" style="width:12;height:12;" onclick="delrow(\'' + fileindex + '\',\'' + appendId + '\');"/></row>');
 							$(appendId).add(row);
 							//$('input_file'+fileindex).value = path;
-							$('content_form_list').addMore('<imag><list><item><row><input type="file" style="display:none;" value="' + path + '" name="attachment_main_' + sysname + '"  id="input_file' + fileindex + '"/></row></item></list></imag>');
+							$('content_form_list').addMore('<imag><list><item style="display:none;"><row><input type="file" style="display:none;" value="' + path + '" name="attachment_main_' + sysname + '"  id="input_file' + fileindex + '"/></row></item></list></imag>');
 							fileindex++;
 							fileTotle++;
 						}
@@ -1454,7 +1454,15 @@
 	        	}else if(( showType == '213' || showType == '215'|| showType =='406'|| showType =='601'|| showType =='602'|| showType =='603'|| showType =='604'|| showType =='605'|| showType =='607'|| showType =='701'|| showType =='702'|| showType =='201'|| showType =='202' || showType =='207'  ) && readWrite == '1'){
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
 	        		//登录人信息
-	        		itemContent += '<row><label style="color:#555555;font-size:16;">' + field.value + '</label><input type="hidden" name="_main_' + field.sysname + '" value="' + field.value + '"/></row>';
+	        		var viewName = field.value;
+	        		if(field.expressionval&&viewName!=null&&field.expressionval=='self'){
+	        			viewName =viewName.substring(viewName.lastIndexOf('.')+1);
+	        		}else if(field.expressionval&&viewName!=null&&field.expressionval=='parent'){
+	        			viewName =viewName.substring(viewName.indexOf('.')+1);
+	        		}else if(field.expressionval&&viewName!=null&&field.expressionval=='unit'){
+	        			viewName = field.value;
+	        		}
+	        		itemContent += '<row><label style="color:#555555;font-size:16;">' + viewName + '</label><input type="hidden" name="_main_' + field.sysname + '" value="' + viewName + '"/></row>';
 	        	}else if(showType == '301' && readWrite == '1'){
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
 	        		//金额
@@ -1468,7 +1476,7 @@
 	        	}else if(showType == '302' && readWrite == '1'){
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
 	        		//金额
-        			itemContent += '<row><input style="color:#555555;font-size:16;" type="text" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '" value="' + field.value + '" maxlength="18" onchange="computeExpress(this);" onchange="computeExpress(this);"/></row>';
+        			itemContent += '<row><input style="color:#555555;font-size:16;" type="text" id="_main_' + field.sysname + '" name="_main_' + field.sysname + '" value="' + field.value + '" maxlength="18"  onchange="computeExpress(this);"/></row>';
 	        		canComputeField.push(field.sysname);    //可以进行计算的字段
 	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
 	        	}else if(showType == '210' && readWrite == '1'){

@@ -2,6 +2,7 @@
 <imag>
      <script>
         <![CDATA[
+            var loadFlag = '0';  //函数执行置为1，提交之前进行判断，若为1，则禁止 提交，防重复提交
 			var storage = $phone.localStorage();
 			var userName = storage.getItem('sys_userName');
 			var orgName = storage.getItem('sys_orgName');
@@ -71,6 +72,10 @@
                 	alert('汇报标题不能为空');
                 	return false;
                 }else{//判断同一汇报区间重复汇报条数
+                     if(loadFlag == '1' ){
+		        		return false;
+		        	}
+		        	loadFlag == '1';
                     $http.post(evoUrl+'/ezOffice/report/checkReport.do',{reportTime:startDate,reportType:type,checkType:"3"}, 
                     function(data){
                  	if(data){
@@ -104,7 +109,8 @@
 			                	}
 			                }  
 			           }
-                 	}	                 		      
+                 	}	
+                 	loadFlag == '0';                 		      
                  },function(error) {
 					    if (error == 'timeout') {
 							hint('连接服务器超时！');

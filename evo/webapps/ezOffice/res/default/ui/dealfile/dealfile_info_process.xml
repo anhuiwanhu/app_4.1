@@ -608,8 +608,12 @@
 	        function openPopMenu(modiButton){
 	        	if(modiButton.indexOf('Tran') < 0){
 		        	$('popupmenu_list').remove($('tranInfoItem'));
-	        	}else if(modiButton.indexOf('AddSign') < 0){
+	        	}
+	        	if(modiButton.indexOf('AddSign') < 0){
 		        	$('popupmenu_list').remove($('addSignItem'));
+	        	}
+	        	if(modiButton.indexOf('Selfsend') < 0){
+		        	$('popupmenu_list').remove($('selfSendItem'));
 	        	}
 	       		$('main_popupmenu').open();
 	        }
@@ -957,6 +961,13 @@
 				$page.open('dealfile_pressInfo.xml?'+$('sendFormAgain').serialize(),{animation:'down-to-up'});
 			}
 			
+			// 阅件发送
+			function selfsend(){
+				$('main_popupmenu').close();
+				$page.open('../workflow/workflow_selfsend.xml?fromXml='+fromXml+'&workId='+workId+'&workcurstep='+encodeURIComponent($('workcurstep').value),
+				{animation:'down-to-up'});
+			} 
+			
 			// 流程撤办
 			function workfolwUndo(){
 				$('sendForm').action = evoUrl + '/ezOffice/workflow/workfolwUndo.do?workId='+workId;
@@ -1028,6 +1039,9 @@
 	         	</item>            
 	         	<item id="addSignItem" onclick="addSign();"  style="background:#3daffe,#474747;margin:0;padding:0;">
 	         		<col><row style="margin:10;padding:10;"><label style="align:center;color:#F0F9FF,white;font-size:14;">加签</label></row></col>
+	         	</item>
+	         	<item id="selfSendItem" onclick="selfsend();"  style="background:#3daffe,#474747;margin:0;padding:0;">
+	         		<col><row style="margin:10;padding:10;"><label style="align:center;color:#F0F9FF,white;font-size:14;">阅件</label></row></col>
 	         	</item>
 		    </list>
 		</popupmenu>

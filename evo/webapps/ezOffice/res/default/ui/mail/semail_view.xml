@@ -82,6 +82,8 @@
 							}
 							if(data.mailSign=="1"){
 								$("mailSign").checked=true;
+								$("mailSign_web").html=obj.gnome;
+								$('mailSign_web').css('display', 'block');
 							}
 							if(data.mailanonymous=="1"){
 								$("mailanonymous").checked=true;
@@ -90,11 +92,9 @@
 							if(mailcontenttype =='1'){
 								$("mailweb").html=newcontent;
 								$('mailweb').css('display', 'block');
-								//$('mailcontent').css('display', 'none');
 							}else{
 								$("mailweb").html=newcontent;
 								$('mailweb').css('display', 'block');
-								//$('mailcontent').css('display', 'block');
 							}
 							var objArr = data.attachments;
 		                    var accessoryNameseries="";
@@ -272,6 +272,7 @@
                     <item>
                         <label id="mailcontent"></label>
                         <web id="mailweb" style="display:none"/>
+                        <web id="mailSign_web" style="display:none"/>
                     </item>
 
                 </list>

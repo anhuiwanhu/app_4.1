@@ -73,7 +73,7 @@
 						//创建编辑正文附件名称
 						createBodyFileName(workInfo);
 						// 创建附件内容
-						createAttachCon();
+						createAttachCon(attachmentArray);
        					// 创建底部内容
        					createFootContent(workInfo);
        					var dealTipsContent = workInfo.dealTipsContent;
@@ -203,6 +203,7 @@
 				}
 				//$page.open('dealfile_subProcess.xml?workId=' + workId);
 				$('subTabel_form_list').addMore('<imag><list>' + subTabelItemContent + '</list></imag>');
+				createAttachCon(subAttachmentArray);  //附件显示
 				$('subTabel_form_list').css('display','');
 				$('content_form_list').css('display','none');
 				$('subTable_footer_list').css('display','');
@@ -222,14 +223,13 @@
 			}
 			// 具体子表字段展示函数
 			function getFieldCon(field){
-				attachmentArray = new Array();
 				if(field.showtype == '115'){
 	        		subTabelItemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label>' + field.name + ':</label>';
 	        		//附件上传
-					attIndex = attIndex++;
+					attIndex++;
 	        		var attId = 'attachments_' + attIndex;
 	        		if(field.value && field.value.length > 0){
-		        		attachmentArray.push(field.value + ';attachments_' + attIndex);
+		        		subAttachmentArray.push(field.value + ';attachments_' + attIndex);
 	        		}
 	        		subTabelItemContent += '</row></col><col id="' + attId + '" style="padding:10;margin:10;"></col></item>';
 				}else if(field.showtype == '116'){
@@ -251,8 +251,6 @@
 					subTabelItemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label>' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
 					subTabelItemContent += '<row><label>' + (field.hiddenval == "undefined" ? "" : field.hiddenval) + '</label></row></col></item>';
 				}
-				// 创建附件内容
-				createAttachCon();
 			}
 			// 创建打开子表时的底部按钮
 			function createSubTableFoot(){
@@ -481,11 +479,12 @@
 	             
 	        // 需要创建附件下载内容的数组
 	        var attachmentArray = new Array();
+	        var subAttachmentArray = new Array();
 	        
 	        // 创建附件下载内容
-	        function createAttachCon(){
+	        function createAttachCon(attachArray){
 	        	var attachments;
-	        	attachmentArray.map(function(attachmentInfo){
+	        	attachArray.map(function(attachmentInfo){
 	        		attachments = attachmentInfo.split(';');
 					$http.post(evoUrl + '/ezOffice/doc/dealFiles.do', {
 						accessoryNameseries : attachments[1].replace(/,/g,'|'),

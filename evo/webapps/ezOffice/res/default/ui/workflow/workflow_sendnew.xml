@@ -85,6 +85,7 @@
 						$('beginForkActivityId').value = beginForkActivityId ? beginForkActivityId : '';
 						$('beginForkActivityName').value = beginForkActivityName ? beginForkActivityName : '';
 						$('toJoinActivityId').value = toJoinActivityId ? toJoinActivityId : '';
+						$('commentAttitudeType').value =  $param['commentAttitudeType'];
 						$('gateType').value = gateType;
 						g_gateType = gateType;
 						
@@ -865,6 +866,7 @@
 				<input type="hidden" id="beginForkActivityName" name="beginForkActivityName" value="" />
 				<input type="hidden" id="toJoinActivityId" name="toJoinActivityId" value="" /> 
 				<input type="hidden" id="gateType" name="gateType" value="" /> 
+				<input type="hidden" id="commentAttitudeType" name="commentAttitudeType" value="" /> 
 	            <list id="content_list">
 	            </list>
             </form>

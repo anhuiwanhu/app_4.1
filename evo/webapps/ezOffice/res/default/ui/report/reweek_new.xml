@@ -61,6 +61,10 @@
                 	alert('汇报内容不能为空');
                 	return false;
                 }else{//判断同一汇报区间重复汇报条数
+                      if(loadFlag == '1' ){
+		        		return false;
+		        	 }
+		        	 loadFlag == '1';
                      $http.post(evoUrl+'/ezOffice/report/checkReport.do',{startDate:startDate,endDate:endDate,reportType:"1",checkType:"1"},function(data) {
 	                 	if(data){
 	                 	   var obj = JSON.parse(data);
@@ -93,7 +97,8 @@
 				                	}
 				                }  
 				           }
-	                 	}	                 		      
+	                 	}	
+	                 	loadFlag == '0';                 		      
 	                 },function(error) {
 					    if (error == 'timeout') {
 						hint('连接服务器超时！');

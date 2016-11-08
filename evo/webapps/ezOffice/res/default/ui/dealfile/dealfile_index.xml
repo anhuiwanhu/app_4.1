@@ -15,7 +15,7 @@
             	var items = '';
             	if('main' == type){
             		$mainPopupmenu.position = 'topcenter';
-            		$mainPopupmenu.css('width','150');
+            	//	$mainPopupmenu.css('width','150');
             		$mainPopupmenu.onclose = "$('upOrDownIcon').src = 'mail_down.png'";
             		$('upOrDownIcon').src = 'mail_up.png';
             		var seeProcess0 = 'display:hidden';
@@ -147,7 +147,6 @@
 			        function(data) {
 			        	if(data){
 			        		var jsonData = eval('('+data+')');
-			        		data = data.replace(/\&/g,'＆');
 			        		if(jsonData.logonerror && jsonData.logonerror=='1'){
 			         			alert("该账号已在设备"+jsonData.deviceId+"上登录");
 			          			$page.open('../index.xml',{target:'_self'});
@@ -580,7 +579,7 @@
                 <item label="待阅文件" id="tabbarTitleRead" badge=""  onchange="changeStatus('2');"></item>
             </tabbar>
        </header>
-		<popupmenu id="main_popupmenu">
+		<popupmenu id="main_popupmenu" style="width:150">
 			<list id="popupmenu_list">
 		    </list>
 		</popupmenu>

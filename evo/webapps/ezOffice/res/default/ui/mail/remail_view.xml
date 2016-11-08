@@ -109,6 +109,10 @@
 				$page.open('meetRoomDetail.xml',{target:'_self'});
 			}
 			
+			function jumpOldWork(wfWorkId){
+				storage.setItem('workflow_workId',wfWorkId);
+				$page.open('../dealfile/dealfile_process.xml',{target:'_self'});
+			}
 			function downFile(accessorySaveNameseries,accessoryNameseries){
 			   var path = 'html';
 	            $http.post(evoUrl+'/ezOffice/doc/dealFiles.do',
@@ -142,6 +146,7 @@
 				    $page.open('../index.xml',{animation:'down-to-up'});
 				  });
             }
+			
 			
 			function viewFiles(accessoryNameseries,accessorySaveNameseries){
 			    $('docFiles').css('display','block');
