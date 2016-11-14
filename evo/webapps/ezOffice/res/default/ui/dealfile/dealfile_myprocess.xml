@@ -638,12 +638,12 @@
 					for(var i=0,length=subFieldList.length;i<length;i++){
 						subTabelItemContent += '<item ><col><row><label style="align:left;font-size:14;">表'+eval(i+1)+'</label></row></col></item>';
 						createSubTableField(subFieldList[i].field);
-						subTabelItemContent += '<item></item>';
+					//	subTabelItemContent += '<item></item>';
 					}
 				}else if(subFieldList instanceof Object){
 					subTabelItemContent += '<item ><col><row><label style="align:left;font-size:14;">表1</label></row></col></item>';
 					createSubTableField(subFieldList.field);
-					subTabelItemContent += '<item></item>';
+				//	subTabelItemContent += '<item></item>';
 				}
 				//$page.open('dealfile_subProcess.xml?workId=' + workId);
 				$('subTabel_form_list').addMore('<imag><list>' + subTabelItemContent + '</list></imag>');

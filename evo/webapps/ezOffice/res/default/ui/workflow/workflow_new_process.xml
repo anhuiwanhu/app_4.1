@@ -1593,7 +1593,7 @@
 	        	// 只读数据
 	        	else{
 	        		itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view+'<label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col><col style="padding:10;margin:10;">';
-	        		itemContent += '<row><label style=color:#555555;font-size:16;">' + field.value + '</label></row>';
+	        		itemContent += '<row><label style="color:#555555;font-size:16;">' + field.value + '</label></row>';
 	        	}
 	        	itemContent += '</col></item>';
 	        }

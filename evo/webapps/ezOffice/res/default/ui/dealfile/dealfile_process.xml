@@ -40,7 +40,7 @@
 						    '<label id="attachmentId' + fileindex + '" style="color:blue;'+fujianwidth+'">' + showpath + '</label>'+
 						    '<icon id="imageId" src="mail_del.png" style="width:12;height:12;" onclick="delrow(\'' + fileindex + '\',\'' + appendId + '\');"/></row>');
 						    $(appendId).add(row);
-						    $('content_form_list').addMore('<imag><list><item><row><input type="file" style="display:none;" value="' + path + '" name="attachment_main_' + sysname + '"  id="input_file' + fileindex + '"/></row></item></list></imag>');
+						    $('content_form_list').addMore('<imag><list><item style="display:none;"><row><input type="file" style="display:none;" value="' + path + '" name="attachment_main_' + sysname + '"  id="input_file' + fileindex + '"/></row></item></list></imag>');
 				            
 				        	fileindex++;
 				        },
@@ -60,7 +60,7 @@
 						    '<label id="attachmentId' + fileindex + '" style="color:blue;'+fujianwidth+'">' + showpath + '</label>'+
 						    '<icon id="imageId" src="mail_del.png" style="width:12;height:12;" onclick="delrow(\'' + fileindex + '\',\'' + appendId + '\');"/></row>');
 						    $(appendId).add(row);
-						    $('content_form_list').addMore('<imag><list><item><row><input type="file" style="display:none;" value="' + path + '" name="attachment_main_' + sysname + '"  id="input_file' + fileindex + '"/></row></item></list></imag>');
+						    $('content_form_list').addMore('<imag><list><item style="display:none;"><row><input type="file" style="display:none;" value="' + path + '" name="attachment_main_' + sysname + '"  id="input_file' + fileindex + '"/></row></item></list></imag>');
 				      
 		        	fileindex++;
 		        },
@@ -81,7 +81,7 @@
 						    '<label id="attachmentId' + fileindex + '" style="color:blue;'+fujianwidth+'">' + showpath + '</label>'+
 						    '<icon id="imageId" src="mail_del.png" style="width:12;height:12;" onclick="delrow(\'' + fileindex + '\',\'' + appendId + '\');"/></row>');
 						    $(appendId).add(row);
-						    $('content_form_list').addMore('<imag><list><item><row><input type="file" style="display:none;" value="' + path + '" name="attachment_main_' + sysname + '"  id="input_file' + fileindex + '"/></row></item></list></imag>');
+						    $('content_form_list').addMore('<imag><list><item style="display:none;"><row><input type="file" style="display:none;" value="' + path + '" name="attachment_main_' + sysname + '"  id="input_file' + fileindex + '"/></row></item></list></imag>');
 				      
 		        	fileindex++;
 		        },
@@ -119,7 +119,7 @@
 						'<icon id="imageId" src="mail_del.png" style="width:12;height:12;" onclick="delrow(\'' + fileindex + '\',\'' + appendId + '\');"/></row>');
 						$(appendId).add(row);
 						//$('input_file'+fileindex).value = path;
-						$('content_form_list').addMore('<imag><list><item><row><input type="file" style="display:none;" value="' + path + '" name="attachment_main_' + sysname + '"  id="input_file' + fileindex + '"/></row></item></list></imag>');
+						$('content_form_list').addMore('<imag><list><item style="display:none;"><row><input type="file" style="display:none;" value="' + path + '" name="attachment_main_' + sysname + '"  id="input_file' + fileindex + '"/></row></item></list></imag>');
 						fileindex++;
 					}
 				});
