@@ -239,10 +239,10 @@
 	           }
 	          
                var infoContent  = $('infoContent').value;  //正文
-               if(infoContent==null||infoContent==""){
-	              alert("请输入正文！");
-	              return;
-	           }
+        //       if(infoContent==null||infoContent==""){
+	    //          alert("请输入正文！");
+	    //          return;
+	    //       } 
 	           if(/[(\\)(\/)(\?)(\#)(\&)(\')(\")]/.test(infoTitle)){
 	              alert("正文内容不能输入特殊字符！");
 	              return;

@@ -76,7 +76,7 @@
 					                   var item = $C('<tabbar-item><item label="'+objArr[i].userChannelName+'" onchange="channelList(\''+objArr[i].userChannelId+'\',\''+i+'\',\'1\',\'1\')" ></item></tabbar-item>');
 							           $('tabbar').add(item);
 							           var contentItem = $C('<content draggable="true" id="indexContent'+i+'" ondragdown="refreshPage(\''+i+'\');" >'+
-									                '<list  id="docList'+i+'" reuse="true" >'+
+									                '<list  id="docList'+i+'" reuse="true" onscrollbottom="scrollbottom()">'+
 									                    '<item style="background:#f0eff5;padding:2;border:1 #f0eff5;" >'+
 													            '<col>'+
 															    '</col>'+
@@ -103,10 +103,10 @@
 											        '</list>'+
 											        '<bottom>'+
 										                '<list>'+
-										                    '<item onclick="loadList(\'add\')">'+
+										                    '<item>'+
 										                        '<row id="bottom_load'+i+'" style="display:hidden;"><label style="align:center;">正在加载...</label><progress style="align:center"/></row>'+
 										                      	'<row style="display:hidden" id="bottom_hasmore'+i+'">'+
-											                        '<label style="align:center;">点击加载更多...</label>'+
+											                        '<label style="align:center;">上拉加载更多...</label>'+
 											                        '<progress id="more_progress" style="display:none;align:center"/>'+
 											                    '</row>'+
 											                '</item>'+
@@ -119,7 +119,7 @@
 				        	         var item = $C('<tabbar-item><item onchange="channelList(\''+objArr.userChannelId+'\',\'0\',\'1\',\'1\')" ><label>'+objArr.userChannelName+'</label></item></tabbar-item>');
 							         $('tabbar').add(item);
 							          var contentItem = $C('<content  draggable="true" id="indexContent0" ondragdown="refreshPage(\'0\');" >'+
-									                '<list  id="docList0" reuse="true" >'+
+									                '<list  id="docList0" reuse="true" onscrollbottom="scrollbottom()">'+
 									                    '<item style="background:#f0eff5;padding:2;border:1 #f0eff5;" >'+
 													            '<col>'+
 															    '</col>'+
@@ -146,10 +146,10 @@
 											        '</list>'+
 											        '<bottom id="content_bottom">'+
 										                '<list>'+
-										                    '<item onclick="loadList(\'add\')">'+
+										                    '<item>'+
 										                        '<row id="bottom_load0" style="display:hidden;"><label style="align:center;">正在加载...</label><progress style="align:center"/></row>'+
 										                      	'<row style="display:hidden" id="bottom_hasmore0">'+
-											                        '<label style="align:center;">点击加载更多...</label>'+
+											                        '<label style="align:center;">上拉加载更多...</label>'+
 											                        '<progress id="more_progress" style="display:none;align:center"/>'+
 											                    '</row>'+
 											                '</item>'+
@@ -304,9 +304,11 @@
 	                pagerOffset = parseInt(pagerOffset)+15;
 	                if(parseInt(recordCount) > parseInt(pagerOffset)){
         				$('bottom_hasmore'+contentIdIndex).css('display','');
+        				onscrollbottomFlag = 'true';
         			}else{
         				$('bottom_hasmore'+contentIdIndex).css('display','none');
         				$('indexContent'+contentIdIndex).hideBottom();
+        				onscrollbottomFlag = 'false';
         			}
         			if(loadType == 'add'){
 	        			$('docList'+contentIdIndex).addMore(listJson);
@@ -335,7 +337,16 @@
             $('indexContent'+contentIdIndex).hideTop();
             $('docList'+cunrrentContentIdIndex).clear();   //清理上一个content内容
 	        pagerOffset = 0;
+	        onscrollbottomFlag = 'true';
 	        initList("update",commUserChannelId,contentIdIndex,commUserDefine,commChannelType);  //加载 所选频道列表
+        }
+        
+        var onscrollbottomFlag = 'true';
+        function scrollbottom(){    //禁止多次上拉，所有数据加载完毕禁止上拉
+            if(onscrollbottomFlag == 'true'){
+            	onscrollbottomFlag = 'false';
+            	loadList('add');
+            }
         }
         
         ]]>
@@ -377,7 +388,7 @@
 		</header>
 		<contents id="contents" scrollable="true">
 		  	<content draggable="true" id="indexContent"  ondragdown="refreshPage('');" >
-	                <list  id="docList" reuse="true" >
+	                <list  id="docList" reuse="true" onscrollbottom="scrollbottom()">
 	                    <item style="background:#f0eff5;padding:2;border:1 #f0eff5;" >
 					            <col>
 							    </col>
@@ -404,10 +415,10 @@
 			        </list>
 			        <bottom>
 		                <list>
-		                    <item onclick="loadList('add')">
+		                    <item>
 		                        <row id="bottom_load" style="display:hidden;"><label style="align:center;">正在加载...</label><progress style="align:center"/></row>
 		                      	<row style="display:hidden" id="bottom_hasmore">
-			                        <label style="align:center;">点击加载更多...</label>
+			                        <label style="align:center;">上拉加载更多...</label>
 			                        <progress id="more_progress" style="display:none;align:center"/>
 			                    </row>
 			                </item>
@@ -415,7 +426,7 @@
 	                </bottom>
 	            </content>
 	            <content draggable="true" id="indexContentinfo"  ondragdown="refreshPage('info');" >
-	                <list  id="docListinfo" reuse="true" >
+	                <list  id="docListinfo" reuse="true" onscrollbottom="scrollbottom()">
 	                    <item style="background:#f0eff5;padding:2;border:1 #f0eff5;" >
 					            <col>
 							    </col>
@@ -442,10 +453,10 @@
 			        </list>
 			        <bottom>
 		                <list>
-		                    <item onclick="loadList('add')">
+		                    <item>
 		                        <row id="bottom_loadinfo" style="display:hidden;"><label style="align:center;">正在加载...</label><progress style="align:center"/></row>
 		                      	<row style="display:hidden" id="bottom_hasmoreinfo">
-			                        <label style="align:center;">点击加载更多...</label>
+			                        <label style="align:center;">上拉加载更多...</label>
 			                        <progress id="more_progressinfo" style="display:none;align:center"/>
 			                    </row>
 			                </item>
@@ -453,7 +464,7 @@
 	                </bottom>
 	            </content>
 	            <content draggable="true" id="indexContentportal"  ondragdown="refreshPage('portal');" >
-	                <list  id="docListportal" reuse="true" >
+	                <list  id="docListportal" reuse="true" onscrollbottom="scrollbottom()">
 	                    <item style="background:#f0eff5;padding:2;border:1 #f0eff5;" >
 					            <col>
 							    </col>
@@ -483,7 +494,7 @@
 		                    <item onclick="loadList('add')">
 		                        <row id="bottom_loadportal" style="display:hidden;"><label style="align:center;">正在加载...</label><progress style="align:center"/></row>
 		                      	<row style="display:hidden" id="bottom_hasmoreportal">
-			                        <label style="align:center;">点击加载更多...</label>
+			                        <label style="align:center;">上拉加载更多...</label>
 			                        <progress id="more_progressportal" style="display:none;align:center"/>
 			                    </row>
 			                </item>

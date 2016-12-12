@@ -7,7 +7,6 @@
     var lastOrgName ='';
     var evoUrl = storage.getItem('evoUrl');
     var deptArr = [];
-    
     var selectuser_range = storage.getItem('sys_selectuser_range');
     var selectUserIds = storage.getItem('sys_selectuser_userids');
     var selectUserNames = storage.getItem('sys_selectuser_usernames');
@@ -180,9 +179,11 @@
 	                	if(parseInt(currentPage) < parseInt(pageCount)){
                 			$('bottom_more').css('display','block');
                 			disp='1';
+                			onscrollbottomFlag_frsh = 'true';
 	                	}else{
 	                		$('InnerCon').hideBottom();
 	                		disp='0';
+	                		onscrollbottomFlag_frsh = 'false';
 	                	}
 	                	$('InnerCon').hideTop();
 						addMore='0';
@@ -260,6 +261,7 @@
 	function upfrsh(){
    		var se = $("searchUser").value;
 		if(se==''){
+			onscrollbottomFlag_frsh = 'true';
 			$('bottom_more').css('display','none');
 	        $('InnerCon').showBottom();
 	   		curpage = '0';
@@ -269,6 +271,7 @@
 			toFirst();
 			$('contents').showContent(0);
 		}else{
+		    onscrollbottomFlag_sear = 'true';
 			$('sear_more').css('display','none');
 	        $('serCon').showBottom();
 	   		page = '0';
@@ -393,9 +396,11 @@
 	                	if(parseInt(currentPage) < parseInt(pageCount)){
                 			$('sear_more').css('display','block');
                 			disp='1';
+                			onscrollbottomFlag_sear = 'true';
 	                	}else{
 	                		$('serCon').hideBottom();
 	                		disp='0';
+	                		onscrollbottomFlag_sear = 'false';
 	                	}
 	                	$('serCon').hideTop();
 						flag='0';
@@ -414,7 +419,7 @@
     function creatNo(){
     	var listJson = {items:[]};
     	var itemJson = {
-            template :num,
+            template :1,
             onclick : '',
             widgets : {
                 title : {text :'暂无相关记录'}
@@ -545,6 +550,22 @@
 		}
 		$page.open('../index.xml',{animation:'down-to-up'});
 	} 
+	
+	var onscrollbottomFlag_frsh = 'true';
+    function scrollbottom_frsh(){    //禁止多次上拉，所有数据加载完毕禁止上拉
+        if(onscrollbottomFlag_frsh == 'true'){
+        	onscrollbottomFlag_frsh = 'false';
+        	downfrsh();
+        }
+    }
+    
+    var onscrollbottomFlag_sear = 'true';
+    function scrollbottom_sear(){    //禁止多次上拉，所有数据加载完毕禁止上拉
+        if(onscrollbottomFlag_sear == 'true'){
+        	onscrollbottomFlag_sear = 'false';
+        	downSear();
+        }
+    }
 ]]>
 </script>
     <page>
@@ -579,7 +600,7 @@
         <contents id="contents">
 	       	<content id="InnerCon" draggable="true" ondragdown="upfrsh();">
 				<input type="hidden" id="orgId" value="0"/>
-				<list id="innerList" reuse="true">
+				<list id="innerList" reuse="true" onscrollbottom="scrollbottom_frsh();">
 					<item style="col-width:45,*" accessory="indicator">
 	                    <col>
 	                       <button reusekey="btn"></button>
@@ -606,9 +627,9 @@
 				</list>
 				<bottom id="bottom" style="display:block">
 		            <list>
-		                <item onclick="downfrsh();" style="background:null,#DEE3E7">
+		                <item style="background:null,#DEE3E7">
 		                    <row id="bottom_more" style="display:none">
-		                        <label style="align:center;">点击加载更多...</label>
+		                        <label style="align:center;">上拉加载更多...</label>
 		                        <progress id="globalProgress" style="display:hidden;align:center;"/>
 		                    </row>
 		                </item>
@@ -616,7 +637,7 @@
 		        </bottom>
 			</content>
 			<content id="serCon" draggable="true" ondragdown="upfrsh();">
-				<list id="serList" reuse="true">
+				<list id="serList" reuse="true" onscrollbottom="scrollbottom_sear();">
 	                <item style="col-width:45,45,*">
 	                    <col>
 	                    	<checkbox reusekey="check"></checkbox>
@@ -635,9 +656,9 @@
 				</list>
 				<bottom id="bottomSer" style="display:block">
 		            <list>
-		                <item onclick="downSear();" style="background:null,#DEE3E7">
+		                <item style="background:null,#DEE3E7">
 		                    <row id="sear_more" style="display:none">
-		                        <label style="align:center;">点击加载更多...</label>
+		                        <label style="align:center;">上拉加载更多...</label>
 		                        <progress id="globalProgress" style="display:hidden;align:center;"/>
 		                    </row>
 		                </item>

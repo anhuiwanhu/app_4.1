@@ -247,6 +247,7 @@
     
     function refresh(){
     	var seOrgId = $('orgId').value;
+    	onscrollbottomFlag = 'true';
     	var db = $phone.openDatabase(dbName);
         db.transaction(DbToCacheData_1);
         function DbToCacheData_1(tx) {
@@ -330,8 +331,10 @@
                	if(parseInt(curpage) < parseInt(pageCount)){
               		$('bottom_more').css('display','block');
 					$('indexContent').showBottom();
+					onscrollbottomFlag = 'true';
                	}else{
                		$('indexContent').hideBottom();
+               		onscrollbottomFlag = 'false';
                	}
 			}
 			disp = '0';
@@ -479,6 +482,14 @@
 		}
 		$page.open('../index.xml',{animation:'down-to-up'});
 	} 
+	
+	var onscrollbottomFlag = 'true';
+    function scrollbottom(){    //禁止多次上拉，所有数据加载完毕禁止上拉
+        if(onscrollbottomFlag == 'true'){
+        	onscrollbottomFlag = 'false';
+        	downfrsh();
+        }
+    }
 ]]>
 </script>
     <page>
@@ -531,7 +542,7 @@
         </header>
 		<content id="indexContent" current="true">
 			<input type="hidden" id="orgId" value="0"/>
-			<list id="contactList" reuse="true">
+			<list id="contactList" reuse="true" onscrollbottom="scrollbottom()">
 				<item style="col-width:45,*,20" accessory="indicator">
                     <col>
                        <button reusekey="btn"></button>
@@ -558,9 +569,9 @@
 			</list>
 			<bottom id="bottom" style="display:block">
 	            <list>
-	                <item onclick="downfrsh();" style="background:null,#DEE3E7">
+	                <item style="background:null,#DEE3E7">
 	                    <row id="bottom_more" style="display:none">
-	                        <label style="align:center;">点击加载更多...</label>
+	                        <label style="align:center;">上拉加载更多...</label>
 	                        <progress id="globalProgress" style="display:hidden;align:center;"/>
 	                    </row>
 	                </item>

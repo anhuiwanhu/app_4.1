@@ -45,3 +45,11 @@ go
 
 insert into oa_patchinfo (patch_editinfo,patch_name,patch_version,patch_time,PATCH_EVO) values('evo','evo4.1_SP_07_20161113','4.1.07',getdate(),1);
 go
+
+
+
+
+
+
+insert into oa_patchinfo (patch_editinfo,patch_name,patch_version,patch_time,PATCH_EVO) values('evo','evo4.1_SP_08_20161211','4.1.08',getdate(),1);
+go

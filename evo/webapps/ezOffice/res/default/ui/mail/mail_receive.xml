@@ -111,16 +111,6 @@
 				return false;
 			}
 			
-			function containSpecial(s){
-				if(s!=''){
-					if(/[`~!@#\$%\^\&\*\(\)_\+<>《》？，。；、‘ “【】{}|（）=\?:"\{\},\.\-\\\/\\\/;'\[\]]/im.test(s)){
-						alert("搜索值不能为特殊字符，请重新输入！");
-						return true;
-					}
-				}
-				return false;
-			}
-			
 			function refresh(){
 				if(containSpecial($('subject').value)){
 					$('subject').value='';
@@ -273,9 +263,11 @@
 		                	if(parseInt(curpage) < parseInt(pageCount)){
 	                			$('bottom_more').css('display','block');
 	                			disp='1';
+	                			onscrollbottomFlag = 'true';
 		                	}else{
 		                		$('indexContent').hideBottom();
 		                		disp='0';
+		                		onscrollbottomFlag = 'false';
 		                	}
 		                	$('indexContent').hideTop();
 							addMore='0';
@@ -318,6 +310,7 @@
 		   		$('bottom_more').css('display','none');
 	            $('indexContent').showBottom();
 		   		curpage = '1';
+		   		onscrollbottomFlag = 'true';
 		   		refresh();
 		   }
 		   
@@ -333,6 +326,14 @@
 				}
 				$page.open('../index.xml',{animation:'down-to-up'});
 			}
+			
+			var onscrollbottomFlag = 'true';
+	        function scrollbottom(){    //禁止多次上拉，所有数据加载完毕禁止上拉
+	            if(onscrollbottomFlag == 'true'){
+	            	onscrollbottomFlag = 'false';
+	            	downfrsh();
+	            }
+	        }
         ]]>
     </script>
 
@@ -378,7 +379,7 @@
           </row>
 		</header>
         <content id="indexContent" draggable="true" ondragdown="upfrsh();">
-            <list id="mailList" reuse="true">
+            <list id="mailList" reuse="true" onscrollbottom="scrollbottom();">
             	<item style="col-width:25,45,*">
                     <col>
                         <icon reusekey="unRead" style="width:10;height:10"></icon>
@@ -414,9 +415,9 @@
             </list>
             <bottom id="bottom" style="display:block">
 	            <list>
-	                <item onclick="downfrsh();" style="background:null,#DEE3E7">
+	                <item style="background:null,#DEE3E7">
 	                    <row id="bottom_more" style="display:none">
-	                        <label style="align:center;">点击加载更多...</label>
+	                        <label style="align:center;">上拉加载更多...</label>
 	                        <progress id="globalProgress" style="display:hidden;align:center;"/>
 	                    </row>
 	                </item>

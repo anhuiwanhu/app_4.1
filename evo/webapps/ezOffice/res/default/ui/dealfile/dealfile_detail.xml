@@ -22,6 +22,7 @@
         	var passRoundCommFieldName = '';  //批示意见对于字段数据库名称
         	var commFieldExistIsTrue = false;  ////批示意见是否在表单与节点中同时存在
         	var bodyIndex = 1 ;      //正文index
+        	var editFileArr = new Array();   //表单字段doc、xls、wps 三种格式的编辑方式。解决页面加载完成后再进行请求。
         	
         	
         	(function(){
@@ -66,7 +67,8 @@
         					passRoundCommFieldName = workInfo.passRoundCommField.replace(/,/g,'');; //批示意见字段名赋值
         				}
         				//创建流程图
-       					createFlowImg(workInfo.flowgraphurl,jsonData.data_2.picRootPath,workInfo.worktype);
+       				//	createFlowImg(workInfo.flowgraphurl,jsonData.data_2.picRootPath,workInfo.worktype);
+       					createFlowImg(workInfo.flowgraphurl,jsonData.data_2.picRootPath,'0'); //隐藏流程图
        					$('headers').css('display','');
        					//初始化表单数据
        					var officeList = jsonData.data_0.data.officelist;
@@ -96,6 +98,8 @@
         				if(dealTipsContent!=null&&dealTipsContent!=''&&dealTipsContent!='[]'){
         				   alert(dealTipsContent.replace(/(<[^>]+>)|(&nbsp;)/g,""));
         				}
+        				//创建表单字段doc、xls、wps格式问题。
+       					createEditFiles();
         			},function(error) {
 				    if (error == 'timeout') {
 						hint('连接服务器超时！');
@@ -110,6 +114,22 @@
 				  }
         		);
 	        }
+	        
+	       function createEditFiles(){
+	        	if(editFileArr.length>0){
+	        		for(var k=0;k<editFileArr.length;k=k+2){
+	        		    if(editFileArr[k].indexOf('docFiles')>-1&&editFileArr[k+1]!=''){
+	        		    	viewFiles(editFileArr[k],"正文",editFileArr[k+1]+".doc","information",".doc");
+	        		    }else if(editFileArr[k].indexOf('xlsFiles')>-1&&editFileArr[k+1]!=''){
+	        		    	viewFiles(editFileArr[k],"正文",editFileArr[k+1]+".xls","information",".xls");
+	        		    }else if(editFileArr[k].indexOf('wpsFiles')>-1&&editFileArr[k+1]!=''){
+	        		    	viewFiles(editFileArr[k],"正文",editFileArr[k+1]+".wps","information",".wps");
+	        		    }
+	        			
+	        		}
+	        	}
+	        }
+	        
 	        function createBodyFileName(workInfo){
 	        	draftPerson = workInfo.worksubmitperson == null ? '': workInfo.worksubmitperson;
 	        	worktitle =  workInfo.worktitle== null ? '': workInfo.worktitle;
@@ -592,18 +612,34 @@
 	        	}else if(showType == '116'){
 	        		// Word编辑
 		        	itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">' + field.name + ':</label>'+
-	        		'</row></col><col style="padding:10;margin:10;" id="docFiles"></col></item>';
-	        		viewFiles('docFiles',"正文",field.value+".doc","information",".doc");   //显示名不能为空
+	        		'</row></col><col style="padding:10;margin:10;" id="docFiles'+field.sysname+'">';
+	        		editFileArr.push('docFiles'+field.sysname);
+	        		if(field.value==null||field.value.lenght==0){
+	        			editFileArr.push('');
+	        		}else{
+	        			editFileArr.push(field.value);
+	        		}
 	        	}else if(showType == '117'){
 	        		// Excel编辑
 		        	itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">' + field.name + ':</label>'+
 	        		'</row></col><col style="padding:10;margin:10;" id="xlsFiles"></col></item>';
-	        		viewFiles('xlsFiles',"正文",field.value+".xls","information",".xls");   //显示名不能为空
+	        		'</row></col><col style="padding:10;margin:10;" id="xlsFiles'+field.sysname+'">';
+	        		editFileArr.push('xlsFiles'+field.sysname);
+	        		if(field.value==null||field.value.lenght==0){
+	        			editFileArr.push('');
+	        		}else{
+	        			editFileArr.push(field.value);
+	        		}
 	        	}else if(showType == '118'){
 	        		// WPS编辑
 		        	itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">' + field.name + ':</label>'+
-	        		'</row></col><col style="padding:10;margin:10;" id="wpsFiles"></col></item>';
-	        		viewFiles('wpsFiles',"正文",field.value+".wps","information",".wps");   //显示名不能为空
+	        		'</row></col><col style="padding:10;margin:10;" id="wpsFiles'+field.sysname+'">';
+	        		editFileArr.push('wpsFiles'+field.sysname);
+	        		if(field.value==null||field.value.lenght==0){
+	        			editFileArr.push('');
+	        		}else{
+	        			editFileArr.push(field.value);
+	        		}
 	        	}else if(showType == '401'){
 	        	    itemContent += '<item style="padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">' + field.name + ':</label></row></col></item><item style="padding:0;margin:0;"><col>';
 	        		if(passRoundCommFieldName == field.sysname){

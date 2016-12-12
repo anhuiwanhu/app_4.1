@@ -156,8 +156,10 @@
 			                	$('reportList').addMore(listJson);
 			                	if(parseInt(pageNum) < parseInt(pageCount)){
 		                			$('weekbottom_more').css('display','block');
+		                			onscrollbottomFlag_frsh = 'true';
 			                	}else{
 			                		$('weekContent').hideBottom();
+			                		onscrollbottomFlag_frsh = 'false';
 			                	}
 			                	$('weekContent').hideTop();
 								weekAddMore=0;
@@ -195,6 +197,7 @@
 		   		$('weekbottom_more').css('display','none');
 	            $('weekContent').showBottom();
 		   		curpage = '1';
+		   		onscrollbottomFlag_frsh = 'true';
 				refresh('1');
 		   }
 		
@@ -313,8 +316,10 @@
 		                			$('monthContent').showBottom();
 		                			$('monthbottom_more').css('display','block');
 	                				$('monthbottom_load').css('display','none');
+	                				onscrollbottomFlag_month = 'true';
 			                	}else{
 			                		$('monthContent').hideBottom();
+			                		onscrollbottomFlag_month = 'false';
 			                	}
 			                	$('monthContent').hideTop();
 			                	monthAddMore = 0;
@@ -352,6 +357,7 @@
 	            $('monthbottom_load').css('display','none');
 	            $('monthContent').showBottom();
 		   		curpage = '1';
+		   		onscrollbottomFlag_month = 'true';
 				refreshMonth('1');
 		   }
 			
@@ -469,8 +475,10 @@
 		                			$('otherContent').showBottom();
 		                			$('otherbottom_more').css('display','block');
 	                				$('otherbottom_load').css('display','none');
+	                				onscrollbottomFlag_other = 'true';
 			                	}else{
 			                		$('otherContent').hideBottom();
+			                		onscrollbottomFlag_other = 'false';
 			                	}
 			                	$('otherContent').hideTop();
 							    otherAddMore = 0;
@@ -508,6 +516,7 @@
 	            $('otherbottom_load').css('display','none');
 	            $('otherContent').showBottom();
 		   		curpage = '1';
+		   		onscrollbottomFlag_other = 'true';
 				refreshOther('1');
 		   }
 			
@@ -584,6 +593,30 @@
 					$page.open('reother_new.xml', {animation:'down-to-up'});
 				}
 			}
+			
+	        var onscrollbottomFlag_frsh = 'true';   //周报
+	        function scrollbottom_frsh(){    //禁止多次上拉，所有数据加载完毕禁止上拉
+	            if(onscrollbottomFlag_frsh == 'true'){
+	            	onscrollbottomFlag_frsh = 'false';
+	            	downfrsh();
+	            }
+	        }
+	        
+	        var onscrollbottomFlag_month = 'true';   //月报
+	        function scrollbottom_month(){    //禁止多次上拉，所有数据加载完毕禁止上拉
+	            if(onscrollbottomFlag_month == 'true'){
+	            	onscrollbottomFlag_month = 'false';
+	            	downfrsh();
+	            }
+	        }
+	        
+	        var onscrollbottomFlag_other = 'true';   //其他
+	        function scrollbottom_other(){    //禁止多次上拉，所有数据加载完毕禁止上拉
+	            if(onscrollbottomFlag_other == 'true'){
+	            	onscrollbottomFlag_other = 'false';
+	            	downfrsh();
+	            }
+	        }
         ]]>
     </script>
     <page>
@@ -629,7 +662,7 @@
 		</header>
 		<contents id="indexContent" draggable="true" scrollable="true">
 			<content id="weekContent"  draggable="true" ondragdown="upWeek();">
-	            <list id="reportList" reuse="true">
+	            <list id="reportList" reuse="true"  onscrollbottom="scrollbottom_frsh()">
 	                <item style="col-width:25,45,*">
 	                   	<col>
 	                   		<icon reusekey="unRead" style="width:10;height:10"></icon>
@@ -649,9 +682,9 @@
 	            </list>
 	            <bottom id="bottom" style="display:block">
 	               <list>
-	                   <item onclick="downfrsh();" style="background:null,#DEE3E7">
+	                   <item style="background:null,#DEE3E7">
 		                    <row id="weekbottom_more" style="display:none">
-		                        <label style="align:center;">点击加载更多...</label>
+		                        <label style="align:center;">上拉加载更多...</label>
 		                        <progress id="globalProgress" style="display:hidden;align:center;"/>
 		                    </row>
 	                   </item>
@@ -659,7 +692,7 @@
 	           </bottom>
 	        </content>
 	        <content id="monthContent"  draggable="true" ondragdown="upMonth();">
-            <list id="monthReportList" reuse="true">
+            <list id="monthReportList" reuse="true" onscrollbottom="scrollbottom_month()">
                 <item style="col-width:20,40,*">
                    	<col>
                    		<icon reusekey="monthUnRead" style="width:15;height:15"></icon>
@@ -679,13 +712,13 @@
             </list>
             <bottom id="monthBottom">
                <list>
-                   <item onclick="downfrsh();" style="background:null,#DEE3E7">
+                   <item  style="background:null,#DEE3E7">
                        <row id="monthbottom_load">
 		                    <label style="align:center;">正在加载...</label>
 		                    <progress style="align:center"/>
 	                    </row>
 	                    <row id="monthbottom_more" style="display:none">
-	                        <label style="align:center;">点击加载更多...</label>
+	                        <label style="align:center;">上拉加载更多...</label>
 	                        <progress id="globalProgress" style="display:hidden;align:center;"/>
 	                    </row>
                    </item>
@@ -693,7 +726,7 @@
            </bottom>
         </content>
         <content id="otherContent" draggable="true" ondragdown="upOther();">
-            <list id="otherReportList" reuse="true">
+            <list id="otherReportList" reuse="true" onscrollbottom="scrollbottom_other()">
                 <item style="col-width:20,40,*">
                    	<col>
                    		<icon reusekey="otherUnRead" style="width:15;height:15"></icon>
@@ -712,13 +745,13 @@
             </list>
             <bottom id="otherBottom">
                <list>
-                   <item onclick="downfrsh();" style="background:null,#DEE3E7">
+                   <item  style="background:null,#DEE3E7">
                        <row id="otherbottom_load">
 		                    <label style="align:center;">正在加载...</label>
 		                    <progress style="align:center"/>
 	                    </row>
 	                    <row id="otherbottom_more" style="display:none">
-	                        <label style="align:center;">点击加载更多...</label>
+	                        <label style="align:center;">上拉加载更多...</label>
 	                        <progress id="globalProgress" style="display:hidden;align:center;"/>
 	                    </row>
                    </item>

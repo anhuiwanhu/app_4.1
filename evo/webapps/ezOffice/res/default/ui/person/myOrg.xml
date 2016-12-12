@@ -228,9 +228,11 @@
 	                			$('bottom_more').css('display','block');
 	                			$('bottom_load').css('display','none');
 	                			disp='1';
+	                			onscrollbottomFlag = 'true';
 		                	}else{
 		                		$('indexContent').hideBottom();
 		                		disp='0';
+		                		onscrollbottomFlag = 'false';
 		                	}
 		                	$('indexContent').hideTop();
 							addMore='0';
@@ -272,6 +274,7 @@
 	            $('bottom_load').css('display','none');
 	            $('indexContent').showBottom();
 		   		curpage = '1';
+		   		onscrollbottomFlag = 'true';
 				refresh();
 		   }
 		
@@ -292,6 +295,14 @@
 			}
 			$page.open('../index.xml',{animation:'down-to-up'});
 		}
+		
+		var onscrollbottomFlag = 'true';
+        function scrollbottom(){    //禁止多次上拉，所有数据加载完毕禁止上拉
+            if(onscrollbottomFlag == 'true'){
+            	onscrollbottomFlag = 'false';
+            	downfrsh();
+            }
+        }
 	     ]]>
     </script> 
     <page>
@@ -309,7 +320,7 @@
 		    </row>
         </header>
         <content id="indexContent" draggable="true" ondragdown="upfrsh();">
-            <list id="userlist" reuse="true">
+            <list id="userlist" reuse="true" onscrollbottom="scrollbottom()">
                 <item style="col-width:45,*">
                     <col>
                     	<img reusekey="photo" style="height:35;width:35;" default="login_per.png" effect="round"></img>
@@ -325,13 +336,13 @@
             </list>
             <bottom id="bottom" style="display:none">
 	            <list>
-	                <item onclick="downfrsh();" style="background:null,#DEE3E7">
+	                <item style="background:null,#DEE3E7">
 	                    <row id="bottom_load">
 		                    <label style="align:center;">正在加载...</label>
 		                    <progress style="align:center"/>
 	                    </row>
 	                    <row id="bottom_more" style="display:none">
-	                        <label style="align:center;">点击加载更多...</label>
+	                        <label style="align:center;">上拉加载更多...</label>
 	                        <progress id="globalProgress" style="display:hidden;align:center;"/>
 	                    </row>
 	                </item>

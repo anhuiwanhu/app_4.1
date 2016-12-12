@@ -103,13 +103,13 @@
 					                   var item = $C('<tabbar-item><item label="'+objArr[i].userChannelName+'" onchange="channelList(\''+i+'\',\'2\',\''+objArr[i].userChannelId+'\')" ></item></tabbar-item>');
 							           $('tabbar').add(item);
 							           var contentItem = $C('<content draggable="true" id="indexContent'+i+'" ondragdown="refreshPage(\''+i+'\');" >'+
-											        '<list id="list'+i+'" style="background:#ffffff">'+
+											        '<list id="list'+i+'" style="background:#ffffff" onscrollbottom="scrollbottom()">'+
 	                								'</list>'+
 											        '<bottom id="content_bottom'+i+'">'+
 										                '<list>'+
-										                    '<item onclick="loadList(\'add\')">'+
+										                    '<item>'+
 										                      	'<row style="display:hidden" id="bottom_hasmore'+i+'">'+
-											                        '<label style="align:center;">点击加载更多...</label>'+
+											                        '<label style="align:center;">上拉加载更多...</label>'+
 											                        '<progress id="more_progress" style="display:none;align:center"/>'+
 											                    '</row>'+
 											                '</item>'+
@@ -122,13 +122,13 @@
 				        	         var item = $C('<tabbar-item><item onchange="channelList(\'0\',\'2\',\''+objArr.userChannelId+'\')" ><label>'+objArr.userChannelName+'</label></item></tabbar-item>');
 							         $('tabbar').add(item);
 							          var contentItem = $C('<content  draggable="true" id="indexContent0" ondragdown="refreshPage(\'0\');" >'+
-											        '<list id="list0" style="background:#ffffff">'+
+											        '<list id="list0" style="background:#ffffff" onscrollbottom="scrollbottom()">'+
 	                								'</list>'+
 											        '<bottom id="content_bottom0">'+
 										                '<list>'+
-										                    '<item onclick="loadList(\'add\')">'+
+										                    '<item>'+
 										                      	'<row style="display:hidden" id="bottom_hasmore0">'+
-											                        '<label style="align:center;">点击加载更多...</label>'+
+											                        '<label style="align:center;">上拉加载更多...</label>'+
 											                        '<progress id="more_progress" style="display:none;align:center"/>'+
 											                    '</row>'+
 											                '</item>'+
@@ -298,10 +298,12 @@
 	                pagerOffset = parseInt(pagerOffset)+15;
 	                if(parseInt(recordCount) > parseInt(pagerOffset)){
         				$('bottom_hasmore'+contentIdIndex).css('display','');
+        				onscrollbottomFlag = 'true';
         			 }else{
         				$('bottom_hasmore'+contentIdIndex).css('display','none');
         				$('content_bottom'+cunrrentContentIdIndex).css('display','none');
         			//	$('indexContent'+contentIdIndex).hideBottom();
+        			    onscrollbottomFlag = 'false';
         			 }
         			
 	            }
@@ -497,6 +499,7 @@
             $('indexContent'+contentIdIndex).hideTop();
             $('list'+cunrrentContentIdIndex).clear();   //清理上一个content内容
 	        pagerOffset = 0;
+	        onscrollbottomFlag = 'true';
 	        var title = $('search').value;
 	        if(containSpecial(title)){
 				$('search').value='';
@@ -617,10 +620,12 @@
 			      pagerOffset = parseInt(pagerOffset)+15;
 	              if(parseInt(recordCount) > parseInt(pagerOffset)){
         				$('bottom_hasmore'+cunrrentContentIdIndex).css('display','');
+        				onscrollbottomFlag = 'true';
         		  }else{
         				$('bottom_hasmore'+cunrrentContentIdIndex).css('display','none');
         				//$('indexContent'+cunrrentContentIdIndex).hideBottom();
         				$('content_bottom'+cunrrentContentIdIndex).css('display','none');
+        				onscrollbottomFlag = 'false';
         		  }
 			},function(error) {
 			    if (error == 'timeout') {
@@ -635,6 +640,14 @@
 			    $page.open('../index.xml',{animation:'down-to-up'});
 		    });
 		}
+		
+		var onscrollbottomFlag = 'true';
+        function scrollbottom(){    //禁止多次上拉，所有数据加载完毕禁止上拉
+            if(onscrollbottomFlag == 'true'){
+            	onscrollbottomFlag = 'false';
+            	loadList('add');
+            }
+        }
         
         ]]>
 </script>
@@ -659,13 +672,13 @@
 		</header>
 		<contents id="contents" scrollable="true" >
 	            <content draggable="true" id="indexContentinfo"  ondragdown="refreshPage('info');" >
-	                <list id="listinfo" style="background:#ffffff">
+	                <list id="listinfo" style="background:#ffffff" onscrollbottom="scrollbottom()">
 	                </list>
 			        <bottom id="content_bottominfo">
 		                <list>
-		                    <item onclick="loadList('add')">
+		                    <item >
 		                      	<row id="bottom_hasmoreinfo" style="display:hidden;">
-			                        <label style="align:center;">点击加载更多...</label>
+			                        <label style="align:center;">上拉加载更多...</label>
 			                        <progress id="more_progressinfo" style="display:none;align:center"/>
 			                    </row>
 			                </item>
@@ -673,13 +686,13 @@
 	                </bottom>
 	            </content>
 	            <content draggable="true" id="indexContentportal"  ondragdown="refreshPage('portal');" >
-	                <list id="listportal" style="background:#ffffff">
+	                <list id="listportal" style="background:#ffffff" onscrollbottom="scrollbottom()">
 	                </list>
 			        <bottom id="content_bottomportal">
 		                <list>
-		                    <item onclick="loadList('add')">
+		                    <item >
 		                      	<row style="display:hidden" id="bottom_hasmoreportal">
-			                        <label style="align:center;">点击加载更多...</label>
+			                        <label style="align:center;">上拉加载更多...</label>
 			                        <progress id="more_progressportal" style="display:none;align:center"/>
 			                    </row>
 			                </item>

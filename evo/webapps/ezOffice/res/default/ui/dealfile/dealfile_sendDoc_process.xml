@@ -413,7 +413,7 @@
 					$http.post(evoUrl + '/ezOffice/doc/dealFiles.do', {
 						accessoryNameseries : attachments[1].replace(/,/g,'|'),
 						accessorySaveNameseries : attachments[0].replace(/,/g,'|'),
-						path : 'govdocumentmanager'
+						path : attachments[3]
 					}, function(data) {
 						if (data) {
 							var obj = JSON.parse(data);
@@ -592,7 +592,7 @@
 		        		var fieldDisplayType = govDocDetail.field1.fieldDisplayType;
 		        		if(fieldDisplayType == '13' || fieldDisplayType == '14' || fieldDisplayType == '17'){
 		        			if(govDocDetail.field1.text && govDocDetail.field1.text.length > 0){
-			        			attachmentArray.push(govDocDetail.field1.text + ';field1');
+			        			attachmentArray.push(govDocDetail.field1.text + ';field1'+';govdocumentmanager');
 		        			}
 		        			itemContent += '<col id="field1"  style="margin:10;padding:10;"></col></item>';
 		        		}else{
@@ -606,7 +606,7 @@
 		        		var fieldDisplayType = govDocDetail.field2.fieldDisplayType;
 		        		if(fieldDisplayType == '13' || fieldDisplayType == '14' || fieldDisplayType == '17'){
 		        			if(govDocDetail.field2.text && govDocDetail.field2.text.length > 0){
-			        			attachmentArray.push(govDocDetail.field2.text + ';field2');
+			        			attachmentArray.push(govDocDetail.field2.text + ';field2'+';govdocumentmanager');
 		        			}
 		        			itemContent += '<col id="field2" style="margin:10;padding:10;"></col></item>';
 		        		}else{
@@ -620,7 +620,7 @@
 		        		var fieldDisplayType = govDocDetail.field3.fieldDisplayType;
 		        		if(fieldDisplayType == '13' || fieldDisplayType == '14' || fieldDisplayType == '17'){
 		        			if(govDocDetail.field3.text && govDocDetail.field3.text.length > 0){
-			        			attachmentArray.push(govDocDetail.field3.text + ';field3');
+			        			attachmentArray.push(govDocDetail.field3.text + ';field3'+';govdocumentmanager');
 		        			}
 		        			itemContent += '<col id="field3" style="margin:10;padding:10;"></col></item>';
 		        		}else{
@@ -634,7 +634,7 @@
 		        		var fieldDisplayType = govDocDetail.field4.fieldDisplayType;
 		        		if(fieldDisplayType == '13' || fieldDisplayType == '14' || fieldDisplayType == '17'){
 		        			if(govDocDetail.field4.text && govDocDetail.field4.text.length > 0){
-			        			attachmentArray.push(govDocDetail.field4.text + ';field4');
+			        			attachmentArray.push(govDocDetail.field4.text + ';field4'+';govdocumentmanager');
 		        			}
 		        			itemContent += '<col id="field4" style="margin:10;padding:10;"></col></item>';
 		        		}else{
@@ -648,7 +648,7 @@
 		        		var fieldDisplayType = govDocDetail.field5.fieldDisplayType;
 		        		if(fieldDisplayType == '13' || fieldDisplayType == '14' || fieldDisplayType == '17'){
 		        			if(govDocDetail.field5.text && govDocDetail.field5.text.length > 0){
-			        			attachmentArray.push(govDocDetail.field5.text + ';field5');
+			        			attachmentArray.push(govDocDetail.field5.text + ';field5'+';govdocumentmanager');
 		        			}
 		        			itemContent += '<col id="field5" style="margin:10;padding:10;"></col></item>';
 		        		}else{
@@ -662,7 +662,7 @@
 		        		var fieldDisplayType = govDocDetail.field6.fieldDisplayType;
 		        		if(fieldDisplayType == '13' || fieldDisplayType == '14' || fieldDisplayType == '17'){
 		        			if(govDocDetail.field6.text && govDocDetail.field6.text.length > 0){
-			        			attachmentArray.push(govDocDetail.field6.text + ';field6');
+			        			attachmentArray.push(govDocDetail.field6.text + ';field6'+';govdocumentmanager');
 		        			}
 		        			itemContent += '<col id="field6" style="margin:10;padding:10;"></col></item>';
 		        		}else{
@@ -676,7 +676,7 @@
 		        		var fieldDisplayType = govDocDetail.field7.fieldDisplayType;
 		        		if(fieldDisplayType == '13' || fieldDisplayType == '14' || fieldDisplayType == '17'){
 		        			if(govDocDetail.field7.text && govDocDetail.field7.text.length > 0){
-			        			attachmentArray.push(govDocDetail.field7.text + ';field7');
+			        			attachmentArray.push(govDocDetail.field7.text + ';field7'+';govdocumentmanager');
 		        			}
 		        			itemContent += '<col id="field7" style="margin:10;padding:10;"></col></item>';
 		        		}else{
@@ -690,7 +690,7 @@
 		        		var fieldDisplayType = govDocDetail.field8.fieldDisplayType;
 		        		if(fieldDisplayType == '13' || fieldDisplayType == '14' || fieldDisplayType == '17'){
 		        			if(govDocDetail.field8.text && govDocDetail.field8.text.length > 0){
-			        			attachmentArray.push(govDocDetail.field8.text + ';field8');
+			        			attachmentArray.push(govDocDetail.field8.text + ';field8'+';govdocumentmanager');
 		        			}
 		        			itemContent += '<col id="field8" style="margin:10;padding:10;"></col></item>';
 		        		}else{
@@ -704,7 +704,7 @@
 		        		var fieldDisplayType = govDocDetail.field9.fieldDisplayType;
 		        		if(fieldDisplayType == '13' || fieldDisplayType == '14' || fieldDisplayType == '17'){
 		        			if(govDocDetail.field9.text && govDocDetail.field9.text.length > 0){
-			        			attachmentArray.push(govDocDetail.field9.text + ';field9');
+			        			attachmentArray.push(govDocDetail.field9.text + ';field9'+';govdocumentmanager');
 		        			}
 		        			itemContent += '<col id="field9" style="margin:10;padding:10;"></col></item>';
 		        		}else{
@@ -718,7 +718,7 @@
 		        		var fieldDisplayType = govDocDetail.field10.fieldDisplayType;
 		        		if(fieldDisplayType == '13' || fieldDisplayType == '14' || fieldDisplayType == '17'){
 		        			if(govDocDetail.field10.text && govDocDetail.field10.text.length > 0){
-			        			attachmentArray.push(govDocDetail.field10.text + ';field10');
+			        			attachmentArray.push(govDocDetail.field10.text + ';field10'+';govdocumentmanager');
 		        			}
 		        			itemContent += '<col id="field10" style="margin:10;padding:10;"></col></item>';
 		        		}else{
@@ -748,10 +748,10 @@
 	        		var custemFieldList = govDocDetail.custemFieldList;
 		        	if(custemFieldList instanceof Array){
 		        		for(var i=0,length=custemFieldList.length;i<length;i++){
-			        		itemContent += createCustemFieldCon(custemFieldList[i]);
+			        		itemContent += createCustemFieldCon(custemFieldList[i],i+'');
 		        		}
 		        	}else if(custemFieldList instanceof Object){
-		        		itemContent += createCustemFieldCon(custemFieldList);
+		        		itemContent += createCustemFieldCon(custemFieldList.custemField,'0');
 		        	}
 	        	}
 	        	// 批示意见
@@ -811,9 +811,9 @@
 	        }
 
 	        // 构建自定义字段内容
-			function createCustemFieldCon(custemField){
+			function createCustemFieldCon(custemField,cusIndex){
 				var custemCon = '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;">';
-				custemCon += '<row><label style="align:left;font-size:16;color:#555555">'+custemField.name+':</label></row></col><col style="margin:10;padding:10;">';
+				custemCon += '<row><label style="align:left;font-size:16;color:#555555">'+custemField.name+':</label></row></col><col style="margin:10;padding:10;" id="cusFile_'+cusIndex+'">';
 				var content = custemField.content;
 				var fieldDisplayType = custemField.displayType;
 				if(fieldDisplayType=='705' || fieldDisplayType=='704' || fieldDisplayType=='214' 
@@ -821,6 +821,12 @@
 				    if(content){
 				    	var cons = content.split(";");
 				    	custemCon += '<row><label style="color:#555555">'+cons[0]+'</label></row>';
+				    }
+				}else if(fieldDisplayType=='115'){   //附件
+				    if(content&&content.length>0){
+				   // 	var cons = content.split(";");
+				    	attachmentArray.push(content+';cusFile_'+cusIndex+';customform');
+				   // 	custemCon += '<row><label style="color:#555555">'+cons[0]+'</label></row>';
 				    }
 				}else{
 					if(content && fieldDisplayType){
@@ -963,7 +969,8 @@
 	        
         	 //创建流程图
 	        function createFlowImg(flowGraphUrl,picRootPath){
-	        	if(!(flowGraphUrl instanceof Array)){
+	        //	if(!(flowGraphUrl instanceof Array)){
+	            if(false){
 	        	//	var imgPath = webServiceUrl + 'upload/workflow_acc/' + flowGraphUrl + '?rand=' + Math.random();
 		        	picRootPath = evoUrl +'/ezOffice/download/resizeHandSign.do?url=' +webServiceUrl + 'upload/workflow_acc/';
 	        		var imgPath = picRootPath+flowGraphUrl;

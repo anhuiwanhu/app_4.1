@@ -486,8 +486,10 @@
 			        var pageCount = obj.person.data.pageCount;
 			        if(eval(currentPage)==eval(pageCount)){
 			          $('content_per').hideBottom();
+			          onscrollbottomFlag = 'false';
 			        }else{
 			          $('content_per').showBottom();
+			          onscrollbottomFlag = 'true';
 			        }
 			        offset  = obj.offset;
 			        
@@ -566,6 +568,14 @@
             //alert(selectUserIds+"  "+selectUserNames);
         	$page.close(0, returnfuc);
        	} 
+       	
+       	var onscrollbottomFlag = 'true';
+        function scrollbottom(){    //禁止多次上拉，所有数据加载完毕禁止上拉
+            if(onscrollbottomFlag == 'true'){
+            	onscrollbottomFlag = 'false';
+            	addpersonList();
+            }
+        }
 		
     ]]>
     </script> 
@@ -589,9 +599,7 @@
         </header>
         <contents id="contents">
             <content id="content_per">
-                
-	            <list id="resuelist" reuse="true">
-              
+	            <list id="resuelist" reuse="true" onscrollbottom="scrollbottom()">
 	                <item style="background:#ffffff;margin:1;col-width:40,55,*;">
 	                    <col><checkbox reusekey="chek" style="align:left;font-size:18" id="" value="" disabled="false" onclick=""/></col>
 	                    <col>
@@ -605,10 +613,10 @@
 	            </list>
                 <bottom id="content_bottom">
 	                <list>
-	                    <item id="bottom_list" onclick="addpersonList()">
+	                    <item id="bottom_list">
 	                        <row style="display:hidden" id="bottom_load"><label style="align:center;">正在加载...</label><progress style="align:center"/></row>
 	                      	<row id="bottom_hasmore">
-		                        <label style="align:center;">点击加载更多...</label>
+		                        <label style="align:center;">上拉加载更多...</label>
 		                        <progress id="more_progress" style="display:none;align:center"/>
 		                    </row>
 		                </item>

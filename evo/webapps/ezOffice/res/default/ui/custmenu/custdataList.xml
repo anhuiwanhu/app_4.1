@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag mode="develop">
+    <script>
+    <![CDATA[
+        var curpage;
+        $page.onload = function() {
+			var storage = $phone.localStorage();
+            var evoUrl = storage.getItem('evoUrl');
+            var custdata_menuId = storage.getItem('custdata_menuId');
+            var custdata_menuName = storage.getItem('custdata_menuName');
+            curpage = storage.getItem('curpage');
+            $('titleLabel1').text = custdata_menuName;
+            var storage = $phone.localStorage();
+            var evoUrl = storage.getItem('evoUrl');
+            var cust_queryField =storage.getItem('cust_queryField');
+            var cust_queryText =storage.getItem('cust_queryText');
+            
+		   $http.post(evoUrl+'/ezOffice/custmenu/getCustMenuDataList.do','menuid='+custdata_menuId
+		        +'&curpage='+curpage+'&cust_queryField='+cust_queryField+'&cust_queryText='+cust_queryText, function(data) {
+			     var obj = JSON.parse(data);
+			     if(obj.logonerror && obj.logonerror=='1'){
+         			alert("该账号已在设备"+obj.deviceId+"上登录");
+          			$page.open('../index.xml',{target:'_self'});
+                    return;
+                 } 
+			     if(obj.data.middlButton.button){
+			       var type = obj.data.middlButton.button.type;
+			       var formId = obj.data.middlButton.button.formId;
+			       if(type=='cmdAdd'){
+			       		$('but_cmdAdd').onclick="go_CmdAdd('','"+formId+"')";
+			            $('but_cmdAdd').style="display:block;";
+			       }else if(type=='cmdNewAdd'){
+			             var formCode = obj.data.middlButton.button.formCode;
+			       		$('but_cmdAdd').onclick="go_newCmdAdd('new','"+formId+"','"+formCode+"')";
+			            $('but_cmdAdd').style="display:block;";
+
+			       }else if(type=='cmdStartFlow'){
+			         var processId = obj.data.middlButton.button.processId;
+			         var processName = obj.data.middlButton.button.processName;
+			         
+			         $('but_cmdAdd').onclick="go_CmdFlow('"+formId+"','"+processId+"','"+processName+"')";
+			         $('but_cmdAdd').style="display:block;";
+			       }else if(type=='cmdNewStartFlow'){
+			         var processId = obj.data.middlButton.button.processId;
+			         var processName = obj.data.middlButton.button.processName;
+			         
+			         $('but_cmdAdd').onclick="go_CmdNewFlow('"+formId+"','"+processId+"','"+processName+"')";
+			         $('but_cmdAdd').style="display:block;";
+			       }
+			       
+			     }
+
+			     if(obj.data.searchFields&&
+			        obj.data.searchFields!=""&&
+			        obj.data.searchFields!=" "&&
+			        obj.data.searchFields!="[]"&&
+			        obj.message.result=="1"&&
+			        obj.data.datalist){
+                    var item = $C('<list-item><item style="col-width:*,100;"><row>'+
+                          '<input type="text" name="username" style="text-align:center;font-size:16;" placeholder="点击查询" onclick="go_dataSearchpage();"/></row></item></list-item>');
+			       $('data_list').add(item);
+			     }
+			            
+			     if(obj.message.result=="1"&&
+			        obj.data.datalist){
+			        var formId = obj.data.viewButton.formId;
+			        var pageCount = obj.data.pageCount;
+			        if(eval(curpage)==eval(pageCount)){
+			          $('content_bottom').css('display','none');
+			          onscrollbottomFlag = 'false';   //数据全部显示完毕，禁止上拉
+			        }else{
+			          $('content_bottom').css('display','block');
+			          onscrollbottomFlag = 'true';   
+			        }
+                    var groups = obj.data.datalist;
+                    if(groups instanceof Array){
+	                    for(var i=0;i<groups.length;i++){
+				            var infoId=groups[i][0];
+				            var title="";
+				            for(var j=1;j<groups[i].length;j++){
+				               title +=groups[i][j]+"  ";
+				            }
+				            title = title.replace(/\&/g,'&amp;');
+				            title = title.replace(/\</g,'&lt;');
+				            var item = $C('<list-item><item accessory="indicator" style="col-width:*,100;" onclick="go_viewForm(\''+formId+'\',\''+infoId+'\');"><row><label style="color:#555555;font-size:16;">'+title+'</label></row></item></list-item>');
+				            $('data_list').add(item);
+				        }
+                    }else if(groups instanceof Object){
+                           var infoId=groups.list[0];
+				            var title="";
+				            for(var j=1;j<groups.list.length;j++){
+				               title +=groups.list[j]+"  ";
+				            }
+				            title = title.replace(/\&/g,'&amp;');
+				            title = title.replace(/\</g,'&lt;');
+				            var item = $C('<list-item><item accessory="indicator" style="col-width:*,100;" onclick="go_viewForm(\''+formId+'\',\''+infoId+'\');"><row><label style="color:#555555;font-size:16;">'+title+'</label></row></item></list-item>');
+				            $('data_list').add(item);
+                    }
+			        
+			        if(obj.data.pageCount)
+			           storage.setItem('pageCount',obj.data.pageCount);
+			     }else{
+			        var item = $C('<list-item><item style="col-width:*,100;"><row><label>暂无相关记录</label></row></item></list-item>');
+			            $('data_list').add(item);
+			     }
+			},function(error) {
+			    if (error == 'timeout') {
+			        hint('连接服务器超时！');
+			    } else if (error == '404') {
+			        hint('链接超时重新登录！');
+			    } else if (error == '500') {
+			        hint('内部服务器错误！');
+			    } else {
+			        hint('访问网络错误！错误代码:' + error);
+			    }
+			    $page.open('../index.xml',{animation:'down-to-up'});
+		    });
+		}
+		
+		function addDataList() {
+		    var storage = $phone.localStorage();
+            var evoUrl = storage.getItem('evoUrl');
+            var custdata_menuId = storage.getItem('custdata_menuId');
+            var curpage = storage.getItem('curpage');
+            var pageCount = storage.getItem('pageCount');
+            if(eval(curpage)>=eval(pageCount)){
+                return;
+            }
+            curpage = eval(curpage)+1;
+            $('bottom_hasmore').css('display','hidden');
+		    $('bottom_load').css('display','');
+            var cust_queryField =storage.getItem('cust_queryField');
+            var cust_queryText =storage.getItem('cust_queryText');
+		    $http.post(evoUrl+'/ezOffice/custmenu/getCustMenuDataList.do','menuid='+custdata_menuId+
+		    '&curpage='+curpage+'&cust_queryField='+cust_queryField+'&cust_queryText='+cust_queryText, 
+		      function(data) {
+			     var obj = JSON.parse(data);
+			     if(obj.logonerror && obj.logonerror=='1'){
+         			alert("该账号已在设备"+obj.deviceId+"上登录");
+          			$page.open('../index.xml',{target:'_self'});
+                    return;
+                 } 
+			     if(obj.message.result=="1"&&
+			        obj.data.datalist){
+			        var formId = obj.data.viewButton.formId;
+                    var groups = obj.data.datalist;
+                    var pageCount = obj.data.pageCount;
+			        if(eval(curpage)==eval(pageCount)){
+			          $('content_bottom').css('display','none');
+			          onscrollbottomFlag = 'false';   //数据全部显示完毕，禁止上拉
+			        }else{
+			          $('content_bottom').css('display','block');
+			          onscrollbottomFlag = 'true';   //还可以进行上拉
+			        }
+			        for(var i=0;i<groups.length;i++){
+			            var infoId=groups[i][0];
+			            var title="";
+			            for(var j=1;j<groups[i].length;j++){
+			               title +=groups[i][j]+"  ";
+			            }
+			            title = title.replace(/\&/g,'&amp;');
+				        title = title.replace(/\</g,'&lt;');
+			            var item = $C('<list-item><item accessory="indicator" style="col-width:*,100;" onclick="go_viewForm(\''+formId+'\',\''+infoId+'\');"><row><label style="color:#555555;font-size:16;">'+title+'</label></row></item></list-item>');
+			            $('data_list').add(item);
+			        }
+			     }
+			},function(error) {
+			    if (error == 'timeout') {
+			        hint('连接服务器超时！');
+			    } else if (error == '404') {
+			        hint('页面不存在！');
+			    } else if (error == '500') {
+			        hint('内部服务器错误！');
+			    } else {
+			        hint('访问网络错误！错误代码:' + error);
+			    }
+			    $page.open('../index.xml',{animation:'down-to-up'});
+		    });
+			$('bottom_hasmore').css('display','');
+		    $('bottom_load').css('display','hidden');
+		    storage.setItem('curpage',curpage);
+			
+		}
+		function go_CmdAdd(formtype,formId) {
+		   var storage = $phone.localStorage();
+		   storage.setItem('cust_formId',formId);
+		   storage.setItem('cust_formType',formtype);
+		  
+		   $page.open('cust_FormAdd.xml', {animation:'down-to-up'});
+		}
+		
+		function go_newCmdAdd(formtype,formId,formCode) {
+		   var storage = $phone.localStorage();
+		   storage.setItem('cust_formId',formId);
+		   storage.setItem('cust_formType',formtype);
+		    storage.setItem('cust_formCode',formCode);
+		  
+		   $page.open('cust_FormAdd.xml', {animation:'down-to-up'});
+		}
+		//老流程
+		function go_CmdFlow(pageId,processId,processName) {
+		   $page.open('../workflow/workflow_new_process.xml?model=custmenu&pageId='+pageId+'&processId='+processId+'&processName='+encodeURIComponent(processName),
+		   {animation:'down-to-up'});
+		}
+		//新流程
+		function go_CmdNewFlow(pageId,processId,processName) {
+		  $page.open('../workflow/workflow_new_ezprocess.xml?model=custmenu&pageId='+pageId+'&processId='+encodeURIComponent(processId)+'&processName='+encodeURIComponent(processName),
+		   {animation:'down-to-up'});
+		}
+		function go_viewForm(formId,infoId) {
+		   $page.open('cust_FormView.xml?formId='+formId+'&infoId='+infoId,{animation:'down-to-up'});
+		}
+		function go_dataSearchpage() {
+		    var storage = $phone.localStorage();
+            var custdata_menuId = storage.getItem('custdata_menuId');
+		   $page.open('custdataSearch.xml?custmenuId='+custdata_menuId,{animation:'down-to-up'});
+		}
+		
+		var onscrollbottomFlag = 'true';
+        function scrollbottom(){    //禁止多次上拉，所有数据加载完毕禁止上拉
+            if(onscrollbottomFlag == 'true'){
+            	onscrollbottomFlag = 'false';
+            	addDataList();
+            }
+        }
+		
+		
+    ]]>
+    </script> 
+	<page>
+	    <title style="background:#3daffe;tint-color:white">
+            <left>
+				<button role="back" />
+			</left>
+            <center>
+                <label id="titleLabel1" style="color:#ffffff"></label>
+            </center>
+            <right>
+                <button id="but_cmdAdd" style="display:none;" icon="desk_personcenter_add.png" />
+            </right>
+        </title>
+        <content id="content" draggable="true">
+           <list id="data_list" style="background:#ffffff;margin:10 0" onscrollbottom="scrollbottom()"></list>
+           <bottom id="content_bottom" style="display:hidden">
+	          <list>
+	              <item>
+	                  <row style="display:hidden" id="bottom_load"><label style="align:center;">正在加载...</label><progress style="align:center"/></row>
+	                	<row id="bottom_hasmore">
+	                   <label style="align:center;">上拉加载更多...</label>
+	                   <progress id="more_progress" style="display:none;align:center"/>
+	               </row>
+	           </item>
+	          </list>
+	        </bottom>
+        </content>
+    </page>
+</imag>

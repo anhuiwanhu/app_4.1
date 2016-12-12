@@ -97,6 +97,7 @@
 	            $('content'+cunrrentContentIdIndex).hideTop();
 	            currPage = '0';
 	        	offset = '0';
+	        	onscrollbottomFlag = 'true';
 	        	loadList('update');
 	        }
 	        //初始化列表数据   
@@ -257,9 +258,11 @@
 			        			}
 			        			if(parseInt(pageCount) > parseInt(currPage)){
 			        				$('bottom'+cunrrentContentIdIndex+'_hasmore').css('display','block');
+			        				onscrollbottomFlag = 'true';   //还可以进行上拉
 			        			}else{
 			        				$('bottom'+cunrrentContentIdIndex+'_hasmore').css('display','none');
 			        				$('content'+cunrrentContentIdIndex).hideBottom();
+			        				onscrollbottomFlag = 'false';   //数据全部显示完毕，禁止上拉
 			        			}
 			        			if(loadType == 'add'){
 				        			$('content'+cunrrentContentIdIndex+'_list').addMore(listJson);
@@ -295,7 +298,7 @@
 	        	itemJson = {
                     template : 1,
                     widgets : {
-                        title_tips : {text : '系统没有查询到数据！'}
+                        title_tips : {text : '暂无相关记录'}
                     }
                 }
                 listJson.items.push(itemJson);
@@ -502,7 +505,7 @@
 	        function addContentToPage(){  //待办与待阅页面
 	           $('tabbarId').css('display','block');
 	        	var contentItem  =  $C('<content id="contentRead" ondragdown="onloadList();$(\'contentRead\').hideTop();"  draggable="true" >'+
-								            '<list id="contentRead_list" reuse="true">'+
+								            '<list id="contentRead_list" reuse="true" onscrollbottom="scrollbottom();" >'+
 								                '<item style="col-width: 12%,*">'+
 								                    '<col>'+
 									                    '<row>'+
@@ -529,9 +532,9 @@
 								            '</list>'+
 								            '<bottom id="contentRead_bottom">'+
 								               '<list>'+
-								                   '<item onclick="loadList(\'add\');">'+
+								                   '<item >'+
 								                      	'<row style="display:hidden" id="bottomRead_hasmore">'+
-									                        '<label style="align:center;">点击加载更多...</label>'+
+									                        '<label style="align:center;">上拉加载更多...</label>'+
 									                        '<progress id="more_progress" style="display:none;align:center"/>'+
 									                    '</row>'+
 								                	'</item>'+
@@ -553,6 +556,14 @@
 	        		titleText = '待办文件';
 	        	}
 	        	initList();
+	        }
+	        
+	        var onscrollbottomFlag = 'true';
+	        function scrollbottom(){    //禁止多次上拉，所有数据加载完毕禁止上拉
+	            if(onscrollbottomFlag == 'true'){
+	            	onscrollbottomFlag = 'false';
+	            	loadList('add');
+	            }
 	        }
         ]]>
     </script>
@@ -584,8 +595,8 @@
 		    </list>
 		</popupmenu>
 		<contents id="indexContent" draggable="true"  scrollable="true">
-	        <content id="content" ondragdown="onloadList();$('content').hideTop();" draggable="true" >
-	            <list id="content_list" reuse="true">
+	        <content id="content" ondragdown="onloadList();$('content').hideTop();" draggable="true"  >
+	            <list id="content_list" reuse="true" onscrollbottom="scrollbottom()">
 	                <item style="col-width: 12%,*">
 	                    <col>
 		                    <row>
@@ -612,9 +623,9 @@
 	            </list>
 	            <bottom id="content_bottom">
 	               <list>
-	                   <item onclick="loadList('add');">
+	                   <item >
 	                      	<row style="display:hidden" id="bottom_hasmore">
-		                        <label style="align:center;">点击加载更多...</label>
+		                        <label style="align:center;">上拉加载更多...</label>
 		                        <progress id="more_progress" style="display:none;align:center"/>
 		                    </row>
 	                	</item>

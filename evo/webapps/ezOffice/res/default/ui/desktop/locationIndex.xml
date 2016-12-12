@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+ <script>
+    <![CDATA[
+        var loadFlag = '0';  //函数执行置为1，提交之前进行判断，若为1，则禁止 提交，防重复提交
+        var pagerOffset=0;
+        var lastDate = '';   //当前返回最后一条数据的日期，用于与下页返回数据进行对比，若为同一日，则下一页不显示日期。
+       
+        
+         //页面家在完成后执行
+        $page.onload = function() {
+            initList('update');
+        }
+        
+        function loadList(loadType){   //加载更多
+           initList(loadType);
+        }
+        
+       
+        function initList(loadType){
+            if(loadFlag == '1'){
+	        	return false;
+	        }
+	        if(loadType == "update"){
+	           $('docList').clear();
+	        }
+	        loadFlag = '1';
+	        $('bottom_hasmore').css('display','hidden');
+	        $('bottom_load').css('display','');
+	        $('indexContent').showBottom();
+	        var storage = $phone.localStorage();
+		    var evoUrl = storage.getItem('evoUrl');
+            $http.post(evoUrl+'/ezOffice/attendance/locateList.do',{pagerOffset:pagerOffset},  function(data) {
+                if(data){
+                    var res = JSON.parse(data);
+                    if(res.logonerror &&res.logonerror=='1'){
+		         		alert("该账号已在设备"+res.deviceId+"上登录");
+	          			$page.open('../index.xml',{target:'_self'});
+                        return;
+                    }
+	                var  serveUrl = res.serveUrl;   //请求服务器路径
+				    var rootPath_res = res.rootPath_res;  //真实路径
+	                var docXml = res.docXml;
+	                var obj = JSON.parse(docXml);
+                    
+	                var result = obj.message.result;
+	               
+	                var listJson = {items:[]};   //存储返回数据列表信息
+		            var currentDate = "";   //获取当前时间，与签到日期对比，若为当天，时间显示为“当日”
+                    var myDate = new Date();
+                    currentDate = myDate.getFullYear()+"-"+((myDate.getMonth())<9?("0"+(myDate.getMonth()+1)) :((myDate.getMonth()+1) ))+"-"+(myDate.getDate()<10?("0"+myDate.getDate()) : myDate.getDate());
+                   
+				    if(result =="1"){
+				        pagerOffset = obj.data.pagerOffset;
+	                    var recordCount = obj.data.recordCount;
+				        var objArr = obj.data.locationList; //返回列表数组
+			        	if(objArr instanceof Array){    //返回多条数据
+				                for (var i = 0; i < objArr.length; i++) {
+			                        //显示头像
+				                    var empLivingPhoto = obj.data.empLivingPhoto;
+				                    //var empLivingPhoto = ""
+				                    var photoPath ;
+				                    
+				                    if(empLivingPhoto!=null&&empLivingPhoto!=""){
+								    	photoPath = serveUrl + empLivingPhoto;
+								    }else{
+								    	photoPath = rootPath_res + "person_ico.png";
+								    }
+				                   
+				                   var locationTime = objArr[i].locationTime;  //签到具体时间
+				                   var registTime = "";   //签到日期，不显示年月日
+				                   var loDate = "";        //签到日期，不含时分秒,显示在标题。
+			                       if(locationTime!=null&&locationTime!=""){
+			                           if(locationTime.substring(0,10)==currentDate){
+			                              loDate = "本日";
+			                           }else{
+			                              loDate = locationTime.substring(0,10);
+			                           }
+			                           registTime = locationTime.substring(0,19);
+			                       }else{
+			                           registTime = "";
+			                       }
+			                       if(objArr.length == 15){   //本页最后时间赋值
+			                       		lastDate = loDate ;
+			                       }
+			                       
+			                       if(i>=1){   //第二条数据需要与上一条进行对比，若是一天，则显示灰色长条
+			                           if(objArr[i-1].locationTime!=null&&objArr[i-1].locationTime.length>=12&&objArr[i].locationTime!=null&&objArr[i].locationTime.length>=12){
+			                               if(objArr[i-1].locationTime.substring(0,10)==objArr[i].locationTime.substring(0,10)){
+			                                    var    itemJson_null = {   
+									                        template : 1,
+									                        onclick : '',
+									                        widgets : {
+									                        }
+									                  };
+									                listJson.items.push(itemJson_null);
+			                                         
+			                                   
+			                               }else{
+			                                    var   itemJson_time = {   //
+								                        template : 0,
+								                        onclick : '',
+								                        widgets : {
+								                            loDate : {text : loDate}
+								                        }
+								                 };
+								               listJson.items.push(itemJson_time);
+			                               }
+			                           }
+			                           
+			                       }else{
+			                          var    itemJson_time = {   //第一条数据，直接显示
+								                        template : 0,
+								                        onclick : '',
+								                        widgets : {
+								                            loDate : {text : loDate}
+								                        }
+								                 };
+								       if(lastDate == ''){  //首页数据，直接显示第一条
+								       		listJson.items.push(itemJson_time);
+								       }else if(lastDate == loDate){
+								              var    itemJson_null = {   
+									                        template : 1,
+									                        onclick : '',
+									                        widgets : {
+									                        }
+									                  };
+									          listJson.items.push(itemJson_null);
+								       }   
+								       
+			                       }
+				                    
+					              var  itemJson_name = {   //头像，姓名，时间
+					                        template : 2,
+					                        onclick : '',
+					                        widgets : {
+					                            username : {text : obj.data.username},
+					                            locationTime : {text :  registTime}
+					                        }
+					                 };
+					              var locationAddress = objArr[i].locationAddress;
+					              if(locationAddress == null||locationAddress == ''||locationAddress == 'undefined'){
+					                  locationAddress = '';
+					              }
+					              var  itemJson_addr = {   //地址
+					                        template : 3,
+					                        onclick : '',
+					                        widgets : {
+					                            locationAddress : {text :locationAddress}
+					                        }
+					                 };
+					                 
+					                 listJson.items.push(itemJson_name);
+					                 listJson.items.push(itemJson_addr);
+				                }
+			        	}else if(objArr instanceof Object){   //返回一条数据
+			        	      //显示头像
+		                     var empLivingPhoto = obj.data.empLivingPhoto;
+		                      //var empLivingPhoto = ""
+		                     var photoPath ;
+		                    
+		                     if(empLivingPhoto!=null&&empLivingPhoto!=""){
+						    	 photoPath = serveUrl + empLivingPhoto;
+						     }else{
+						    	 photoPath = rootPath_res + "person_ico.png";
+						     }
+				                  // alert(photoPath);
+			        	      var locationTime = objArr.locationTime;  //签到具体时间
+				              var registTime = ""; //签到时间     
+			                  var loDate = "";        //签到日期，不含时分秒,显示在标题。
+		                      if(locationTime!=null&&locationTime!=""){
+		                           if(locationTime.substring(0,10)==currentDate){
+		                              loDate = "本日";
+		                           }else{
+		                              loDate = locationTime.substring(0,10);
+		                           }
+		                           registTime = locationTime.substring(11,19);
+		                      }else{
+		                           registTime = "";
+		                      }
+		                      
+		                      var    itemJson_time = {   //第一条数据，直接显示
+								                        template : 0,
+								                        onclick : '',
+								                        widgets : {
+								                            loDate : {text : loDate}
+								                        }
+								                 };
+							  listJson.items.push(itemJson_time);
+			                       
+			        	      var  itemJson_name = {   //头像，姓名，时间
+					                        template : 2,
+					                        onclick : '',
+					                        widgets : {
+					                            username : {text : obj.data.username},
+					                            locationTime : {text :  registTime}
+					                        }
+					                 };
+					          var locationAddress = objArr.locationAddress;
+				              if(locationAddress == null||locationAddress == ''||locationAddress == 'undefined'){
+				                  locationAddress = '';
+				              }
+				              var  itemJson_addr = {   //地址
+				                        template : 3,
+				                        onclick : '',
+				                        widgets : {
+				                            locationAddress : {text :locationAddress}
+				                        }
+				                 };
+				                 
+				              listJson.items.push(itemJson_name);
+				              listJson.items.push(itemJson_addr);
+			        	     
+		               	}else{   //没有返回数据
+		               	   itemJson = {
+			                    template : 4,
+			                    onclick : '',
+                                widgets : {
+			                             title : {text :'暂无相关记录' }
+			                         }
+			                }
+			                listJson.items.push(itemJson); 
+			            }
+	                }else{       //查询异常
+	                    itemJson = {
+			                    template : 4,
+			                    onclick : '',
+			                    widgets : {
+						                    title : {text : '暂无相关记录'}
+			                                }
+			                }
+			            listJson.items.push(itemJson); 
+	                }
+        			if(loadType == 'add'){
+	        			$('docList').addMore(listJson);
+        			}else if(loadType == 'update'){
+	        			$('docList').update(listJson);
+        			}
+	                pagerOffset = parseInt(pagerOffset)+15;
+	                if(parseInt(recordCount) > parseInt(pagerOffset)){
+        				$('bottom_hasmore').css('display','');
+        				onscrollbottomFlag = 'true';   //还可以进行上拉
+        			}else{
+        				$('bottom_hasmore').css('display','none');
+        				$('indexContent').hideBottom();
+        				onscrollbottomFlag = 'false';   //数据全部显示完毕，禁止上拉
+        			}
+	            }
+	            $('bottom_load').css('display','none');
+	        	loadFlag = '0';
+	         },function(error) {
+				    if (error == 'timeout') {
+				        hint('连接服务器超时！');
+				    } else if (error == '404') {
+				        hint('链接超时重新登录！');
+				    } else if (error == '500') {
+				        hint('内部服务器错误！');
+				    } else {
+				        hint('访问网络错误！错误代码:' + error);
+				    }
+				    $page.open('../index.xml',{animation:'down-to-up'});
+			    }
+	         );
+        }
+        
+        function refreshPage(){
+           $('indexContent').hideTop();
+           pagerOffset = '0';
+           onscrollbottomFlag = 'true';   //还可以进行上拉
+           initList('update');
+        }
+        
+        var onscrollbottomFlag = 'true';
+        function scrollbottom(){    //禁止多次上拉，所有数据加载完毕禁止上拉
+            if(onscrollbottomFlag == 'true'){
+            	onscrollbottomFlag = 'false';
+            	loadList('add');
+            }
+        }
+        
+    ]]>
+</script>
+	<page >
+		<title style="background:#3daffe;tint-color:white;">
+		    <left>
+				<button  role="back" />
+			</left>
+            <center>
+                <label id="title_center_label">签到信息</label>
+            </center>
+	    </title>
+	    <header  style="background:#f8f8f8;margin:12 0 2 0;">
+			<row style="text-align:center; padding:0 0;">
+				<label style="font-size:12;align:center;color:#b8b8b8;">若签到信息不准确，请签退后重新点击“上班签到”</label>
+			</row>
+		</header>
+		<content  current="true" id="indexContent"  style="background:white;" draggable="true" ondragdown="refreshPage();" >
+			<list id="docList" style="margin:10 0;corner-radius:0;"  reuse="true" onscrollbottom="scrollbottom()">
+			    <item style="background:#f0eff5;" >
+			           <col>
+					       <row><label style="color:#555555;font-size:16;" reusekey="loDate" ></label></row>
+					   </col>
+	            </item>
+	            <item style="background:#f0eff5;padding:2;border:1 #f0eff5;">
+			           <col>
+					   </col>
+	            </item>
+	            <item>
+	                   <col>
+	                        <row><label style="font-size:18;margin-left:10;"  reusekey="username" > </label><label  style="font-size:16;margin-left:5;color:#555555;" reusekey="locationTime" >2015-10-16 09:45:23</label></row>
+	                   </col>
+	            </item>
+	            <item style="background:#f9f9f9;col-width:25,*;">
+	                   <col>
+							  <row><icon src="desk_position.png" style="width:10;height:15;"/></row>
+						</col>
+	                    <col>
+	                    	<row>
+	                    		<label style="align:left;color:#b8b8b8;font-size:16;" reusekey="locationAddress" ></label>
+	                    	</row>
+	                    </col>
+	             </item>
+	             <item>
+	                    <col>
+	                    	<row>
+	                    		<label reusekey="title" style="align:center;"></label>
+	                    	</row>
+	                    </col>
+	              </item>
+			</list>
+			<bottom id="content_bottom">
+                <list>
+                    <item>
+                        <row id="bottom_load"><label style="align:center;">正在加载...</label><progress style="align:center"/></row>
+                      	<row style="display:hidden" id="bottom_hasmore">
+	                        <label style="align:center;">上拉加载更多...</label>
+	                        <progress id="more_progress" style="display:none;align:center"/>
+	                    </row>
+	                </item>
+                </list>
+             </bottom>
+		</content>
+	</page>
+</imag>

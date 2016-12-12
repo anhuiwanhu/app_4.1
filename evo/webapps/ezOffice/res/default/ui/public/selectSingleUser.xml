@@ -202,9 +202,11 @@
 			        if(parseInt(currentPage) < parseInt(pageCount)){
 	              		 $('bottom_hasmore').css('display','block');
 	              		 $('bottom_load').css('display','none');
+	              		 onscrollbottomFlag = 'true';
 	               	}else{
 	               		$('bottom_hasmore').css('display','none');
 		    	   		$('bottom_load').css('display','none'); 
+		    	   		onscrollbottomFlag = 'false';
 	               	}
 			     }else{
 			        $('resuelist').add($C('<list-item>'+
@@ -297,9 +299,11 @@
 			        if(parseInt(currentPage) < parseInt(pageCount)){
 	              		 $('bottom_hasmore').css('display','block');
 	              		 $('bottom_load').css('display','none');
+	              		 onscrollbottomFlag = 'true';
 	               	}else{
 	               		$('bottom_hasmore').css('display','none');
 		    	   		$('bottom_load').css('display','none'); 
+		    	   		onscrollbottomFlag = 'false';
 	               	}
 			     }
 			},function(error) {
@@ -322,6 +326,14 @@
             //alert(selectUserIds+"  "+selectUserNames);
         	$page.close(0, returnfuc);
        	} 
+       	
+       	var onscrollbottomFlag = 'true';
+        function scrollbottom(){    //禁止多次上拉，所有数据加载完毕禁止上拉
+            if(onscrollbottomFlag == 'true'){
+            	onscrollbottomFlag = 'false';
+            	addpersonList();
+            }
+        }
 		
     ]]>
     </script> 
@@ -340,14 +352,14 @@
 		    </row>
         </header>
         <content id="content_per">
-	         <list id="resuelist">
+	         <list id="resuelist" onscrollbottom="scrollbottom();">
 	         </list>
             <bottom>
 	             <list>
 	                 <item>
 	                     <row id="bottom_load"><label style="align:center;">正在加载...</label><progress style="align:center"/></row>
-	                   	   <row style="display:none" id="bottom_hasmore" onclick="addpersonList();">
-	                      <label style="align:center;">点击加载更多...</label>
+	                   	   <row style="display:none" id="bottom_hasmore" >
+	                      <label style="align:center;">上拉加载更多...</label>
 	                        <progress id="more_progress" style="display:none;align:center"/>
 	                  </row>
 	              </item>

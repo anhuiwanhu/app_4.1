@@ -308,9 +308,11 @@
 	                pagerOffset = parseInt(pagerOffset)+15;
 	                if(parseInt(recordCount) > parseInt(pagerOffset)){
         				$('bottom_hasmore').css('display','');
+        				onscrollbottomFlag = 'true';
         			}else{
         				$('bottom_hasmore').css('display','none');
         				$('indexContent').hideBottom();
+        				onscrollbottomFlag = 'false';
         			}
         			if(loadType == 'add'){
 	        			$('docList').addMore(listJson);
@@ -339,10 +341,19 @@
            $('indexContent').hideTop();
            //获取手机缓存中的数据
              pagerOffset=0;
+             onscrollbottomFlag = 'true';
              var storage = $phone.localStorage();
         //     var channelId = storage.getItem('information_channelId');
              initColumnList("update",channelId);
         }    
+        
+        var onscrollbottomFlag = 'true';
+        function scrollbottom(){    //禁止多次上拉，所有数据加载完毕禁止上拉
+            if(onscrollbottomFlag == 'true'){
+            	onscrollbottomFlag = 'false';
+            	loadList('add');
+            }
+        }
         ]]>
 </script>
 	<page >
@@ -363,7 +374,7 @@
 			</row>
 		</header>
 	    <content  id="indexContent" draggable="true" ondragdown="refreshPage();" >
-               <list  id="docList"  reuse="true" >
+               <list  id="docList"  reuse="true" onscrollbottom="scrollbottom()">
 					<item  accessory="indicator" style="col-width:50,*;">
 				            <col>
 							   <row><button style ="width:120;background:#f98e75;width:40;height:40;align:left;font-size:16;color:#ffffff;" onclick="" reusekey="btn"></button></row>
@@ -399,10 +410,10 @@
 	        </list>
 	        <bottom id="content_bottom" style="border:hidden;">
                 <list>
-                    <item onclick="loadList('add')">
+                    <item>
                         <row id="bottom_load"><label style="align:center;">正在加载...</label><progress style="align:center"/></row>
                       	<row style="display:hidden" id="bottom_hasmore">
-	                        <label style="align:center;">点击加载更多...</label>
+	                        <label style="align:center;">上拉加载更多...</label>
 	                        <progress id="more_progress" style="display:none;align:center"/>
 	                    </row>
 	                </item>

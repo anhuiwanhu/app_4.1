@@ -522,7 +522,8 @@
 	        
         	 //创建流程图
 	        function createFlowImg(flowGraphUrl,picRootPath){
-	        	if(!(flowGraphUrl instanceof Array)){
+	        //	if(!(flowGraphUrl instanceof Array)){
+	           if(false){
 	        	//	var imgPath = webServiceUrl + 'upload/workflow_acc/' + flowGraphUrl + '?rand=' + Math.random();
 		        	picRootPath = evoUrl +'/ezOffice/download/resizeHandSign.do?url=' +webServiceUrl + 'upload/workflow_acc/';
 	        		var imgPath = picRootPath+flowGraphUrl;

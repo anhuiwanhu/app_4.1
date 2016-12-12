@@ -65,10 +65,10 @@
                 if(readerIds == ''){
                 	alert('请选择提交人');
                 	return false;
-                }else if(content == ''){
+                 }else if(content == null||content == ''||content.replace(/ /g,'')==''){
                 	alert('汇报内容不能为空');
                 	return false;
-                }else if(title == ''){
+                }else if(title == null||title == ''||title.replace(/ /g,'')==''){
                 	alert('汇报标题不能为空');
                 	return false;
                 }else{//判断同一汇报区间重复汇报条数
