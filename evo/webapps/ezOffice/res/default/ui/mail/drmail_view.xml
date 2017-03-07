@@ -69,7 +69,7 @@
 							}
 							if(data.mailSign=="1"){
 								$("mailSign").checked=true;
-								var gnome = obj.gnome+"";
+								var gnome = data.gnome+"";
 								if(gnome!=null && gnome!=""&&gnome!="null"&&gnome!="undefined"){
 									newcontent += '\r\n\r\n'+gnome;
 								}
@@ -87,8 +87,8 @@
 								$('mailweb').css('display', 'none');
 								$('mailcontent').css('display', 'block');
 							}
-							$("accessorySize").value=obj.accessorySize;
 							var objArr = data.attachments;
+							$("accessorySize").value=obj.accessorySize;
 		                    var accessoryNameseries="";
 		                    var accessorySaveNameseries="";
 		                    var sfilenames="";
@@ -96,8 +96,8 @@
 		                    if((objArr+"")!=null && (objArr+"")!=""){
 		                    	if(objArr instanceof Array){    //返回多条数据
 					        	    for (var i = 0; i < objArr.length; i++) {
-					        	        if(i<objArr.length-1){
-					        	            accessoryNameseries += objArr[i].name+"|";
+					        	    	if(i<objArr.length-1){
+					        	        	accessoryNameseries += objArr[i].name+"|";
 					        	            rfileNames += objArr[i].name+"$F$";
 					        	            accessorySaveNameseries += objArr[i].savename+"|";
 					        	            sfilenames += objArr[i].saveName+"$F$";
@@ -139,8 +139,21 @@
 		               var attList = obj.attList;
 		               if(!attList==""){  //不为空，数据进行迭代,并为附件赋值
 		                  for(var k=0;k<attList.length;k++){
-		                      var files = $C('<row style="margin-bottom:5"><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath=innerMailbox'+'&amp;viewName='+attList[k].realname+'\')">'+attList[k].realname+'</label></row>')
-		                      $('docFiles').add(files); 
+		                       var files = "";
+			                      var fileType = attList[k].savename.substr(attList[k].savename.lastIndexOf(".")).replace(/<[^>]+>/g,'').toLowerCase();
+			                      if(fileType.toLowerCase() != '.xls' && fileType.toLowerCase() != '.xlsx'     //直接下载
+									&& fileType.toLowerCase() != '.doc' && fileType.toLowerCase() != '.docx' 
+									&& fileType.toLowerCase() != '.ppt' && fileType.toLowerCase() != '.pptx' 
+									&& fileType.toLowerCase() != '.rtf' && fileType.toLowerCase() != '.eio'
+									&& fileType.toLowerCase() != '.txt' && fileType.toLowerCase() != '.jpg'
+									&& fileType.toLowerCase() != '.png' && fileType.toLowerCase() != '.gif'
+									&& fileType.toLowerCase() != '.jpeg' && fileType.toLowerCase() != '.bmp'){
+			                      	 files = $C('<row style="margin-bottom:5"><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath='+path+'&amp;viewName='+attList[k].realname+'\')">'+attList[k].realname+'</label></row>');
+			                      }else{
+			                      	 // files = $C('<row style="margin-bottom:5"><label style="color:#38adff;align:left;font-size:16;margin-left:5;margin-right:5;" onclick="convertFileToHtml(\''+attList[k].savename+'\',\''+attList[k].realname+'\',\''+path+'\')">预览</label><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5;"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath='+path+'&amp;viewName='+attList[k].realname+'\')">'+attList[k].realname+'</label></row>');
+			                     	  files = $C('<row style="margin-bottom:5"><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5;"  onclick="convertFileToHtml(\''+attList[k].savename+'\',\''+attList[k].realname+'\',\''+path+'\')">'+attList[k].realname+'</label></row>');
+								  }
+								  $('docFiles').add(files); 
 		                  }
 		               }else{     //无附件，或者后台处理异常
 		               
@@ -150,6 +163,48 @@
 					toErro(error);
 				});
         }
+        
+            function convertFileToHtml(fileName,menuName,path){   //高清wordToSvgHtml  普通wordToHtml
+	         	 var fileType = fileName.substr(fileName.lastIndexOf(".")).replace(/<[^>]+>/g,'').toLowerCase();
+                 if(fileType.toLowerCase() != '.xls' && fileType.toLowerCase() != '.xlsx'
+					&& fileType.toLowerCase() != '.doc' && fileType.toLowerCase() != '.docx' 
+					&& fileType.toLowerCase() != '.ppt' && fileType.toLowerCase() != '.pptx' 
+					&& fileType.toLowerCase() != '.rtf' && fileType.toLowerCase() != '.eio'
+					&& fileType.toLowerCase() != '.txt' && fileType.toLowerCase() != '.jpg'
+					&& fileType.toLowerCase() != '.png' && fileType.toLowerCase() != '.gif'
+					&& fileType.toLowerCase() != '.jpeg' && fileType.toLowerCase() != '.bmp'){
+				    alert("该类型不支持预览，请于电脑端查看！");
+				    return;
+			     }
+            	 $http.progress('预览中，请稍后...').post(evoUrl+'/ezOffice/fileView/fileConvert.do',
+	              {path:path,convertType:'wordToSvgHtml','fileName':fileName},
+	              function(data) {
+		               if(data == '1'){
+		               		 var menuAction = '';
+		               		 var fileLength = fileName.length;
+		               		 if(fileType.toLowerCase() == '.jpg' || fileType.toLowerCase() == '.png' || fileType.toLowerCase() == '.gif' || 
+									fileType.toLowerCase() == '.jpeg' || fileType.toLowerCase() == '.bmp'){
+									 menuAction = evoUrl+'/ezOffice/upload/'+path+'/'+fileName;
+		               		 }else{
+		               		 	    menuAction = evoUrl+'/ezOffice/upload/'+path+'/'+fileName.substring(0,fileName.lastIndexOf('.'))+'svg.html';
+		               		 }
+		              		$page.open('../custmenu/cust_url.xml?menuAction='+encodeURIComponent(menuAction)+'&menuName='+encodeURIComponent(menuName), {animation:'down-to-up'});
+		               }else{
+		               		alert("预览失败，请重新预览！");
+		               }
+		            },function(error) {
+		            	if (error == 'timeout') {
+					        hint('连接服务器超时！');
+					    } else if (error == '404') {
+					        hint('页面不存在！');
+					    } else if (error == '500') {
+					        hint('内部服务器错误！');
+					    } else {
+					        hint('访问网络错误！错误代码:' + error);
+					    }
+					    $page.open('../index.xml',{animation:'down-to-up'});
+					});
+            }
 			
 			function sendMail() {
 	            if($('mailto').value.trim().length == 0){
@@ -218,105 +273,132 @@
 
 <script>
    <![CDATA[
-	var fileindex =0;    //附件最多能上传5个
-	var picAddressArr = new Array();
-	function fileLoad(){
-		var menu = $C('<actionmenu cancelTitle="取消">' +
-				 '<item style="text-decoration:underline;color:blue" label="上传图片" onclick="doFilePhotoAlbum(this)"/>' +
-				 '<item style="text-decoration:underline;color:blue" label="上传文件" onclick="doFileBrowse(this)"/>' +
-			'</actionmenu>');
-        menu.show();
-	}
-	function getAttanchNum(){
-		if(fileindex>=5){
-			hint('上传附件不能超过5个！');
-			return false;
-		}
-		return true;
-	}
-	
-    function doFilePhotoAlbum(file){    //上传文件选择相册
-	    if(!getAttanchNum()){
-			return;
-		}
-		$page.browseImage({
-			complete: function(path) {
-			  //  alert(path);
-			 	var showpath = path.substring(path.lastIndexOf('/')+1,path.length);
-			 //	alert(showpath);
-	            picAddressArr.push(path);
-	            uploadPicView();
-	        	fileindex++;
-	        },
-	        error: function() {
-	            hint('上传附件失败！');
+			var info = $phone.info();
+	        var fujianwidth='';
+	        if(info['platform']=='android'){
+	           fujianwidth='width:200';
 	        }
-		  });
-	}
-       
-    function uploadPicView(){
-        $("picRow").clear();
-        for(var i=0;i<picAddressArr.length;i++){
-			if(picAddressArr[i]!=null&&picAddressArr[i]!=""&&picAddressArr[i]!=undefined){
-		       	var iconRow = $C('<icon src="'+picAddressArr[i]+'" style="width:28;height:28;margin-right:0;" id="icon_'+fileindex+'"/>');
-		           $("picRow").add(iconRow);
-		           var inputRow = $C('<input type="file" style="display:none;" value="'+picAddressArr[i]+'" name="attachment" />');
-		           $("picRow").add(inputRow);
-		           var deleteIconRow = $C('<icon relative="icon_'+fileindex+'" position="topright" src="mail_del.png" style="width:8;height:8;margin-right:10" onclick="delPic(\''+i+'\');"/>');
-		           $("picRow").add(deleteIconRow);
-			}	            
-         }
-        var uploadPicRow = $C('<icon src="mail_addfu.png" style="width:28;height:28;"  onclick="fileLoad();" />');
-   		$("picRow").add(uploadPicRow);
-    }
-    
-    function delPic(index){     //删除图片，index是要删除的图片位置。
-		if(confirm('确认删除图片吗？')){
-		    picAddressArr.splice(parseInt(index),'1');
-		    uploadPicView();
-		    fileindex--;
-		}
-	}
-	
-	function doFileBrowse(file) {   //附件上传
-		if(!getAttanchNum()){
-			return;
-		}
-	    $page.browse({
-	        complete: function(path){
-	        	var showpath = path.substring(path.lastIndexOf('/')+1,path.length);
-	        	if(showpath.indexOf(".") == -1) {
-	        		hint("无后缀名的附件不允许上传，请重新选择");
-	        		return false;
-	        	}
-	        	var filenameExt = path.substring(path.lastIndexOf('\.')+1,path.length);
-	        	if(filenameExt == 'exe'){
-	        	    hint("后缀名为exe的附件不允许上传，请重新选择");
-	        		return false;
-	        	}
-	        	if(filenameExt == 'cmd'){
-	        	    hint("后缀名为cmd的附件不允许上传，请重新选择");
-	        		return false;
-	        	}
-	        	if(filenameExt == 'jsp'){
-	        	    hint("后缀名为jsp的附件不允许上传，请重新选择");
-	        		return false;
-	        	}
-	        	var row = $C('<row id="row'+fileindex+'"><label id="attachmentId'+fileindex+'" style="color:blue;width:220">'+showpath+'</label><input type="file" style="display:none;" value="'+path+'" name="attachment"  id="input_file'+fileindex+'"/><icon id="imageId" src="mail_del.png" style="width:12;height:12;" onclick="delrow(\''+fileindex+'\');"/></row>');
-	        	$("fileCol").add(row);
-	        	fileindex++;
-	        }
-	    });
-	    
-	}
-       
-    function delrow(index){   //删除附件
-		if(confirm('确认删除附件吗？')){
-			$('input_file'+index).value="";
-			$("fileCol").remove($('row'+index));
-			fileindex--;
-		}
-	}
+	        var fileindex =0;    //附件最多能上传5个,删除之后fileindex一直增加
+	        var fileTotle = 0 ;  //附件最多能上传5个
+	        var fileAddressArr = new Array();
+	        var fileTypeArr = new Array();   //附件上传时，存储对应数组fileAddressArr中的类型。pic:图片类型，sound：声音类型，file：其他附件类型
+	        
+	        function getAttanchNum(){
+				if(fileTotle>=10){
+					hint('上传附件不能超过10个！');
+					return false;
+				}
+				return true;
+			}
+	        function doRelatedAcc(file){   
+			       	 var menu = $C('<actionmenu cancelTitle="取消">' +
+									 '<item style="text-decoration:underline;" label="上传图片" onclick="doFilePhotoAlbum(this,\'fileRow\')"/>' +
+									 '<item style="text-decoration:underline;" label="上传文件" onclick="doFileBrowse(this,\'fileRow\')"/>' +
+								'</actionmenu>');
+			               menu.show();
+			 }
+		    function doFilePhotoAlbum(file,appendId){    //上传文件选择相册
+				    if(!getAttanchNum()){
+						return;
+					}
+					$page.browseImage({
+						complete: function(path) {
+						 	var showpath = path.substring(path.lastIndexOf('/')+1,path.length);
+                            var row = $C('<row id="row' + fileindex + '"><icon style="padding-left:20;width:20;height:25;" src="mail_fujian.png"/>'+
+						    '<label  style="color:blue;'+fujianwidth+'">' + showpath + '</label>'+
+						    '<icon  src="mail_del.png" style="width:12;height:12;" onclick="delrow(\'' + fileindex + '\',\'' + appendId + '\');"/></row>');
+						    $(appendId).add(row);
+						    $('content_form_list').addMore('<imag><list><item style="display:none;"><row><input type="file" style="display:none;" value="' + path + '" name="attachment"  id="input_file' + fileindex + '"/></row></item></list></imag>');
+				        	fileindex++;
+				        	fileTotle++;
+				        },
+				        error: function() {
+				            hint('上传图片失败！');
+				        }
+					  });
+		     }
+			 function doFileCamera(file,appendId) {  //拍照
+				if(!getAttanchNum()){
+					return;
+				}
+			    $phone.camera({
+			        success: function(path) {
+			        	var showpath = path.substring(path.lastIndexOf('/')+1,path.length);
+			        	
+			        	var row = $C('<row id="row' + fileindex + '"><icon style="padding-left:20;width:20;height:25;" src="mail_fujian.png"/>'+
+							    '<label style="color:blue;'+fujianwidth+'">' + showpath + '</label>'+
+							    '<icon  src="mail_del.png" style="width:12;height:12;" onclick="delrow(\'' + fileindex + '\',\'' + appendId + '\');"/></row>');
+							    $(appendId).add(row);
+							    $('content_form_list').addMore('<imag><list><item style="display:none;"><row><input type="file" style="display:none;" value="' + path + '" name="attachment"  id="input_file' + fileindex + '"/></row></item></list></imag>');
+			        	fileindex++;
+			        	fileTotle++;
+			        },
+			        error: function() {
+			            hint('拍照失败！');
+			        }
+			    });
+			 }
+			 function doFileRecordSound(file,appendId) {
+				if(!getAttanchNum()){
+					return;
+				}
+			    $phone.recordSound({
+			        success: function(path) {
+			        	var showpath = path.substring(path.lastIndexOf('/')+1,path.length);
+			        	var row = $C('<row id="row' + fileindex + '"><icon style="padding-left:20;width:20;height:25;" src="mail_fujian.png"/>'+
+							    '<label  style="color:blue;'+fujianwidth+'">' + showpath + '</label>'+
+							    '<icon  src="mail_del.png" style="width:12;height:12;" onclick="delrow(\'' + fileindex + '\',\'' + appendId + '\');"/></row>');
+							    $(appendId).add(row);
+							    $('content_form_list').addMore('<imag><list><item style="display:none;"><row><input type="file" style="display:none;" value="' + path + '" name="attachment"  id="input_file' + fileindex + '"/></row></item></list></imag>');
+			        	fileindex++;
+			        	fileTotle++;
+			        },
+			        error: function() {
+			            hint('录音失败！');
+			        }
+			    });
+			}
+			function doFileBrowse(file,appendId) { //附件上传
+					if (!getAttanchNum()) {
+						return;
+					}
+					$page.browse({
+						complete: function(path) {
+							var showpath = path.substring(path.lastIndexOf('/') + 1, path.length);
+							if (showpath.indexOf(".") == -1) {
+								hint("无后缀名的附件不允许上传，请重新选择");
+								return false;
+							}
+							var filenameExt = path.substring(path.lastIndexOf('\.')+1,path.length);
+				        	if(filenameExt == 'exe'){
+				        	    hint("后缀名为exe的附件不允许上传，请重新选择");
+				        		return false;
+				        	}
+				        	if(filenameExt == 'cmd'){
+				        	    hint("后缀名为cmd的附件不允许上传，请重新选择");
+				        		return false;
+				        	}
+				        	if(filenameExt == 'jsp'){
+				        	    hint("后缀名为jsp的附件不允许上传，请重新选择");
+				        		return false;
+				        	}
+							var row = $C('<row id="row' + fileindex + '"><icon style="padding-left:20;width:20;height:25;" src="mail_fujian.png"/>'+
+							'<label  style="color:blue;'+fujianwidth+'">' + showpath + '</label>'+
+							'<icon  src="mail_del.png" style="width:12;height:12;" onclick="delrow(\'' + fileindex + '\',\'' + appendId + '\');"/></row>');
+							$(appendId).add(row);
+							$('content_form_list').addMore('<imag><list><item style="display:none;"><row><input type="file" style="display:none;" value="' + path + '" name="attachment"  id="input_file' + fileindex + '"/></row></item></list></imag>');
+							fileindex++;
+							fileTotle++;
+						}
+					});
+				}
+				function delrow(index,appendId) { //删除附件
+					if (confirm('确认删除附件吗？')) {
+						$('input_file' + index).value = "";
+						$(appendId).remove($('row' + index));
+						fileTotle--;
+					}
+				}
   ]]>
 </script>
     <page>
@@ -333,7 +415,7 @@
         </title>
         <content>
 	        <form id="mailFrom" action="/ezOffice/mail/mailWrite.do" progress="提交表单|正在提交表单，请稍后..." multipart="true">
-	        	<list>
+	        	<list id="content_form_list">
                     <item style="col-width:70,*" onclick="selectMailto();" accessory="indicator">
                         <col>
                            <label style="font-size:16;color:#555555;">收件人：</label>
@@ -384,9 +466,9 @@
 	                       <input type="hidden" id="sfilenames" name="sfilenames" value=""/>
 	                       <input type="hidden" id="accessorySize" name="accessorySize" value=""/>
                         </col>
-                       <col id="fileCol">
-							<row id="picRow" style="margin-buttom:10;">
-								 <icon src="mail_addfu.png" style="width:28;height:28;" id="uploadPicIcon" onclick="fileLoad();" />
+                       <col id="picRow">
+							<row>
+								 <icon src="mail_addfu.png" style="width:28;height:28;"  onclick="doRelatedAcc(this)" />
 							</row>
 						</col>
                     </item>
@@ -402,7 +484,7 @@
 	                </item>
                     <item>
                         <textarea id="mailcontent" name="mailcontent" rows="7" placeholder="请输入" style="border:0 white;font-size:16;color:#555555;"></textarea>
-                    	<web id="mailweb" style="display:none"/>
+                   		<web id="mailweb" style="display:none"/>
                     </item>
                 </list>
 	        </form>

@@ -16,8 +16,8 @@
             var fileTypeArr = new Array();   //附件上传时，存储对应数组fileAddressArr中的类型。pic:图片类型，sound：声音类型，file：其他附件类型
 	        
 	        function getAttanchNum(){
-				if(fileTotle>=5){
-					hint('上传附件不能超过5个！');
+				if(fileTotle>=10){
+					hint('上传附件不能超过10个！');
 					return false;
 				}
 				return true;

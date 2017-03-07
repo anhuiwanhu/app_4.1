@@ -4,7 +4,7 @@
     <![CDATA[
         var versionNumber="V4.2";
        	var dbName = "mobile_evo.db";
-       	var evoUrl = "http://192.168.7.193:8080";
+       	var evoUrl = "http://192.168.7.99:8080";
 		
 		$page.onload = function() {
 		    
@@ -29,7 +29,7 @@
 			$('platform').value = info['platform'];
 			$('versionCode').value = info['versionCode'];
 			$('appCode').value = info['appCode'];
-			
+			$('evoUrl').value = evoUrl;
 			
             storage.setItem('evoUrl',evoUrl);
 		    $('loginForm').action=evoUrl+"/ezOffice/desktop/logon.do";
@@ -262,6 +262,7 @@
 				<input type="hidden" id="platform" name="platform" value=""/>
 				<input type="hidden" id="versionCode" name="versionCode" value=""/>
 				<input type="hidden" id="appCode" name="appCode" value=""/>
+				<input type="hidden" id="evoUrl" name="evoUrl" value=""/>
 				<list id="myphotoimg_list" type="transparent" style="height:136">
 				</list>
 				<list style="background:#f8f8f8">

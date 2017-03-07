@@ -29,8 +29,8 @@
 			}
 			
 	        function getAttanchNum(){
-				if(fileindex>=5){
-					hint('上传附件不能超过5个！');
+				if(fileindex>=10){
+					hint('上传附件不能超过10个！');
 					return false;
 				}
 				return true;

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+    <script>
+    <![CDATA[
+    	$page.onload = function() {
+    	    var storage = $phone.localStorage();
+	        var webServiceUrl = storage.getItem('webServiceUrl');
+	        var workId = $param['workId'];
+            $('test_web').src = webServiceUrl+"OpenFromMobile?workId="+workId+"&mopendir=1";
+        }
+    		    
+        function saveOriginal() {
+             $('test_web').exec('cmdSaveclose()');
+             $page.close(-1);
+             $page.open('dealfile_process.xml?fromXml='+$param['fromXml']+'&empLivingPhoto='+$param['empLivingPhoto'],{target:'self'});
+        }
+        
+         
+    ]]>
+    </script>
+    <page>
+         <title style="background:#3daffe;tint-color:white;">
+		    <left>
+				<button   role="back" />
+			</left>
+            <center>
+                <label id="title_center_label" >原表单</label>
+            </center>
+            <right>
+                <button onclick="saveOriginal()"  type="button">保存</button>
+            </right>
+	    </title>
+        <content>
+            <web id="test_web" include="jquery.js" src="http://192.168.0.28:7200/defaultroot/OpenFromMobile?workId=1459341" scalable="true">
+               			
+               			 <![CDATA[   
+               			        <html>        
+               			        <script>
+               				function forumCite(id,cont){
+               					$imag.exec('cite(\''+id+'\',\''+cont+'\')');
+               				}
+               				
+               				function down(attachurlser,savename,viewName){
+               					$imag.exec('downFile(\''+attachurlser+'\',\''+savename+'\',\''+viewName+'\')');
+               				}
+               				
+               				function ontest(){
+               				    alert('55');
+							}
+							
+							function test(){
+							alert(2323);
+							}
+							
+							   
+               			</script>          
+                <body>                       
+                    <div id="contentDiv"></div>    
+                </body>                   
+            </html>                       
+                      
+            ]]>       
+            
+            </web>
+        </content>
+    </page>
+</imag>

@@ -107,12 +107,12 @@
 	        		for(var index=0,size=field.dataList.length;index<size;index++){
 		        		if(field.hiddenval){
 							if((field.hiddenval + ',').indexOf(field.dataList[index].hiddenval + ',') > -1){
-			        			selectContent += '<checkbox  checked="true" name="_main_' + field.sysname + '" value="'+field.dataList[index].hiddenval+',">'+field.dataList[index].showval+'</checkbox>';
+			        			selectContent += '<checkbox style="align:right;" checked="true" name="_main_' + field.sysname + '" value="'+field.dataList[index].hiddenval+',">'+field.dataList[index].showval+'</checkbox>';
 			        		}else{
-			        			selectContent += '<checkbox name="_main_' + field.sysname + '" value="'+field.dataList[index].hiddenval+',">'+field.dataList[index].showval+'</checkbox>';
+			        			selectContent += '<checkbox style="align:right;" name="_main_' + field.sysname + '" value="'+field.dataList[index].hiddenval+',">'+field.dataList[index].showval+'</checkbox>';
 			        		}
 		        		}else{
-		        			selectContent += '<checkbox name="_main_' + field.sysname + '" value="'+field.dataList[index].hiddenval+',">'+field.dataList[index].shownval+'</checkbox>';
+		        			selectContent += '<checkbox style="align:right;" name="_main_' + field.sysname + '" value="'+field.dataList[index].hiddenval+',">'+field.dataList[index].shownval+'</checkbox>';
 		        		}
 	        		}
 	        		itemContent += selectContent + '</row>';
@@ -147,7 +147,7 @@
 	        		itemContent += '</col></item><item style="padding:0;margin:0;"><col><row><textarea rows="5" maxrows="5" name="_main_' + field.sysname + '">' + field.value + '</textarea></row>';
 	        	}else if(showType == '111' && readWrite == '1'){
 	        		//自动编号
-	        		itemContent += '<row><label>' + field.value + '</label></row>';
+	        		itemContent += '<row><label style="align:right;">' + field.value + '</label></row>';
 	        	}else if(showType == '113' && readWrite == '1'){
 	        		//html编辑
 	        		itemContent += '</col></item><item style="padding:0;margin:0;"><col><row><textarea rows="5" maxrows="5" name="_main_' + field.sysname + '">' + field.value + '</textarea></row>';
@@ -162,7 +162,7 @@
 	        		if(labelVal == '' || labelVal== null){
 	        			labelVal = '';
 	        		}
-	        		itemContent += '<row><label>' +labelVal + '</label><input type="hidden" name="_main_' + field.sysname + '" value="' + labelVal + '"/></row>';
+	        		itemContent += '<row><label style="align:right;">' +labelVal + '</label><input type="hidden" name="_main_' + field.sysname + '" value="' + labelVal + '"/></row>';
 	        	}else if(showType == '302' && readWrite == '1'){
 	        		//金额
         			itemContent += '<row><input type="text" name="_main_' + field.sysname + '" value="' + field.value + '" maxlength="18"/></row>';
@@ -189,7 +189,7 @@
 	        		}else{
 	        			itemContent += '<row><label>' + field.value + '</label></row>';
 	        		}
-	        		//itemContent += '<row><label>' + field.value + '</label></row>';
+	        		//itemContent += '<row><label style="align:right;">' + field.value + '</label></row>';
 	        	}else if(showType == '211' && readWrite == '1'){
 	        		//多选人 全部
 	        		itemContent += '<row onclick="selectUser(\'_main_' + field.sysname +'\',\'_mainShow_' + field.sysname +'\',\'*0*\',\'1\')">'+
@@ -212,7 +212,7 @@
 	        		//批示意见
 	        		if(field.dataList&&field.dataList.comment){
 	        			for(var j = 0,comLen = field.dataList.comment.length;j < comLen;j ++){
-		        			itemContent += '<row><label>' + field.dataList.comment[j].content + '</label></row>';
+		        			itemContent += '<row><label style="align:right;">' + field.dataList.comment[j].content + '</label></row>';
 	        			}
 	        		}
 	        		if(readWrite == '1'){
@@ -232,7 +232,7 @@
 	        					   '<input type="hidden" id="_main_' + field.sysname +'" name="_main_' + field.sysname +'" value="' + field.hiddenval + '"/></row>';
 	        	}else if(showType == '708' && readWrite == '1'){
 	        		//流程发起人
-	        		itemContent += '<row><label>' + field.value + '</label><input type="hidden" name="_main_' + field.sysname + '" value="' + field.value + '"/></row>';
+	        		itemContent += '<row><label style="align:right;">' + field.value + '</label><input type="hidden" name="_main_' + field.sysname + '" value="' + field.value + '"/></row>';
 	        	}else if(showType == '808' && readWrite == '1'){
 	        		itemContent += '<row><label>该字段暂不支持手机办理，请于电脑端操作。</label></row>';
 	        	}
@@ -257,9 +257,21 @@
 		               var attList = obj.attList;
 		               if(!attList==""){  //不为空，数据进行迭代,并为附件赋值
 		                  for(var k=0;k<attList.length;k++){
-		                 // alert(attList[k].savename);
-		                      var files = $C('<row><icon src="mail_fujian.png" style="align:left;margin-right:5;"/><label style="color:#38adff;align:left;font-size:16;"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath=govdocumentmanager'+'&amp;viewName=' + attList[k].realname +'\')">'+attList[k].realname+'</label></row>')
-		                      $(attId).add(files); 
+		                       var files = "";
+			                   var fileType = attList[k].savename.substr(attList[k].savename.lastIndexOf(".")).replace(/<[^>]+>/g,'').toLowerCase();
+		                      if(fileType.toLowerCase() != '.xls' && fileType.toLowerCase() != '.xlsx'     //直接下载
+								  && fileType.toLowerCase() != '.doc' && fileType.toLowerCase() != '.docx' 
+								  && fileType.toLowerCase() != '.ppt' && fileType.toLowerCase() != '.pptx' 
+								  && fileType.toLowerCase() != '.rtf' && fileType.toLowerCase() != '.eio'
+								  && fileType.toLowerCase() != '.txt' && fileType.toLowerCase() != '.jpg'
+								  && fileType.toLowerCase() != '.png' && fileType.toLowerCase() != '.gif'
+								  && fileType.toLowerCase() != '.jpeg' && fileType.toLowerCase() != '.bmp'){
+		                      	  files = $C('<row style="margin-bottom:5"><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath='+path+'&amp;viewName='+attList[k].realname+'\')">'+attList[k].realname+'</label></row>');
+		                      }else{
+		                      	 // files = $C('<row style="margin-bottom:5"><label style="color:#38adff;align:left;font-size:16;margin-left:5;margin-right:5;" onclick="convertFileToHtml(\''+attList[k].savename+'\',\''+attList[k].realname+'\',\''+path+'\')">预览</label><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5;"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath='+path+'&amp;viewName='+attList[k].realname+'\')">'+attList[k].realname+'</label></row>');
+		                     	  files = $C('<row style="margin-bottom:5"><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5;"  onclick="convertFileToHtml(\''+attList[k].savename+'\',\''+attList[k].realname+'\',\''+path+'\')">'+attList[k].realname+'</label></row>');
+							  }
+		                      $('attId').add(files); 
 		                  }
 		               }else{     //无附件，或者后台处理异常
 		               
@@ -279,6 +291,50 @@
 				   }
 	            );
 	        }
+	        
+	        function convertFileToHtml(fileName,menuName,path){   //高清wordToSvgHtml  普通wordToHtml
+	         	 var fileType = fileName.substr(fileName.lastIndexOf(".")).replace(/<[^>]+>/g,'').toLowerCase();
+                 if(fileType.toLowerCase() != '.xls' && fileType.toLowerCase() != '.xlsx'
+					&& fileType.toLowerCase() != '.doc' && fileType.toLowerCase() != '.docx' 
+					&& fileType.toLowerCase() != '.ppt' && fileType.toLowerCase() != '.pptx' 
+					&& fileType.toLowerCase() != '.rtf' && fileType.toLowerCase() != '.eio'
+					&& fileType.toLowerCase() != '.txt' && fileType.toLowerCase() != '.jpg'
+					&& fileType.toLowerCase() != '.png' && fileType.toLowerCase() != '.gif'
+					&& fileType.toLowerCase() != '.jpeg' && fileType.toLowerCase() != '.bmp'){
+				    alert("该类型不支持预览，请于电脑端查看！");
+				    return;
+			     }
+            	 $http.progress('预览中，请稍后...').post(evoUrl+'/ezOffice/fileView/fileConvert.do',
+	              {path:path,convertType:'wordToSvgHtml','fileName':fileName},
+	              function(data) {
+		               if(data == '1'){
+		               		 var menuAction = '';
+		               		 var fileLength = fileName.length;
+		               		 if(fileType.toLowerCase() == '.jpg' || fileType.toLowerCase() == '.png' || fileType.toLowerCase() == '.gif' || 
+									fileType.toLowerCase() == '.jpeg' || fileType.toLowerCase() == '.bmp'){
+									 menuAction = evoUrl+'/ezOffice/upload/'+path+'/'+fileName;
+		               		 }else{
+		               		 	    menuAction = evoUrl+'/ezOffice/upload/'+path+'/'+fileName.substring(0,fileName.lastIndexOf('.'))+'svg.html';
+		               		 }
+		              		$page.open('cust_url.xml?menuAction='+encodeURIComponent(menuAction)+'&menuName='+encodeURIComponent(menuName), {animation:'down-to-up'});
+		               }else{
+		               		alert("预览失败，请重新预览！");
+		               }
+		            },function(error) {
+		            	if (error == 'timeout') {
+					        hint('连接服务器超时！');
+					    } else if (error == '404') {
+					        hint('页面不存在！');
+					    } else if (error == '500') {
+					        hint('内部服务器错误！');
+					    } else {
+					        hint('访问网络错误！错误代码:' + error);
+					    }
+					    $page.open('../index.xml',{animation:'down-to-up'});
+					});
+            }
+			
+			
         ]]>
     </script>
     <page>

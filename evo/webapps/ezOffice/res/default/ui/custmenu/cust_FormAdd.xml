@@ -7,14 +7,14 @@
             if(info['platform']=='android'){
               fujianwidth='width:200';
             }
-            var fileTotle = 0 ;  //附件最多能上传5个
+            var fileTotle = 0 ;  //附件最多能上传10个
 	        var fileindex =0;    //附件id标识
             var fileAddressArr = new Array();
             var fileTypeArr = new Array();   //附件上传时，存储对应数组fileAddressArr中的类型。pic:图片类型，sound：声音类型，file：其他附件类型
 	        
 	        function getAttanchNum(){
-				if(fileTotle>=5){
-					hint('上传附件不能超过5个！');
+				if(fileTotle>=10){
+					hint('上传附件不能超过10个！');
 					return false;
 				}
 				return true;
@@ -344,7 +344,7 @@
 	        	    pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
 	        	}else if(showType == '111' && readWrite == '1'){
 	        		//自动编号
-	        		itemContent += '<row><label>' + field.value + '</label></row>';
+	        		itemContent += '<row><label style="align:right;">' + field.value + '</label></row>';
 	        	}else if(showType == '113' && readWrite == '1'){
 	        		//html编辑
 	        		itemContent += '</col></item><item style="padding:0;margin:0;"><col><row><textarea rows="5" maxrows="5" id="_main_' + field.sysname + '"  name="_main_' + field.sysname + '">' + field.value + '</textarea></row>';
@@ -363,7 +363,7 @@
 	        		if(labelVal == '' || labelVal== null){
 	        			labelVal = '';
 	        		}
-	        		itemContent += '<row><label>' +labelVal + '</label><input type="hidden" name="_main_' + field.sysname + '" value="' + labelVal + '"/></row>';
+	        		itemContent += '<row><label style="align:right;">' +labelVal + '</label><input type="hidden" name="_main_' + field.sysname + '" value="' + labelVal + '"/></row>';
 	        	}else if(showType == '301' && readWrite == '1'){
 	        		//金额
 	        		if(fieldType == '1000000' || fieldType == '1000001'){
@@ -408,7 +408,7 @@
 	        		//批示意见
 	        		if(field.dataList&&field.dataList.comment){
 	        			for(var j = 0,comLen = field.dataList.comment.length;j < comLen;j ++){
-		        			itemContent += '<row><label>' + field.dataList.comment[j].content + '</label></row>';
+		        			itemContent += '<row><label style="align:right;">' + field.dataList.comment[j].content + '</label></row>';
 	        			}
 	        		}
 	        		if(readWrite == '1'){
@@ -431,7 +431,7 @@
 	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.sysname);
 	        	}else if(showType == '708' && readWrite == '1'){
 	        		//流程发起人
-	        		itemContent += '<row><label>' + field.value + '</label><input type="hidden" name="_main_' + field.sysname + '" value="' + field.value + '"/></row>';
+	        		itemContent += '<row><label style="align:right;">' + field.value + '</label><input type="hidden" name="_main_' + field.sysname + '" value="' + field.value + '"/></row>';
 	        	}else if(showType == '808' && readWrite == '1'){
 	        		itemContent += '<row><label>该字段暂不支持手机办理，请于电脑端操作。</label></row>';
 	        	}
