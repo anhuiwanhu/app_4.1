@@ -6,7 +6,9 @@
     	    var storage = $phone.localStorage();
 	        var webServiceUrl = storage.getItem('webServiceUrl');
 	        var workId = $param['workId'];
-            $('test_web').src = webServiceUrl+"OpenFromMobile?workId="+workId+"&mopendir=1";
+	      //  alert(webServiceUrl+"OpenFromMobile?workId="+workId+"&workkey="+hex_md5(workId+1)+"&mopendir=1");
+	      //  $('testId').value = (webServiceUrl+"OpenFromMobile?workId="+workId+"&workkey="+hex_md5(workId+1)+"&mopendir=1");
+            $('test_web').src = webServiceUrl+"OpenFromMobile?workId="+workId+"&workkey="+hex_md5(workId+1)+"&mopendir=1";
         }
     		    
         function saveOriginal() {
@@ -18,7 +20,7 @@
          
     ]]>
     </script>
-    <page>
+    <page include="md5.js">
          <title style="background:#3daffe;tint-color:white;">
 		    <left>
 				<button   role="back" />
@@ -31,7 +33,7 @@
             </right>
 	    </title>
         <content>
-            <web id="test_web" include="jquery.js" src="http://192.168.0.28:7200/defaultroot/OpenFromMobile?workId=1459341" scalable="true">
+            <web id="test_web" include="jquery.js" src="" scalable="true">
                			
                			 <![CDATA[   
                			        <html>        

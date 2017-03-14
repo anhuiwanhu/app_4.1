@@ -2,11 +2,145 @@
 <imag>
 	<script>
         <![CDATA[
+            var info = $phone.info();
+            var fujianwidth='';
+            if(info['platform']=='android'){
+                 fujianwidth='width:200';
+            }
+	        var fileindex =0;    //附件最多能上传5个
+            var fileAddressArr = new Array();
+            var fileTypeArr = new Array();   //附件上传时，存储对应数组fileAddressArr中的类型。pic:图片类型，sound：声音类型，file：其他附件类型
+	        
+	        function getAttanchNum(){
+				if(fileindex>=10){
+					hint('上传附件不能超过10个！');
+					return false;
+				}
+				return true;
+			}
+			function doRelatedAcc(file,appendId,sysname){   
+		       	 var menu = $C('<actionmenu cancelTitle="取消">' +
+								 '<item style="text-decoration:underline;" label="拍照"     onclick="doFileCamera(this,\'' + appendId + '\',\'' + sysname + '\')"/>' +
+								 '<item style="text-decoration:underline;" label="相册照片" onclick="doFilePhotoAlbum(this,\'' + appendId + '\',\'' + sysname + '\')"/>' +
+								 '<item style="text-decoration:underline;" label="录音文件" onclick="doFileRecordSound(this,\'' + appendId + '\',\'' + sysname + '\')"/>' +
+								 '<item style="text-decoration:underline;" label="其他文件" onclick="doFileBrowse(this,\'' + appendId + '\',\'' + sysname + '\')"/>' +
+							'</actionmenu>');
+		               menu.show();
+		    }
+		    function doFilePhotoAlbum(file,appendId,sysname){    //上传文件选择相册
+				    if(!getAttanchNum()){
+						return;
+					}
+					$page.browseImage({
+						complete: function(path) {
+						 	var showpath = path.substring(path.lastIndexOf('/')+1,path.length);
+                            var row = $C('<row id="row' + fileindex + '"><icon style="padding-left:20;width:20;height:25;" src="mail_fujian.png"/>'+
+						    '<label id="attachmentId' + fileindex + '" style="color:blue;'+fujianwidth+'">' + showpath + '</label>'+
+						    '<icon id="imageId" src="mail_del.png" style="width:12;height:12;" onclick="delrow(\'' + fileindex + '\',\'' + appendId + '\');"/></row>');
+						    $(appendId).add(row);
+						    $('content_form_list').addMore('<imag><list><item style="display:none;"><row><input type="file" style="display:none;" value="' + path + '" name="attachment_main_' + sysname + '"  id="input_file' + fileindex + '"/></row></item></list></imag>');
+				            
+				        	fileindex++;
+				        },
+				        error: function() {
+				            hint('上传图片失败！');
+				        }
+					  });
+		     }
+		 function doFileCamera(file,appendId,sysname) {  //拍照
+			if(!getAttanchNum()){
+				return;
+			}
+		    $phone.camera({
+		        success: function(path) {
+		        	var showpath = path.substring(path.lastIndexOf('/')+1,path.length);
+		        	var row = $C('<row id="row' + fileindex + '"><icon style="padding-left:20;width:20;height:25;" src="mail_fujian.png"/>'+
+						    '<label id="attachmentId' + fileindex + '" style="color:blue;'+fujianwidth+'">' + showpath + '</label>'+
+						    '<icon id="imageId" src="mail_del.png" style="width:12;height:12;" onclick="delrow(\'' + fileindex + '\',\'' + appendId + '\');"/></row>');
+						    $(appendId).add(row);
+						    $('content_form_list').addMore('<imag><list><item style="display:none;"><row><input type="file" style="display:none;" value="' + path + '" name="attachment_main_' + sysname + '"  id="input_file' + fileindex + '"/></row></item></list></imag>');
+				      
+		        	fileindex++;
+		        },
+		        error: function() {
+		            hint('拍照失败！');
+		        }
+		    });
+		}
+		
+		 function doFileRecordSound(file,appendId,sysname) {
+			if(!getAttanchNum()){
+				return;
+			}
+		    $phone.recordSound({
+		        success: function(path) {
+		        	var showpath = path.substring(path.lastIndexOf('/')+1,path.length);
+		        	var row = $C('<row id="row' + fileindex + '"><icon style="padding-left:20;width:20;height:25;" src="mail_fujian.png"/>'+
+						    '<label id="attachmentId' + fileindex + '" style="color:blue;'+fujianwidth+'">' + showpath + '</label>'+
+						    '<icon id="imageId" src="mail_del.png" style="width:12;height:12;" onclick="delrow(\'' + fileindex + '\',\'' + appendId + '\');"/></row>');
+						    $(appendId).add(row);
+						    $('content_form_list').addMore('<imag><list><item style="display:none;"><row><input type="file" style="display:none;" value="' + path + '" name="attachment_main_' + sysname + '"  id="input_file' + fileindex + '"/></row></item></list></imag>');
+				      
+		        	fileindex++;
+		        },
+		        error: function() {
+		            hint('录音失败！');
+		        }
+		    });
+		}
+		function doFileBrowse(file,appendId,sysname) { //附件上传
+				if (!getAttanchNum()) {
+					return;
+				}
+				$page.browse({
+					complete: function(path) {
+						var showpath = path.substring(path.lastIndexOf('/') + 1, path.length);
+						if (showpath.indexOf(".") == -1) {
+							hint("无后缀名的附件不允许上传，请重新选择");
+							return false;
+						}
+						var filenameExt = path.substring(path.lastIndexOf('\.')+1,path.length);
+			        	if(filenameExt == 'exe'){
+			        	    hint("后缀名为exe的附件不允许上传，请重新选择");
+			        		return false;
+			        	}
+			        	if(filenameExt == 'cmd'){
+			        	    hint("后缀名为cmd的附件不允许上传，请重新选择");
+			        		return false;
+			        	}
+			        	if(filenameExt == 'jsp'){
+			        	    hint("后缀名为jsp的附件不允许上传，请重新选择");
+			        		return false;
+			        	}
+						var row = $C('<row id="row' + fileindex + '"><icon style="padding-left:20;width:20;height:25;" src="mail_fujian.png"/>'+
+						'<label id="attachmentId' + fileindex + '" style="color:blue;'+fujianwidth+'">' + showpath + '</label>'+
+						'<icon id="imageId" src="mail_del.png" style="width:12;height:12;" onclick="delrow(\'' + fileindex + '\',\'' + appendId + '\');"/></row>');
+						$(appendId).add(row);
+						//$('input_file'+fileindex).value = path;
+						$('content_form_list').addMore('<imag><list><item style="display:none;"><row><input type="file" style="display:none;" value="' + path + '" name="attachment_main_' + sysname + '"  id="input_file' + fileindex + '"/></row></item></list></imag>');
+						fileindex++;
+					}
+				});
+			}
+			
+			function delrow(index,appendId) { //删除附件
+				if (confirm('确认删除附件吗？')) {
+					$('input_file' + index).value = "";
+					$(appendId).remove($('row' + index));
+					fileindex--;
+				}
+			}
+		
+    ]]>
+    </script> 
+	<script>
+        <![CDATA[
             var fromXml = $param['fromXml'];
             var model = $param['model'];
         	var storage = $phone.localStorage();
         	var evoUrl = storage.getItem('evoUrl');
         	var	workStatus = storage.getItem('workflow_workStatus');
+        	var orgId = storage.getItem('sys_orgId');
 	        var workId = storage.getItem('workflow_workId');
 	        var webServiceUrl = storage.getItem('webServiceUrl');
 	        var realFiles;
@@ -446,11 +580,6 @@
 		        				   		   '</row></col></item>';
 		        		}	
 		        	}
-		        	var backComment = detailData.backComment;
-					if(backComment){
-						itemContent += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">退回意见:</label></row></col><col><row>'+
-								   '<label style="color:#555555">'+backComment+'</label></row></col></item>';
-					}
 	        	}
 	        	//正文
 	        	var saveFileIsExitst = detailData.docSaveFile+"";
@@ -500,7 +629,19 @@
 	        				   '</row></col><col id="attachments"  style="margin:10;padding:10;"></col></item>';
 	        		}
 	        	}
- 
+ 				
+ 				// 自定义字段集合批示意见
+	        	if(govDocDetail.custemFieldList){
+	        		var custemFieldList = govDocDetail.custemFieldList;
+		        	if(custemFieldList instanceof Array){
+		        		for(var i=0,length=custemFieldList.length;i<length;i++){
+			        		itemContent += createCustemFieldCon(custemFieldList[i],i+'');
+		        		}
+		        	}else if(custemFieldList instanceof Object){
+		        		itemContent += createCustemFieldCon(custemFieldList.custemField,'0');
+		        	}
+	        	}
+ 				
 	        	//已经批示的意见
 	        	if(commentList){
 	        		//var commentList = govDocDetail.commentList;
@@ -558,17 +699,306 @@
 	        }
 
 	        // 构建自定义字段内容
-			function createCustemFieldCon(custemField){
-				var custemCon = '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;">';
-				custemCon += '<row><label style="align:left;font-size:16;color:#555555">'+custemField.name+':</label></row></col><col  style="margin:10;padding:10;">';
-				var content = custemField.content;
-				var fieldDisplayType = custemField.fieldDisplayType;
-				if(content && fieldDisplayType){
-					custemCon += '<row><label style="color:#555555">'+content+'</label></row>';
-				}
+			function createCustemFieldCon(field,cusIndex){
+				var mustfilled = field.mustfilled;
+				var mustfilled_view = '';
+        	    if(mustfilled && mustfilled=='1'){
+        	       mustfilled_view = '<label style="align:left;font-size:12;color:#FF4617">*</label>';
+        	    }
+				var custemCon = '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row>'+mustfilled_view;
+				custemCon += '<label style="align:left;font-size:16;color:#555555">'+field.name+':</label></row></col><col style="margin:10;padding:10;" id="cusFile_'+cusIndex+'">';
+				var content = field.content;
+				var showType = field.displayType;
+				var readWrite = field.readwrite;
+				//单行文本
+				if(showType == '101' && readWrite == '1'){
+					var fieldType = field.fieldtype;
+					if(fieldType == '1000000'){
+	        			custemCon += '<row><input style="font-size:16;color:#555555" id="_main_' + field.fieldname + '" type="number" name="_main_' + field.fieldname + '" value="' + field.content + '" maxlength="9" /></row>';
+	        		}else if(fieldType == '1000001'){
+	        			custemCon += '<row><input style="font-size:16;color:#555555" id="_main_' + field.fieldname + '" type="number" name="_main_' + field.fieldname + '" value="' + field.content + '" maxlength="18"/></row>';
+	        		}else{
+	        			custemCon += '<row><input style="font-size:16;color:#555555" id="_main_' + field.fieldname + '" type="text" name="_main_' + field.fieldname + '" value="' + field.content + '"/></row>';
+	        		}
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.fieldname);
+				//单选
+				}else if(showType == '103' && readWrite == '1'){
+					var selectContent = '<row><select style="align:right;font-size:16;" id="_main_' + field.fieldname + '" name="_main_' + field.fieldname + '">'+
+	        			'<option value="">请选择</option>';
+	        		var dataListIsFlag = field.dataListIsFlag;
+	        		if(dataListIsFlag =='1'){
+	        			for(var index=0,size=field.dataList.length;index<size;index++){
+			        		if(content){
+				        		if(content == field.dataList[index].hiddenval){
+				        			selectContent += '<option selected="true" value="'+field.dataList[index].hiddenval+'">'+field.dataList[index].showval+'</option>';
+				        		}else{
+				        			selectContent += '<option value="'+field.dataList[index].hiddenval+'">'+field.dataList[index].showval+'</option>';
+				        		}
+			        		}else{
+			        			selectContent += '<option value="'+field.dataList[index].hiddenval+'">'+field.dataList[index].showval+'</option>';
+			        		}
+		        		}
+	        		}
+	        		selectContent += '</select>';
+	        		custemCon += selectContent + '</row>';
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.fieldname);
+				//多选
+				}else if(showType == '104' && readWrite == '1'){
+					var selectContent = '';
+	        		var dataListIsFlag = field.dataListIsFlag;
+	        		if(dataListIsFlag =='1'){
+	        			for(var index=0,size=field.dataList.length;index<size;index++){
+		        		    selectContent += '<row>';
+			        		if(content){
+								if((content + ',').indexOf(field.dataList[index].hiddenval + ',') > -1){
+				        			selectContent += '<checkbox style="align:left;font-size:16;" checked="true" id="_main_' + field.fieldname +index+ '" name="_main_' + field.fieldname + '" value="'+field.dataList[index].hiddenval+',">'+field.dataList[index].showval+'</checkbox>';
+				        		}else{
+				        			selectContent += '<checkbox style="align:left;font-size:16;" id="_main_' + field.fieldname +index+ '" name="_main_' + field.fieldname + '" value="'+field.dataList[index].hiddenval+',">'+field.dataList[index].showval+'</checkbox>';
+				        		}
+			        		}else{
+			        			selectContent += '<checkbox style="align:left;font-size:16;" id="_main_' + field.fieldname +index+ '" name="_main_' + field.fieldname + '" value="'+field.dataList[index].hiddenval+',">'+field.dataList[index].shownval+'</checkbox>';
+			        		}
+			        		selectContent += '</row>';
+		        		}
+	        		}
+	        		custemCon += selectContent;
+	        		pushMustFillCheckboxArray(mustfilled,field.name,'_main_' + field.fieldname,field.dataList.length);
+				//下拉框
+				}else if(showType == '105' && readWrite == '1'){
+					var selectContent = '<row><select style="align:right;font-size:16;" id="_main_' + field.fieldname + '" name="_main_' + field.fieldname + '">'+
+	        			'<option value="">请选择</option>';
+	        		var dataListIsFlag = field.dataListIsFlag;
+	        		if(dataListIsFlag =='1'){
+	        			for(var index=0,size=field.dataList.length;index<size;index++){
+			        		if(content){
+				        		if(content == field.dataList[index].hiddenval){
+				        			selectContent += '<option selected="true" value="'+field.dataList[index].hiddenval+'">'+field.dataList[index].showval+'</option>';
+				        		}else{
+				        			selectContent += '<option value="'+field.dataList[index].hiddenval+'">'+field.dataList[index].showval+'</option>';
+				        		}
+			        		}else{
+			        			selectContent += '<option value="'+field.dataList[index].hiddenval+'">'+field.dataList[index].showval+'</option>';
+			        		}
+		        		}
+	        		}
+	        		selectContent += '</select>';
+	        		custemCon += selectContent + '</row>';
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.fieldname);
+				//日期
+				}else if(showType == '107' && readWrite == '1'){
+					custemCon += '<row><input style="color:#555555;font-size:16;" type="date" id="_main_' + field.fieldname + '" name="_main_' + field.fieldname + '" value="' + field.content + '"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.fieldname);
+				//时间 
+				}else if(showType == '108' && readWrite == '1'){
+	        		custemCon += '<row><input style="color:#555555;font-size:16;" type="time" id="_main_' + field.fieldname + '" name="_main_' + field.fieldname + '" value="' + field.content + '"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.fieldname);
+	        	//日期 时间 
+	        	}else if(showType == '109' && readWrite == '1'){
+	        		custemCon += '<row><input style="color:#555555;font-size:16;" type="datetime" id="_main_' + field.fieldname + '" name="_main_' + field.fieldname + '" value="' + field.content + '"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.fieldname);
+	        	//多行文本
+	        	}else if(showType == '110' && readWrite == '1'){
+	        		custemCon += '<row><textarea style="color:#555555;font-size:16;" rows="5" maxrows="5" id="_main_' + field.fieldname + '" name="_main_' + field.fieldname + '">' + field.content + '</textarea></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.fieldname);
+	        	//附件上传
+	        	}else if(showType == '115'){
+	        		if(readWrite == '1'){
+		        		var fuItem='';
+		        		var attId = 'cusFile_'+cusIndex;
+		        		if(content !=''){
+			        		attachmentArray.push(content+';cusFile_'+cusIndex+';customform');
+		        		}else{
+		        			content='';
+		        		}
+		        		fuItem += '<item style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;"><row><label style="align:left;font-size:16;color:#555555">' + field.name + ':</label>'+
+		        		'<input type="hidden" name="_mainfile_' + field.fieldname + '" value="' + content.replace(/&/g,'&amp;') + '"/></row></col><col id="' + attId + '" style="padding:10;margin:10;">';
+		        		fuItem += '<row id="fileRow" onclick="doRelatedAcc(this,\'' + attId + '\',\'' + field.fieldname + '\')"><icon src="mail_addfu.png" style="width:28;height:28;" onclick="doRelatedAcc(this,\'' + attId + '\',\'' + field.fieldname + '\')"/></row>';
+		        		fileindex++;
+		        		custemCon = fuItem;
+	        		}else{
+	        			if(content !=''){
+					    	attachmentArray.push(content+';cusFile_'+cusIndex+';customform');
+					    }
+	        		}
+	        	//Word编辑	
+	        	}else if(showType == '116'){
+				    if(content !=''){
+				    	attachmentArray.push(content+'.doc;正文;cusFile_'+cusIndex+';customform');
+				    }else if(readWrite == '1'){
+				    	custemCon += '<row><label style="align:left;font-size:12;color:#FF4617">该字段暂不支持手机办理，请于电脑端操作...</label></row>';
+				    }
+	        	//Excel编辑
+	        	}else if(showType == '117'){
+	        		if(content !=''){
+				    	attachmentArray.push(content+'.xls;正文;cusFile_'+cusIndex+';customform');
+				    }else if(readWrite == '1'){
+				    	custemCon += '<row><label style="align:left;font-size:12;color:#FF4617">该字段暂不支持手机办理，请于电脑端操作...</label></row>';
+				    }
+	        		
+	        	//WPS编辑 118
+	        	}else if(showType == '118'){
+	        		if(content !=''){
+				    	attachmentArray.push(content+'.wps;正文;cusFile_'+cusIndex+';customform');
+				    }else if(readWrite == '1'){
+				    	custemCon += '<row><label style="align:left;font-size:12;color:#FF4617">该字段暂不支持手机办理，请于电脑端操作...</label></row>';
+				    }
+	        	//单选人 全部	
+	        	}else if(showType == '210' && readWrite == '1'){
+	        		var contId='';
+	        		var contName='';
+	        		if(content && content.indexOf(";")>-1){
+				    	var cons = content.split(";");
+				    	contName=cons[0];
+				    	contId=cons[1];
+				    }
+	        		custemCon += '<row onclick="selectUser(\'_mainId_' + field.fieldname +'\',\'_mainShow_' + field.fieldname +'\',\'_main_' + field.fieldname +'\',\'*0*\',\'0\')">'+
+	        					   '<input onclick="selectUser(\'_mainId_' + field.fieldname +'\',\'_mainShow_' + field.fieldname +'\',\'_main_' + field.fieldname +'\',\'*0*\',\'0\')" style="color:#555555;font-size:16;" readonly="true" type="text" '+ 
+	        					   'value="' + contName + '" id="_mainShow_' + field.fieldname +'" placeholder="请选择>" />'+
+	        					   '<input type="hidden" id="_mainId_' + field.fieldname +'" value="' + contId + '"/>'+
+	        					   '<input type="hidden" id="_main_' + field.fieldname +'" name="_main_' + field.fieldname +'" value="' + content + '"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.fieldname);
+	        	//多选人 全部
+	        	}else if(showType == '211' && readWrite == '1'){
+	        		var contId='';
+	        		var contName='';
+	        		if(content && content.indexOf(";")>-1){
+				    	var cons = content.split(";");
+				    	contName=cons[0];
+				    	contId=cons[1];
+				    }
+	        		custemCon += '<row onclick="selectUser(\'_mainId_' + field.fieldname +'\',\'_mainShow_' + field.fieldname +'\',\'_main_' + field.fieldname +'\',\'*0*\',\'1\')">'+
+	        					   '<input onclick="selectUser(\'_mainId_' + field.fieldname +'\',\'_mainShow_' + field.fieldname +'\',\'_main_' + field.fieldname +'\',\'*0*\',\'1\')" style="color:#555555;font-size:16;" readonly="true" type="text" '+ 
+	        					   'value="' + contName + '" id="_mainShow_' + field.fieldname +'" placeholder="请选择>" />'+
+	        					   '<input type="hidden" id="_mainId_' + field.fieldname +'" value="' + contId + '"/>'+
+	        					   '<input type="hidden" id="_main_' + field.fieldname +'" name="_main_' + field.fieldname +'" value="' + content + '"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.fieldname);
+	        	//单选组织
+	        	}else if(showType == '212' && readWrite == '1'){
+	        		var contId='';
+	        		var contName='';
+	        		if(content && content.indexOf(";")>-1){
+				    	var cons = content.split(";");
+				    	contName=cons[0];
+				    	contId=cons[1];
+				    }
+	        		custemCon += '<row onclick="selectUser(\'_mainId_' + field.fieldname +'\',\'_mainShow_' + field.fieldname +'\',\'_main_' + field.fieldname +'\',\'*0*\',\'2\')">'+
+	        					   '<input onclick="selectUser(\'_mainId_' + field.fieldname +'\',\'_mainShow_' + field.fieldname +'\',\'_main_' + field.fieldname +'\',\'*0*\',\'2\')" style="color:#555555;font-size:16;" readonly="true" type="text" '+ 
+	        					   'value="' + contName + '" id="_mainShow_' + field.fieldname +'" placeholder="请选择>" />'+
+	        					   '<input type="hidden" id="_mainId_' + field.fieldname +'" value="' + contId + '"/>'+
+	        					   '<input type="hidden" id="_main_' + field.fieldname +'" name="_main_' + field.fieldname +'" value="' + content + '"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.fieldname);
+	        	//多选组织
+	        	}else if(showType == '214' && readWrite == '1'){
+	        		var contId='';
+	        		var contName='';
+	        		if(content && content.indexOf(";")>-1){
+				    	var cons = content.split(";");
+				    	contName=cons[0];
+				    	contId=cons[1];
+				    }
+	        		custemCon += '<row onclick="selectUser(\'_mainId_' + field.fieldname +'\',\'_mainShow_' + field.fieldname +'\',\'_main_' + field.fieldname +'\',\'*0*\',\'3\')">'+
+	        					   '<input onclick="selectUser(\'_mainId_' + field.fieldname +'\',\'_mainShow_' + field.fieldname +'\',\'_main_' + field.fieldname +'\',\'*0*\',\'3\')" style="color:#555555;font-size:16;" readonly="true" type="text" '+ 
+	        					   'value="' + contName + '" id="_mainShow_' + field.fieldname +'" placeholder="请选择>" />'+
+	        					   '<input type="hidden" id="_mainId_' + field.fieldname +'" value="' + contId + '"/>'+
+	        					   '<input type="hidden" id="_main_' + field.fieldname +'" name="_main_' + field.fieldname +'" value="' + content + '"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.fieldname);
+	        	//单选人 本组织
+	        	}else if(showType == '704' && readWrite == '1'){
+	        		var contId='';
+	        		var contName='';
+	        		if(content && content.indexOf(";")>-1){
+				    	var cons = content.split(";");
+				    	contName=cons[0];
+				    	contId=cons[1];
+				    }
+	        		custemCon += '<row onclick="selectUser(\'_mainId_' + field.fieldname +'\',\'_mainShow_' + field.fieldname +'\',\'_main_' + field.fieldname +'\',\'*'+orgId+'*\',\'0\')">'+
+	        					   '<input onclick="selectUser(\'_mainId_' + field.fieldname +'\',\'_mainShow_' + field.fieldname +'\',\'_main_' + field.fieldname +'\',\'*'+orgId+'*\',\'0\')" readonly="true" style="color:#555555;font-size:16;" type="text" '+ 
+	        					   'value="' + contName + '" id="_mainShow_' + field.fieldname +'" placeholder="请选择>" />'+
+	        					   '<input type="hidden" id="_mainId_' + field.fieldname +'" value="' + contId + '"/>'+
+	        					   '<input type="hidden" id="_main_' + field.fieldname +'" name="_main_' + field.fieldname +'" value="' + content + '"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.fieldname);
+	        	//多选人 本组织
+	        	}else if(showType == '705' && readWrite == '1'){
+	        		var contId='';
+	        		var contName='';
+	        		if(content && content.indexOf(";")>-1){
+				    	var cons = content.split(";");
+				    	contName=cons[0];
+				    	contId=cons[1];
+				    }
+	        		custemCon += '<row onclick="selectUser(\'_mainId_' + field.fieldname +'\',\'_mainShow_' + field.fieldname +'\',\'_main_' + field.fieldname +'\',\'*'+orgId+'*\',\'1\')">'+
+	        					   '<input onclick="selectUser(\'_mainId_' + field.fieldname +'\',\'_mainShow_' + field.fieldname +'\',\'_main_' + field.fieldname +'\',\'*'+orgId+'*\',\'1\')" readonly="true" style="color:#555555;font-size:16;" type="text" '+ 
+	        					   'value="' + contName + '" id="_mainShow_' + field.fieldname+'" placeholder="请选择>" />'+
+	        					   '<input type="hidden" id="_mainId_' + field.fieldname+'" value="' + contId + '"/>'+
+	        					   '<input type="hidden" id="_main_' + field.fieldname+'" name="_main_' + field.fieldname+'" value="' + content + '"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.fieldname);
+	        	//多选组织和人
+	        	}else if(showType == '216' && readWrite == '1'){
+	        		var contId='';
+	        		var contName='';
+	        		if(content && content.indexOf(";")>-1){
+				    	var cons = content.split(";");
+				    	contName=cons[0];
+				    	contId=cons[1];
+				    }
+	        		custemCon += '<row onclick="selectUser(\'_mainId_' + field.fieldname +'\',\'_mainShow_' + field.fieldname +'\',\'_main_' + field.fieldname +'\',\'*0*\',\'4\')">'+
+	        					   '<input onclick="selectUser(\'_mainId_' + field.fieldname +'\',\'_mainShow_' + field.fieldname +'\',\'_main_' + field.fieldname +'\',\'*0*\',\'4\')" readonly="true" style="color:#555555;font-size:16;" type="text" '+ 
+	        					   'value="' + contName + '" id="_mainShow_' + field.fieldname+'" placeholder="请选择>" />'+
+	        					   '<input type="hidden" id="_mainId_' + field.fieldname+'" value="' + contId + '"/>'+
+	        					   '<input type="hidden" id="_main_' + field.fieldname+'" name="_main_' + field.fieldname+'" value="' + content + '"/></row>';
+	        		pushMustFillArray(mustfilled,field.name,'_main_' + field.fieldname);
+	        	}else if((showType=='705' || showType=='704' || showType=='214' || showType=='216'
+				    || showType=='212' || showType=='211' || showType=='210') && readWrite != '1'){
+	        		var contName='';
+	        		if(content && content.indexOf(";")>-1){
+				    	var cons = content.split(";");
+				    	contName=cons[0];
+				    }
+				    custemCon += '<row><label style="color:#555555">'+contName+'</label></row>';
+	        	}else{
+	        		if(content && showType){
+						custemCon += '<row><label style="color:#555555">'+content+'</label></row>';
+					}
+	        	}
 				custemCon += '</col></item>';
 				return custemCon;
 			}	        
+	        
+	        // 选择用户
+	        var userIdConIdVal;
+	        var userNameConIdVal;
+	        var userAllVal;
+	        function selectUser(userIdConId,userNameConId,userAll,range,type){
+	        	userIdConIdVal = userIdConId;
+	        	userNameConIdVal = userNameConId;
+	        	userAllVal = userAll;
+		        storage.setItem('sys_selectuser_range',range);
+		        storage.setItem('sys_selectuser_userids',$(userIdConIdVal).value);
+		        storage.setItem('sys_selectuser_usernames',$(userNameConIdVal).value);
+		        storage.setItem('sys_selectuser_returnfuc','setUserInfo');
+		        if('0' == type){
+				    $page.open('../public/selectSingleUser.xml', {animation:'down-to-up'});
+		        }else if('1' == type){
+				    $page.open('../public/selectUser.xml', {animation:'down-to-up'});
+		        }else if('2' == type){
+				    $page.open('../public/selectSingleOrg.xml', {animation:'down-to-up'});
+		        }else if('3' == type){
+				    $page.open('../public/selectOrg.xml', {animation:'down-to-up'});
+		        }else if('4' == type){
+				    $page.open('../public/selectUserOrg.xml', {animation:'down-to-up'});
+		        }
+			}
+	        
+	        // 设置选人值
+	        function setUserInfo(id,name){
+	         	var idVal = id;
+	            if(idVal.indexOf("$$")==-1){   //单人，需要单独处理。
+	            	idVal = idVal.replace(/(\$)/g,'')+',';
+			    }
+	        	$(userIdConIdVal).value = idVal;
+	        	$(userNameConIdVal).value = name;
+	        	$(userAllVal).value = name + ';' + idVal;
+	        }
 	        
 	        // 批示意见内容,各环节办理节点意见
 	        function createCommentCon(comment){
@@ -869,19 +1299,79 @@
         		);
 	        } 
 	        
-	        // 发送流程 
-			function sendFlow(smsRight,workTitle,workSubmitTime,empLivingPhoto){
-			    if($('commentmustnonull')&& $('comment_input')){
+	        //必填项数组
+	        var mustFillCon = new Array();
+	        
+	        //添加数组元素 
+	        function pushMustFillArray(mustfilled,fieldName,conId){
+	        	if(mustfilled == '0'){
+	        		return false;
+	        	}
+	        	mustFillCon.push(fieldName + ';' + conId);
+	        }
+	        //必填checkbox
+	        var mustFillCheckbox = new Array();
+	        
+	        //添加数组元素 
+	        function pushMustFillCheckboxArray(mustfilled,fieldName,conId,len){
+	        	if(mustfilled == '0'){
+	        		return false;
+	        	}
+	        	mustFillCheckbox.push(fieldName + ';' + conId+ ';' +len);
+	        }
+	        //发送时验证表单
+	        function checkForm(){
+	        	var fieldInfoArray;
+	        	var flag = true;
+	        	for(var i=0,length=mustFillCon.length;i<length;i++){
+	        		if(!mustFillCon[i]){
+	        			return false;
+	        		}
+	        		fieldInfoArray = mustFillCon[i].split(';');
+	        		if(!($(fieldInfoArray[1]).value)){
+	        			alert(fieldInfoArray[0] + ' 不能为空！');
+			        	return false;
+	        		}
+	        	}
+	        	for(var i=0,length=mustFillCheckbox.length;i<length;i++){
+	        		if(!mustFillCheckbox[i]){
+	        			return false;
+	        		}
+	        		var chefieldInfoArray = mustFillCheckbox[i].split(';');
+	        		var fname = chefieldInfoArray[0];
+	        		var conId = chefieldInfoArray[1];
+	        		var len = eval(chefieldInfoArray[2]);
+	        		
+	        		flag = false;
+	        		for(var j=0;j<len;j++){
+	        		    if(($(conId+j).checked)){
+	        		        flag = true;
+		        		}
+	        		}
+	        		if(!flag){
+	        		   alert(fname + ' 不能为空！');
+	        		   return false;
+	        		}
+	        	}
+	        	if($('commentmustnonull')&& $('comment_input')){
 				    var commentIsNone = $('commentmustnonull').value;  //节点中的批示意见是否为空表示，若为true为不能为空
 				    if(commentIsNone == 'true'){
 				    	 var comment_input_value = $('comment_input').value;
 				    	 if(comment_input_value == null || comment_input_value == ''){
 				    	 	alert('批示意见不能为空！');
-				    	 	return;
+				    	 	flag = false;
 				    	 }
 				    }
 			    }
-				$('sendForm').action = evoUrl + '/ezOffice/workflow/sendnew.do';
+	        	return flag;
+	        }
+	        
+	        // 发送流程 
+			function sendFlow(smsRight,workTitle,workSubmitTime,empLivingPhoto){
+			    if(!checkForm()){    //表单验证
+					return false;
+				}
+				$('sendForm').action = evoUrl + '/ezOffice/doc/sendnew.do';
 				$('sendForm').submit(function(data) {
 					if(!data){
 						alert('保存表单失败！');
@@ -1084,6 +1574,7 @@
 					<input type="hidden" id="workcurstep" name="workcurstep" value=""/>
 					<input type="hidden" id="worksubmittime" name="worksubmittime" value=""/>
 					<input type="hidden" id="workStatus" name="workStatus" value="0"/>
+					<input type="hidden" id="savetable" name="savetable" value="3"/>
 					<list id="content_form_list">
 					</list>
 				</form>
@@ -1108,6 +1599,7 @@
 					<input type="hidden" name="workactivity" id="back_workActivity" value="" />
 					<input type="hidden" name="standForUserid" id="back_standForUserid" value="" />
 					<input type="hidden" name="isStandForWork" id="back_isStandForWork" value="" />
+					<input type="hidden" id="savetable" name="savetable" value="3"/>
 				</form>
 				<form id="sendFormAgain" prompt="请稍后...">
 					<input type="hidden" name="workId" id="again_workId" value=""/>
@@ -1116,6 +1608,7 @@
 					<input type="hidden" name="workcurstep" id="again_workcurstep" value=""/>
 					<input type="hidden" name="worksubmittime" id="again_worksubmittime" value=""/>
 					<input type="hidden" name="workStatus" id="again_workStatus" value="1100"/>
+					<input type="hidden" id="savetable" name="savetable" value="3"/>
 				</form>
             </content>
             <content style="background:white" id="content_flow_pic">
