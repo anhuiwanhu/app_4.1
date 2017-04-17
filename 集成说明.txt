@@ -273,3 +273,29 @@ OAServer_HOME=D:\\eov\\webapps\\ezOffice\\uploadÄ¿Â¼ÐÞ¸ÄÎªµ±Ç°evo·þÎñÊµ¼Ê°²×°Ä¿Â
 6¡¢Çå³ý·þÎñ¶Ë»º´æ£¬Æô¶¯evo·þÎñ
 
 7¡¢ÑéÖ¤ÏµÍ³¹¦ÄÜ
+
+
+
+
+
+
+
+²¹¶¡ÊÊÓÃ·¶Î§£º
+
+ezOFFICE11.5²úÆ·(ÒÑ¼¯³É²¹¶¡11.5.0.01~11.5.0.20£©+ evo4.1(ÒÑ¼¯³É²¹¶¡4.1.01~11£©
+
+²Ù×÷²½Öè£º
+
+1¡¢Í£evo·þÎñ
+
+2¡¢±¸·Ý³ÌÐò¡¢Êý¾Ý¿â
+
+3¡¢¸²¸Ç³ÌÐò²¹¶¡°üµ½evo·þÎñ°²×°Ä¿Â¼£¨d:\evo)
+
+4¡¢°ÑÎÄ¼þ¼Ð..\webapps\ezOffice\res\default\uiÏÂËùÓÐÎÄ¼þ¡¢ÎÄ¼þ¼ÐÍÏÈëui.zip(²»Òª½âÑ¹£©
+
+5¡¢Á¬OAÊý¾Ý¿âÖ´ÐÐsqlÎÄ¼þ¼ÐÏÂÊý¾Ý¿âÉý¼¶½Å±¾£¨·ÖÎªoracle¡¢sqlserverÁ½ÖÖÀàÐÍ¿â£©
+
+6¡¢Çå³ý·þÎñ¶Ë»º´æ£¬Æô¶¯evo·þÎñ
+
+7¡¢ÑéÖ¤ÏµÍ³¹¦ÄÜ

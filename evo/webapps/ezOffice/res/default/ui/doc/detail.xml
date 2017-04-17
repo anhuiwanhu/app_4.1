@@ -3,9 +3,10 @@
     <script>
     <![CDATA[
         var loadFlag = '0';  //函数执行置为1，提交之前进行判断，若为1，则禁止 提交，防重复提交
+        var storage = $phone.localStorage();
+		var evoUrl = storage.getItem('evoUrl');	
         //页面家在完成后执行
         $page.onload = function() {
-            var storage = $phone.localStorage();
             var id = storage.getItem('doc_id');
             var userIsReaded = storage.getItem('doc_userIsReaded');
             if(userIsReaded=="1"){   //已读公文，打开详情进行标记
@@ -20,8 +21,6 @@
 	        	return false;
 	        }
 	        loadFlag = '1';
-	        var storage = $phone.localStorage();
-		    var evoUrl = storage.getItem('evoUrl');	
             $http.post(evoUrl+'/ezOffice/doc/openReceiveDetail.do',{id:id},  function(data) {
 	                if(data){
 	                  // alert(data);
@@ -64,7 +63,6 @@
         
         function initList(){
             //获取手机缓存中的数据
-            var storage = $phone.localStorage();
             var filename = storage.getItem('doc_filename');
             var realname = storage.getItem('doc_realname');
             var wordType = storage.getItem('doc_wordType');
@@ -73,7 +71,6 @@
             var handOutTime = storage.getItem('doc_handOutTime');
             var writeOrg = storage.getItem('doc_writeOrg');
             var byteNumber = storage.getItem('doc_byteNumber');
-		    var evoUrl = storage.getItem('evoUrl');
             $http.post(evoUrl+'/ezOffice/doc/detailinfo.do',{filename:filename,realname:realname,wordType:wordType,id:id,accessoryName:accessoryName,handOutTime:handOutTime},  function(data) {
                  var obj =eval('('+data+')');
                  if(obj.logonerror &&obj.logonerror=='1'){
@@ -101,8 +98,6 @@
         
         
         function getFiles(recordId){
-             var storage = $phone.localStorage();
-		     var evoUrl = storage.getItem('evoUrl');
              $http.post(evoUrl+'/ezOffice/doc/documentfiles.do',{recordId:recordId},  function(data) {
                 if(data){
                     var obj = JSON.parse(data);
@@ -151,10 +146,7 @@
         }
         
         function viewFiles(accessoryNameseries,accessorySaveNameseries,path){
-            var storage = $phone.localStorage();
-		    var evoUrl = storage.getItem('evoUrl');
             $http.post(evoUrl+'/ezOffice/doc/dealFiles.do',{accessoryNameseries:accessoryNameseries,accessorySaveNameseries:accessorySaveNameseries,path:path},  function(data) {
-            //   alert(data);
                if(data){
                    var obj = JSON.parse(data);
                    if(obj.logonerror &&obj.logonerror=='1'){

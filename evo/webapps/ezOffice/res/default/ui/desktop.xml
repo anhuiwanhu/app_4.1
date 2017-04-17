@@ -55,11 +55,15 @@
 		       $('item_register').css('display', 'block');
 		    }
 		    getLinkbook();
-		    getRemindNum();
+		   // getRemindNum();
 		}
+	   $page.onactive = function() {
+		   getRemindNum();
+	   }
 	   
        function getRemindNum(){
             var storage = $phone.localStorage();
+            evoUrl = storage.getItem('evoUrl');
             $http.post(evoUrl+'/ezOffice/desktop/getRemindNumList.do','', function(data) {
                  var obj = JSON.parse(data);
                  if(obj.logonerror && obj.logonerror=='1'){
@@ -1161,9 +1165,15 @@
 		}
 		
 		var bmap = $("bmap");
+		var locationFlag = 'true';
 		function register(){
+		    locationFlag = 'true';
             bmap.startLocation({   //掉出百度地图获取位置
                  onReceiveLocation: function(location) {
+                   if(locationFlag != 'true'){
+                   		return;
+                   }
+                   locationFlag = 'false';
                    var latitude = location.latitude+'';
                    var longitude = location.longitude+'';
                    bmap.stopLocation();  //停止定位
