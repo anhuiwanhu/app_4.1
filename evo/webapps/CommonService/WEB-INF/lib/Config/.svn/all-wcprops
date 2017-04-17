@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/map/!svn/ver/1685/projects/tjg/trunk/WebContent/WEB-INF/lib/Config
+END
+config.eni
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/map/!svn/ver/1685/projects/tjg/trunk/WebContent/WEB-INF/lib/Config/config.eni
+END
+InstallInfo.ini
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/map/!svn/ver/1685/projects/tjg/trunk/WebContent/WEB-INF/lib/Config/InstallInfo.ini
+END
+Key.store
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/map/!svn/ver/1685/projects/tjg/trunk/WebContent/WEB-INF/lib/Config/Key.store
+END
+install.property
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/map/!svn/ver/1685/projects/tjg/trunk/WebContent/WEB-INF/lib/Config/install.property
+END
