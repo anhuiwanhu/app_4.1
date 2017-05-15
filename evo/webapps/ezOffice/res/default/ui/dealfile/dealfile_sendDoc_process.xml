@@ -450,7 +450,43 @@
 					$('oaPdf').value = '1';
 					$('docContent').add($C('<row><label style="color:blue;text-decoration:underline;" onclick="doPdf();">PDF批注</label></row>'));
 				}else if(evoword =='1' && isEdit =='1' && (workStatus=='0' || workStatus=='2')){
-					$('docContent').add($C('<label style="color:blue;text-decoration:underline;" onclick="doWps();">编辑正文</label>'));
+					$http.post(evoUrl+'/ezOffice/doc/getEVOWord.do',{},function(data) {
+		                 var obj =eval('('+data+')');
+		                 if(obj.message.result == '1'){
+		                 	if(obj.data.evoword=='true'){
+		                 		$('docContent').add($C('<label style="color:blue;text-decoration:underline;" onclick="doWps();">编辑正文</label>'));
+		                 	}else{
+		                 		$http.post(evoUrl+'/ezOffice/doc/detailinfo.do',{filename:filename,realname:docTitle,wordType:wordType},function(data) {
+					                 var obj =eval('('+data+')');
+					                 var viewName = draftPerson +worksubmittime +worktitle+"的正文";
+					                 var docUrl="$http.download('"+evoUrl + "/ezOffice/doc/pdf.do?url="+obj.attachurl+"&amp;filename="+filename+wordType+"&amp;viewName="+viewName+"');";
+					                 $('docContent').add($C('<label style="color:blue;text-decoration:underline;" onclick="'+docUrl+'">查看正文</label>'));
+					            },function(error) {
+								    if (error == 'timeout') {
+										hint('连接服务器超时！');
+								    } else if (error == '404') {
+										hint('链接超时重新登录！');
+								    } else if (error == '500') {
+										hint('内部服务器错误！');
+								    } else {
+										hint('访问网络错误！错误代码:' + error);
+								    }
+								    $page.open('../index.xml',{animation:'down-to-up'});
+							  });
+		                 	}
+		                 }
+		            },function(error) {
+					    if (error == 'timeout') {
+							hint('连接服务器超时！');
+					    } else if (error == '404') {
+							hint('链接超时重新登录！');
+					    } else if (error == '500') {
+							hint('内部服务器错误！');
+					    } else {
+							hint('访问网络错误！错误代码:' + error);
+					    }
+					    $page.open('../index.xml',{animation:'down-to-up'});
+				   });
 				}else{  
 					$http.post(evoUrl+'/ezOffice/doc/detailinfo.do',{filename:filename,realname:docTitle,wordType:wordType},function(data) {
 		                 var obj =eval('('+data+')');
@@ -1137,14 +1173,14 @@
 	        	//Word编辑	
 	        	}else if(showType == '116'){
 				    if(content !=''){
-				    	attachmentArray.push(content+'.doc;正文;cusFile_'+cusIndex+';customform');
+				    	attachmentArray.push(content+'.doc;正文;cusFile_'+cusIndex+';information');
 				    }else if(readWrite == '1'){
 				    	custemCon += '<row><label style="align:left;font-size:12;color:#FF4617">该字段暂不支持手机办理，请于电脑端操作...</label></row>';
 				    }
 	        	//Excel编辑
 	        	}else if(showType == '117'){
 	        		if(content !=''){
-				    	attachmentArray.push(content+'.xls;正文;cusFile_'+cusIndex+';customform');
+				    	attachmentArray.push(content+'.xls;正文;cusFile_'+cusIndex+';information');
 				    }else if(readWrite == '1'){
 				    	custemCon += '<row><label style="align:left;font-size:12;color:#FF4617">该字段暂不支持手机办理，请于电脑端操作...</label></row>';
 				    }
@@ -1152,7 +1188,7 @@
 	        	//WPS编辑 118
 	        	}else if(showType == '118'){
 	        		if(content !=''){
-				    	attachmentArray.push(content+'.wps;正文;cusFile_'+cusIndex+';customform');
+				    	attachmentArray.push(content+'.wps;正文;cusFile_'+cusIndex+';information');
 				    }else if(readWrite == '1'){
 				    	custemCon += '<row><label style="align:left;font-size:12;color:#FF4617">该字段暂不支持手机办理，请于电脑端操作...</label></row>';
 				    }
@@ -1427,16 +1463,39 @@
 	        
 	        // 构建批示意见内容
 	        function createCommentCon(comment){
+	        	var commentType = '';
+	        	var commentShouxieOaUrl = '';
+	        	var commentShouxie = '';
 	        	var commentCon = '<item style="padding:0;margin:0;"><col style="background:#f9f9f9;margin:10;padding:10;">';
 	        	commentCon += '<row><label style="align:left;font-size:16;color:#555555">'+comment.step+':</label></row></col></item><item style="padding:0;margin:0;"><col>';
 	        	if(comment){
 	        		if(comment instanceof Array){
-	        			for(var i=0,length=commentContent.length;i<length;i++){
-	        			    commentCon += '<row><label style="color:#555555;margin-left:10;">'+comment[i].content +'</label></row>';
+	        			for(var i=0,length=comment.length;i<length;i++){
+	        			    commentType = comment[i].type;
+	        				if(commentType == '0'){
+	        					//普通意见
+	        					commentCon += '<row><label style="color:#555555;margin-left:10;">'+comment[i].content +'</label></row>';
+	        				}
+	        				if(commentType == '1'){
+	        					// pc手写
+								commentShouxieOaUrl = webServiceUrl + 'upload/workflow_acc/rev' + comment[i].content + '.gif';
+								commentShouxie = evoUrl+'/ezOffice/download/resizeHandSign.do?url='+commentShouxieOaUrl;
+	        					commentCon += '<row><label style="color:#555555;margin-left:10;"><img src="'+commentShouxie+'"/></label></row>';
+	        				}
 				        	commentCon += '<row><label style="align:right;color:#555555">' + comment[i].person + ' (' + comment[i].date +')</label></row>';
 	        			}
 	        		}else if(comment instanceof Object){
-	        		    commentCon += '<row><label style="color:#555555;margin-left:10;">'+comment.content + '</label></row>';
+	        		    commentType = comment.type;
+	       				if(commentType == '0'){
+	       					//普通意见
+	       					commentCon += '<row><label style="color:#555555;margin-left:10;">'+comment.content +'</label></row>';
+	       				}
+	       				if(commentType == '1'){
+	       					// pc手写
+							commentShouxieOaUrl = webServiceUrl + 'upload/workflow_acc/rev' + comment.content + '.gif';
+							commentShouxie = evoUrl+'/ezOffice/download/resizeHandSign.do?url='+commentShouxieOaUrl;
+	       					commentCon += '<row><label style="color:#555555;margin-left:10;"><img src="'+commentShouxie+'"/></label></row>';
+	       				}
 			        	commentCon += '<row><label style="align:right;color:#555555">' +comment.person + ' (' + comment.date +')</label></row>';
 	        		}
 	        	}

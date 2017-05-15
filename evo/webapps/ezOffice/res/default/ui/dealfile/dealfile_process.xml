@@ -1512,6 +1512,7 @@
 				var actiCommFieldType = workInfo.actiCommFieldType;
 				var commentList = detailData.commentList;
 				var commentType = '';
+				var commentShouxieWebUrl ='';
 				var commentShouxie = '';
 				var commentYuyin = '';
 				var commentAttitudeTypeSet = workInfo.commentAttitudeTypeSet; //态度意见设置0：无 1：显示同意、不同意2：显示已阅、同意、不同意
@@ -1549,8 +1550,14 @@
 							if(commentstatus == '0'&&sys_sys_userId == commentList[i].userId){  //草稿
 							    g_comment_input = commentList[i].content;
 							}else{
-								if(commentType == '4'){
-									// 手写
+								if(commentType == '1'){
+									 // pc手写
+									 commentShouxieWebUrl = webServiceUrl + 'upload/workflow_acc/rev' + commentList[i].content + '.gif';
+									 commentShouxie = evoUrl+'/ezOffice/download/resizeHandSign.do?url='+commentShouxieWebUrl;
+									 itemContent += '<item onclick="view_sxContent(\'' + commentShouxie + '\');" style="padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="align:left;font-size:16;color:#555555">'+commentList[i].step+'</label></row></col></item><item style="padding:0;margin:0;"><col><row>'+
+												    '<img src="'+commentShouxie+'"/></row>';
+								}else if(commentType == '4'){
+									// 手机手写
 									commentShouxieOaUrl = webServiceUrl + 'upload/workflow_acc/' + commentList[i].content.substring(0,6) + '/' + commentList[i].content;
 									commentShouxie = evoUrl+'/ezOffice/download/resizeHandSign.do?url='+commentShouxieOaUrl;
 									itemContent += '<item onclick="view_sxContent(\'' + commentShouxie + '\');" style="padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="align:left;font-size:16;color:#555555">'+commentList[i].step+'</label></row></col></item><item style="padding:0;margin:0;"><col><row>'+
@@ -1574,8 +1581,14 @@
 						if(commentstatus == '0'&&sys_sys_userId == commentList.comment.userId){  //草稿
 						    g_comment_input = commentList.comment.content;
 						}else{
-							if(commentType == '4'){
-								// 手写
+							if(commentType == '1'){
+								 // pc手写
+								 commentShouxieWebUrl = webServiceUrl + 'upload/workflow_acc/rev' + commentList.comment.content + '.gif';
+								 commentShouxie = evoUrl+'/ezOffice/download/resizeHandSign.do?url='+commentShouxieWebUrl;
+								 itemContent += '<item onclick="view_sxContent(\'' + commentShouxie + '\');" style="padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="align:left;font-size:16;color:#555555">'+commentList[i].step+'</label></row></col></item><item style="padding:0;margin:0;"><col><row>'+
+												'<img src="'+commentShouxie+'"/></row>';
+							}else if(commentType == '4'){
+								// 手机手写
 								commentShouxieOaUrl = webServiceUrl + 'upload/workflow_acc/' + commentList.comment.content.substring(0,6) + '/' + commentList.comment.content;
 							    commentShouxie = evoUrl+'/ezOffice/download/resizeHandSign.do?url='+commentShouxieOaUrl;
 								itemContent += '<item onclick="view_sxContent(\'' + commentShouxie + '\');" style="col-width:100,*;padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="align:left;font-size:16;color:#555555">'+commentList.comment.step+'</label></row></col></item><item style="padding:0;margin:0;"><col><row>'+
@@ -2083,6 +2096,7 @@
 	        		//批示意见
 	        		var commentList = field.dataList;
 	        		var commentType = '';
+	        		var commentShouxieWebUrl = '';
 	        		var commentShouxie = '';
 					var commentYuyin = '';
 					if(commentList){
@@ -2093,9 +2107,14 @@
 								if(commentstatus == '0'&&sys_sys_userId == commentList[i].userId){
 									g_comment_input = commentList[i].content;
 								}else{
-									if(commentType == '4'){
+									if(commentType == '1'){
+										 // pc手写
+										 commentShouxieWebUrl = webServiceUrl + 'upload/workflow_acc/rev' + commentList[i].content + '.gif';
+										 commentShouxie = evoUrl+'/ezOffice/download/resizeHandSign.do?url='+commentShouxieWebUrl;
+										 itemContent += '<row onclick="view_sxContent(\'' + commentShouxie + '\');"><img src="'+commentShouxie+'"/></row>';
+									}else if(commentType == '4'){
 										if(commentList[i].content.substring(0,6)){
-											// 手写
+											// 手机手写
 											 commentShouxieWebUrl = webServiceUrl + 'upload/workflow_acc/' + commentList[i].content.substring(0,6) + '/' + commentList[i].content;
 											 commentShouxie = evoUrl+'/ezOffice/download/resizeHandSign.do?url='+commentShouxieWebUrl;
 											itemContent += '<row onclick="view_sxContent(\'' + commentShouxie + '\');"><img src="'+commentShouxie+'"/></row>';
@@ -2119,11 +2138,16 @@
 							if(commentstatus == '0'&&sys_sys_userId == commentList.comment.userId){
 								g_comment_input = commentList.comment.content;
 							}else{
-								if(commentType == '4'){
+								if(commentType == '1'){
+									 // pc手写
+									 commentShouxieWebUrl = webServiceUrl + 'upload/workflow_acc/rev' + commentList.comment.content + '.gif';
+									 commentShouxie = evoUrl+'/ezOffice/download/resizeHandSign.do?url='+commentShouxieWebUrl;
+									 itemContent += '<row onclick="view_sxContent(\'' + commentShouxie + '\');"><img src="'+commentShouxie+'"/></row>';
+								}else if(commentType == '4'){
 									if(!(commentList.comment.content instanceof Array)){
 										commentShouxieWebUrl = webServiceUrl + 'upload/workflow_acc/' + commentList.comment.content.substring(0,6) + '/' + commentList.comment.content;
 										commentShouxie = evoUrl+'/ezOffice/download/resizeHandSign.do?url='+commentShouxieWebUrl;
-										// 手写
+										// 手机手写
 										itemContent += '<row onclick="view_sxContent(\'' + commentShouxie + '\');"><img src="'+commentShouxie+'"/></row>';
 									}
 								}else if(commentType == '5'){
