@@ -423,7 +423,7 @@
 							// pc手写
 							commentShouxieOaUrl = webServiceUrl + 'upload/workflow_acc/rev' + commentList.comment.content + '.gif';
 							commentShouxie = evoUrl+'/ezOffice/download/resizeHandSign.do?url='+commentShouxieOaUrl;
-							itemContent += '<item onclick="view_sxContent(\'' + commentShouxie + '\');" style="padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="align:left;font-size:16;color:#555555">'+commentList[i].step+'</label></row></col></item><item style="padding:0;margin:0;"><col><row>'+
+							itemContent += '<item onclick="view_sxContent(\'' + commentShouxie + '\');" style="padding:0;margin:0;"><col style="background:#f9f9f9;padding:10;margin:10;"><row><label style="align:left;font-size:16;color:#555555">'+commentList.comment.step+'</label></row></col></item><item style="padding:0;margin:0;"><col><row>'+
 										   '<img src="'+commentShouxie+'"/></row>';
 						}else if(commentType == '4'){
 							// 手机手写

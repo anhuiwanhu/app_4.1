@@ -1364,7 +1364,7 @@
 	        					// pc手写
 								commentShouxieOaUrl = webServiceUrl + 'upload/workflow_acc/rev' + comment[i].content + '.gif';
 								commentShouxie = evoUrl+'/ezOffice/download/resizeHandSign.do?url='+commentShouxieOaUrl;
-	        					commentCon += '<row><label style="color:#555555;margin-left:10;"><img src="'+commentShouxie+'"/></label></row>';
+	        					commentCon += '<row><img src="'+commentShouxie+'"/></row>';
 	        				}
 				        	commentCon += '<row><label style="align:right;color:#555555">' + comment[i].person + ' (' + comment[i].date +')</label></row>';
 	        			}
@@ -1378,7 +1378,7 @@
 	       					// pc手写
 							commentShouxieOaUrl = webServiceUrl + 'upload/workflow_acc/rev' + comment.content + '.gif';
 							commentShouxie = evoUrl+'/ezOffice/download/resizeHandSign.do?url='+commentShouxieOaUrl;
-	       					commentCon += '<row><label style="color:#555555;margin-left:10;"><img src="'+commentShouxie+'"/></label></row>';
+	       					commentCon += '<row><img src="'+commentShouxie+'"/></row>';
 	       				}
 			        	commentCon += '<row><label style="align:right;color:#555555">' +comment.person + ' (' + comment.date +')</label></row>';
 	        		}
