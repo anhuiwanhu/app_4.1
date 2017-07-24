@@ -83,7 +83,7 @@
 				                    
 				                    var localTitle = objArr[i].title;   //字数超过18位，使用省略号（...）代替
 				                    if(localTitle!=""&&localTitle!=null&&localTitle.length>18){
-				                        localTitle = localTitle.substring(0,18)+"...";
+				                   //     localTitle = localTitle.substring(0,18)+"...";
 				                    }
 				                    
 				                    var localWriteOrg = objArr[i].writeOrg;   //字数超过18位，使用省略号（...）代替
@@ -125,7 +125,7 @@
 		                      }
 		                      var localTitle = objArr.title;
 		                      if(localTitle!=""&&localTitle!=null&&localTitle.length>18){
-		                          localTitle = localTitle.substring(0,18)+"...";
+		                    //      localTitle = localTitle.substring(0,18)+"...";
 		                      }
 		                      
 	                          var localWriteOrg = objArr.writeOrg;   

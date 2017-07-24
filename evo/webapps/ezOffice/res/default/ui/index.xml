@@ -5,11 +5,12 @@
         var versionNumber="V4.2";
        	var dbName = "mobile_evo.db";
        	var evoUrl = "http://192.168.7.99:8080";
-		
+		var fileDownLoadType = "downLoad";        //直接下载：downLoad 免费：freeDownLoad 收费：chargeDownLoad
+		var DOWNLOAD = "downLoad";
+		var FREEDOWNLOAD = "freeDownLoad";
+		var CHARGEDOWNLOAD = "chargeDownLoad";
 		$page.onload = function() {
-		    
 		    var storage = $phone.localStorage();
-		    
 		    //判断版本号不一致就更新
 		    var curVersionNumber = storage.getItem('curVersionNumber');
 		    if(curVersionNumber==null){
@@ -21,9 +22,6 @@
 		       storage.setItem('login_remember','false');
 		       $page.open('index.xml',{target:'_self'});
 		    }
-
-		
-		
 			var info = $phone.info();
 			$('deviceId').value = info['deviceId'];
 			$('platform').value = info['platform'];
@@ -145,14 +143,17 @@
 				     storage.setItem('login_userAccount',$('username').value);
 				     storage.setItem('login_password',$('password').value);
 				     storage.setItem('login_remember','true');
-				     
-				  }else{
+				   }else{
 				     storage.setItem('login_userAccount','');
 				     storage.setItem('login_password','');
 				     storage.setItem('login_remember','false');
-				  }
-
-				  $page.open('desktop.xml?showTab=initView', {animation:'down-to-up',target:'_self'});
+				   }
+				   //附件下载方式，放入缓存中
+				   storage.setItem('fileDownLoadType',fileDownLoadType);
+				   storage.setItem('DOWNLOAD',DOWNLOAD);
+				   storage.setItem('FREEDOWNLOAD',FREEDOWNLOAD);
+				   storage.setItem('CHARGEDOWNLOAD',CHARGEDOWNLOAD);
+				   $page.open('desktop.xml?showTab=initView', {animation:'down-to-up',target:'_self'});
 				}else{
 				  alert(obj.description);
 				}
@@ -245,9 +246,14 @@
 	        tx.executeSql('DROP TABLE IF EXISTS allUser');
 	        tx.executeSql('DROP TABLE IF EXISTS workflow_list');
 	    }
+	    
+	    //物理返回直接退出
+        function physicalReturn(){
+	       exit();
+	    }
     ]]>
     </script> 
-	<page include="md5.js">
+	<page include="md5.js" onback="physicalReturn()">
         <title style="background:#3DAFFE">
             <left>
                 <button role="back" style="background:null" onclick=";"/>

@@ -55,15 +55,15 @@
 		       $('item_register').css('display', 'block');
 		    }
 		    getLinkbook();
-		   // getRemindNum();
+		    //getRemindNum();
 		}
 	   $page.onactive = function() {
 		   getRemindNum();
-	   }
+		}
 	   
        function getRemindNum(){
             var storage = $phone.localStorage();
-            evoUrl = storage.getItem('evoUrl');
+             evoUrl = storage.getItem('evoUrl');
             $http.post(evoUrl+'/ezOffice/desktop/getRemindNumList.do','', function(data) {
                  var obj = JSON.parse(data);
                  if(obj.logonerror && obj.logonerror=='1'){
@@ -1322,10 +1322,10 @@
            refushMyApp('');
            if(sys_location=='1'){checkSignIn();}
        }
-		    
+       
     ]]>
     </script> 
-	<page>
+	<page type="home">
 	  <tabs>
             <tab id="pubtab" label="应用中心" icon="desk_pubcenter_g.png,desk_pubcenter.png" >
 		       <title style="background:#3DAFFE">

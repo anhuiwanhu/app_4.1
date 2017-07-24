@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+<script>
+        <![CDATA[
+			var loadFlag = '0';  //函数执行置为1，提交之前进行判断，若为1，则禁止 提交，防重复提交
+	        
+	         //页面家在完成后执行
+	        $page.onload = function() {
+	          initList("update","");
+	        }
+	        
+	        function loadList(loadType){   //加载更多
+	           initList(loadType);
+	        }
+	        
+            function openPopupMenu() {
+                $('popmenu').open();
+                $('arrow').src = 'mail_up.png'; 
+            }
+            
+	        function initList(loadType){
+	            if(loadFlag == '1'){
+		        	return false;
+		        }
+		        if(loadType == "update"){
+		           $('docList').clear();
+		        }
+		        loadFlag = '1';
+		        $('bottom_load').css('display','');
+		        $('indexContent').showBottom();
+		        var storage = $phone.localStorage();
+				var evoUrl = storage.getItem('evoUrl');
+	            $http.post(evoUrl+'/ezOffice/information/getLevelOneChannel.do', function(data) {
+	                if(data){
+	                  //  alert(data);
+		                var obj = JSON.parse(data);
+		                if(obj.logonerror &&obj.logonerror=='1'){
+				            alert("该账号已在设备"+obj.deviceId+"上登录");
+			          		$page.open('../index.xml',{target:'_self'});
+			                return;
+			            }
+		                var result = obj.message.result;
+		                var listJson = {items:[]};   //存储返回数据列表信息
+			            var itemJson;
+					    if(result =="1"){
+					        var objArr = obj.data; //返回列表数组
+					        if(!objArr){
+				        	     return false;
+				        	}
+				        	if(objArr instanceof Array){    //返回多条数据
+					                for (var i = 0; i < objArr.length; i++) {
+					                    //每条记录图片显示标题第一个字
+					                    var channelName = objArr[i].channelName;
+					                    channelName = channelName.replace(/(&)/g,'');
+					                    var btn="";
+					                    if(channelName!=null&&channelName!=""){
+					                          btn = channelName.substring(0,1);
+					                    }
+					                    //是否有下级栏目
+					                    var hasChildChannl = objArr[i].hasChildChannl;
+					                    var childTip = "";
+					                    var childTipStyle="font-size:12;color:#B8B8B8;display:block;";
+					                    if(hasChildChannl=="1"){
+					                        childTip = "下级栏目";
+					                    }else{
+					                        childTipStyle="font-size:12;color:#B8B8B8;display:none;";     //没有子栏目，隐藏一行，让标题居中显示 
+					                    }
+					                    
+					                     //首字，不同行显示颜色不一样，分三行
+					                    var style = '';
+					                    if((i%6)==0){
+					                         style = 'width:120;background:#f98e75;width:40;height:40;align:left;font-size:16;color:#ffffff;';
+					                    }else if((i%6)==1){
+					                         style = 'width:120;background:#f6d75b;width:40;height:40;align:left;font-size:16;color:#ffffff;';
+					                    }else if((i%6)==2){
+					                         style = 'width:120;background:#6fd5ff;width:40;height:40;align:left;font-size:16;color:#ffffff;';
+					                    }else if((i%6)==3){
+					                         style = 'width:120;background:#9cc2ff;width:40;height:40;align:left;font-size:16;color:#ffffff;';
+					                    }else if((i%6)==4){
+					                         style = 'width:120;background:#93df88;width:40;height:40;align:left;font-size:16;color:#ffffff;';
+					                    }else if((i%6)==5){
+					                         style = 'width:120;background:#d795ea;width:40;height:40;align:left;font-size:16;color:#ffffff;';
+					                    }
+					                    itemJson = {
+						                        template :0,
+						                        onclick : 'openChildChannel("'+objArr[i].channelId+'","'+objArr[i].hasChildChannl+'","'+channelName+'","'+objArr[i].channelNeedCheckup+'","'+objArr[i].isCanAdd+'")',
+						                        widgets : {
+						                            btn : {text :btn,style:style },
+						                            channelName : {text :channelName},
+						                            childTip    : {text :childTip,style:childTipStyle }
+						                        }
+						                 };
+						                 listJson.items.push(itemJson);
+					                }
+				        	}else if(objArr instanceof Object){   //返回一条数据
+				        	        //每条记录图片显示标题第一个字
+			                     var channelName = objArr.informationChannel.channelName;
+			                     channelName = channelName.replace(/(&)/g,'');
+			                     var btn="";
+			                     if(channelName!=null&&channelName!=""){
+			                          btn = channelName.substring(0,1);
+			                     }
+			                     //是否有下级栏目
+			                     var hasChildChannl = objArr.informationChannel.hasChildChannl;
+		                         var childTip = "";
+				                 var childTipStyle="font-size:12;color:#B8B8B8;display:block;";
+			                     if(hasChildChannl=="1"){
+			                         childTip = "下级栏目";
+			                     }else{
+			                         childTipStyle="font-size:12;color:#B8B8B8;display:none;";     //没有子栏目，隐藏一行，让标题居中显示 
+			                     }
+			                     
+			                     style = 'width:120;background:#f98e75;width:40;height:40;align:left;font-size:16;';
+			                     itemJson = {
+						                        template :0,
+						                        onclick : 'openChildChannel("'+objArr.informationChannel.channelId+'","'+objArr.informationChannel.hasChildChannl+'","'+channelName+'","'+objArr.informationChannel.channelNeedCheckup+'","'+objArr.informationChannel.isCanAdd+'")',
+						                        widgets : {
+						                            btn : {text :btn,style: style },
+						                            channelName : {text :channelName},
+						                            childTip    : {text :childTip,style:childTipStyle}
+						                        }
+						                 };
+				                 listJson.items.push(itemJson);
+			               	}else{   //没有返回数据
+			               	   itemJson = {
+						                        template :1,
+						                        widgets : {
+						                            channelName : {text : '暂无相关记录'}
+						                        }
+						                 };
+				                listJson.items.push(itemJson); 
+				            }
+		                }else{       //查询异常
+		                    itemJson = {
+						                        template :1,
+						                        widgets : {
+						                            channelName : {text : '暂无相关记录'}
+						                        }
+						                 };
+				            listJson.items.push(itemJson); 
+		                }
+		        	    $('docList').update(listJson);
+	        			if(loadType == 'add'){
+		        			$('docList').addMore(listJson);
+	        			}else if(loadType == 'update'){
+		        			$('docList').update(listJson);
+	        			}
+		            }
+		            $('bottom_load').css('display','none');
+		            $('indexContent').hideBottom();
+		        	loadFlag = '0';
+		         },function(error) {
+					    if (error == 'timeout') {
+					        hint('连接服务器超时！');
+					    } else if (error == '404') {
+					        hint('链接超时重新登录！');
+					    } else if (error == '500') {
+					        hint('内部服务器错误！');
+					    } else {
+					        hint('访问网络错误！错误代码:' + error);
+					    }
+					    $page.open('../index.xml',{animation:'down-to-up'});
+				    }
+		         );
+	        }
+	     function refreshPage(){
+           $('indexContent').hideTop();
+           initList("update");
+        }    
+	        
+        ]]>
+</script>
+	<page >
+		<title style="background:#3daffe;tint-color:white">
+		    <left>
+				<button role="back" />
+			</left>
+            <center>
+                <label onclick="openPopupMenu();" >栏目视图</label>
+                <icon id="arrow" src="mail_down.png" style="width:15;margin-left:5;" onclick="openPopupMenu();"></icon>
+            </center>
+            <right>
+                <button onclick="$page.open('new.xml', {animation:'down-to-up'});" icon="desk_personcenter_add.png"></button>
+            </right>
+	    </title>
+		<popupmenu id="popmenu" position="topcenter" onclose="$('arrow').src = 'mail_down.png';" style="width:130">
+            <list>
+                <item onclick="$('popmenu').close();$page.open('indexList.xml',{target:'_self'});" style="background:#3daffe,#474747">
+                    <row>
+                        <label style="margin-left:15;font-size:18;color:white;">信息更新</label>
+                    </row>
+                </item>
+                <item onclick="$('popmenu').close();$page.open('column.xml',{target:'_self'});" style="background:#3daffe,#474747">
+                    <row>
+                        <label style="margin-left:15;font-size:18;color:white;" >栏目视图</label>
+                        <icon src="top_updown.png" style="align:right;width:15;"  ></icon>
+                    </row>
+                </item>
+            </list>
+		</popupmenu>
+		<content style="padding-top:12;" draggable="true" id="indexContent" ondragdown="refreshPage()" >
+                <list  id="docList" reuse="true"  >
+					<item  accessory="indicator" style="col-width:50,*;">
+				            <col>
+							   <row><button style="" onclick="" reusekey="btn"></button></row>
+						   </col>
+						    <col>
+							   <row><label reusekey="channelName" style="color:#555555;font-size:16;"></label></row>
+							   <row><label reusekey="childTip" style=""></label></row>
+						   </col>
+	                </item>
+	                <item>
+	                    <col>
+	                    	<row>
+	                    		<label  style="align:center;" reusekey="channelName"></label>
+	                    	</row>
+	                    </col>
+	                </item>
+		        </list>
+		        <bottom>
+	                <list>
+	                    <item onclick="loadList('add')" >
+	                        <row id="bottom_load"><label style="align:center;">正在加载...</label><progress style="align:center"/></row>
+	                      	<row style="display:hidden" id="bottom_hasmore">
+		                        <progress style="display:none;align:center"/>
+		                    </row>
+		                </item>
+	                </list>
+                </bottom>
+            </content>
+	</page>
+	<script>
+	<![CDATA[
+	
+	 function openChildChannel(channelId,hasChildChannl,channelName,channelNeedCheckup,isCanAdd){
+	     var storage = $phone.localStorage();
+         storage.setItem('information_channelId',channelId);
+         storage.setItem('information_hasChildChannl',hasChildChannl);
+         storage.setItem('information_channelName',channelName);
+         storage.setItem('information_channelNeedCheckup',channelNeedCheckup);
+         storage.setItem('information_isCanAdd',isCanAdd);
+         $page.open('childColumn.xml', {animation:'down-to-up'});  	  
+	  }
+	
+	//信息更新
+	function toIndex(){
+	   $('infoFresh').css('display','');
+	   $('columnView').css('display','hidden');
+	   $page.open('index.xml',{target:'_self'});
+	}
+	
+	]]>
+	</script>
+</imag>

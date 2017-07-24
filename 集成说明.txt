@@ -350,3 +350,70 @@ ezOFFICE12.1产品(已集成补丁12.1.0.01~12.1.0.02) + evo4.1(已集成补丁4.1.01~13）
 5、清除服务端缓存，启动evo服务
 
 6、验证系统功能
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+补丁适用范围：
+
+ezOFFICE11.5产品(已集成补丁11.5.0.01~11.5.0.26）+ evo4.1(已集成补丁4.1.01~14）
+ezOFFICE12.1产品(已集成补丁12.1.0.01~12.1.0.05) + evo4.1(已集成补丁4.1.01~14）
+ezOFFICE12.2产品(已集成补丁12.2.0.01) + evo4.1(已集成补丁4.1.01~14）
+
+操作步骤：
+
+1、停evo服务
+
+2、备份程序、数据库
+
+3、先删去本地..\webapps\ezOffice\WEB-INF\lib文件夹下跟补丁包中同名的老版本的3个jar包（commons-logging-1.1.jar这个同名的包不用删去）
+
+4、覆盖程序补丁包到evo服务安装目录（d:\evo)
+
+5、在evo\webapps\ezOffice\WEB-INF\classes\config.properties 中增加ftpWebserviceUrl，
+
+#FTP下载方式
+ftpWebserviceUrl=http://192.168.0.28:7097/defaultroot/
+
+此处的ip、端口填写ftp服务器的地址和端口，此地址为ftp下载的地址，如果没有ftp服务器，可以不配置。
+
+6、在evo\webapps\ezOffice\WEB-INF\classes\config.properties 中增加永中dcs服务地址
+
+YZfileViewUrl=http://192.168.0.64:8207/dcs.web/onlinefile
+
+此处的ip、端口填写永中DCS服务部署的服务器地址和端口。
+
+
+7、在evo\webapps\ezOffice\WEB-INF\classes\config.properties 文件中增加配置。1表示有水印，0表示无水印
+isWatermark=0
+（此配置在永中预览时才会生效）
+
+8、修改文件..\webapps\ezOffice\res\default\ui\index.xml,把以下ip、端口修改为生产环境实际使用值
+    
+   var evoUrl = "http://192.168.7.138:9090";
+
+
+9、把文件夹..\webapps\ezOffice\res\default\ui下所有文件、文件夹拖入ui.zip(不要解压）
+
+10、需打新客户端：安卓版本为v4.2.6，IOS版本为v4.2.5
+
+11、清除服务端缓存，启动evo服务
+
+12、验证系统功能
+

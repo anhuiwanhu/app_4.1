@@ -121,7 +121,7 @@
 			                          btn = channelName.substring(0,1);
 			                     }
 			                     //是否有下级栏目
-			                     var hasChildChannl = objArr.hasChildChannl;
+			                     var hasChildChannl = objArr.informationChannel.hasChildChannl;
 			                     var childTip = "";
 			                     var childTipStyle="font-size:12;color:#B8B8B8;display:block;";
 			                     if(hasChildChannl=="1"){
@@ -131,7 +131,7 @@
 			                     }
 			                     itemJson = {
 						                        template :0,
-						                        onclick : 'openChildChannel("'+objArr.channelId+'","'+objArr.hasChildChannl+'","'+channelName+'","'+objArr.channelNeedCheckup+'","'+objArr.isCanAdd+'")',
+						                        onclick : 'openChildChannel("'+objArr.informationChannel.channelId+'","'+objArr.informationChannel.hasChildChannl+'","'+channelName+'","'+objArr.informationChannel.channelNeedCheckup+'","'+objArr.informationChannel.isCanAdd+'")',
 						                        widgets : {
 						                            btn : {text :btn },
 						                            channelName : {text :channelName},

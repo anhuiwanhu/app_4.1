@@ -68,8 +68,6 @@
         	}
         	
         	function viewMeetFiles(accessoryNameseries,accessorySaveNameseries,path){  //附件显示
-	            var storage = $phone.localStorage();
-			    var evoUrl = storage.getItem('evoUrl');
 	            $http.post(evoUrl+'/ezOffice/doc/dealFiles.do',{accessoryNameseries:accessoryNameseries,accessorySaveNameseries:accessorySaveNameseries,path:path},  function(data) {
 	               if(data){
 	                   var obj = JSON.parse(data);
@@ -80,84 +78,41 @@
 		               }
 		               var attList = obj.attList;
 		               if(!attList==""){  //不为空，数据进行迭代,并为附件赋值
-		                  for(var k=0;k<attList.length;k++){
-		                       var files = "";
-			                   var fileType = attList[k].savename.substr(attList[k].savename.lastIndexOf(".")).replace(/<[^>]+>/g,'').toLowerCase();
-		                       if(fileType.toLowerCase() != '.xls' && fileType.toLowerCase() != '.xlsx'     //直接下载
-									&& fileType.toLowerCase() != '.doc' && fileType.toLowerCase() != '.docx' 
-									&& fileType.toLowerCase() != '.ppt' && fileType.toLowerCase() != '.pptx' 
-									&& fileType.toLowerCase() != '.rtf' && fileType.toLowerCase() != '.eio'
-									&& fileType.toLowerCase() != '.txt' && fileType.toLowerCase() != '.jpg'
-									&& fileType.toLowerCase() != '.png' && fileType.toLowerCase() != '.gif'
-									&& fileType.toLowerCase() != '.jpeg' && fileType.toLowerCase() != '.bmp'){
-		                      	    files = $C('<row style="margin-bottom:5"><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath='+path+'&amp;viewName='+attList[k].realname+'\')">'+attList[k].realname+'</label></row>');
-		                       }else{
-		                      	 // files = $C('<row style="margin-bottom:5"><label style="color:#38adff;align:left;font-size:16;margin-left:5;margin-right:5;" onclick="convertFileToHtml(\''+attList[k].savename+'\',\''+attList[k].realname+'\',\''+path+'\')">预览</label><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5;"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath='+path+'&amp;viewName='+attList[k].realname+'\')">'+attList[k].realname+'</label></row>');
-		                     	    files = $C('<row style="margin-bottom:5"><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5;"  onclick="convertFileToHtml(\''+attList[k].savename+'\',\''+attList[k].realname+'\',\''+path+'\')">'+attList[k].realname+'</label></row>');
-							   }
-							  $('meetFilesId').add(files); 
-		                  }
-		               }else{     //无附件，或者后台处理异常
-		               
-		               }
+			                  for(var k=0;k<attList.length;k++){
+			                      var files = "";
+			                      var fileDownLoadType = storage.getItem('fileDownLoadType');
+			                      var DOWNLOAD = storage.getItem('DOWNLOAD');
+			                      var FREEDOWNLOAD = storage.getItem('FREEDOWNLOAD');
+			                      var CHARGEDOWNLOAD = storage.getItem('CHARGEDOWNLOAD');
+			                      if(fileDownLoadType == DOWNLOAD){   //直接下载
+			                          files = $C('<row style="margin-bottom:5"><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath='+path+'&amp;viewName='+attList[k].realname+'\')">'+attList[k].realname+'</label></row>');
+			                      }else if(fileDownLoadType == FREEDOWNLOAD){   //免费版
+			                           var fileType = attList[k].savename.substr(attList[k].savename.lastIndexOf(".")).replace(/<[^>]+>/g,'').toLowerCase();
+				                       if(fileType.toLowerCase() != '.xls' && fileType.toLowerCase() != '.xlsx'     //直接下载
+										    && fileType.toLowerCase() != '.doc' && fileType.toLowerCase() != '.docx' 
+										    && fileType.toLowerCase() != '.ppt' && fileType.toLowerCase() != '.pptx' 
+										    && fileType.toLowerCase() != '.rtf' && fileType.toLowerCase() != '.eio'
+										    && fileType.toLowerCase() != '.txt' && fileType.toLowerCase() != '.jpg'
+										    && fileType.toLowerCase() != '.png' && fileType.toLowerCase() != '.gif'
+										    && fileType.toLowerCase() != '.jpeg' && fileType.toLowerCase() != '.bmp'){
+				                      	    files = $C('<row style="margin-bottom:5"><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath='+path+'&amp;viewName='+attList[k].realname+'\')">'+attList[k].realname+'</label></row>');
+				                       }else{
+				                     	    files = $C('<row style="margin-bottom:5"><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5;"  onclick="freeconvertFileToHtml(\''+attList[k].savename+'\',\''+attList[k].realname+'\',\''+path+'\')">'+attList[k].realname+'</label></row>');
+									   }
+			                      }else if(fileDownLoadType == CHARGEDOWNLOAD){  //收费版
+			                      	   files = $C('<row style="margin-bottom:5"><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5;"  onclick="chargeConvertFileToHtml(\''+attList[k].savename+'\',\''+attList[k].realname+'\',\''+path+'\')">'+attList[k].realname+'</label></row>');
+			                      }
+			                      $('meetFilesId').add(files); 
+			                  }
+			             }
 	               }
 	            },function(error) {
-					    if (error == 'timeout') {
-					        hint('连接服务器超时！');
-					    } else if (error == '404') {
-					        hint('页面不存在！');
-					    } else if (error == '500') {
-					        hint('内部服务器错误！');
-					    } else {
-					        hint('访问网络错误！错误代码:' + error);
-					    }
-					    $page.open('../index.xml',{animation:'down-to-up'});
+					  toErro(error);
 				   }
 	            );
 	        }
 	        
-	         function convertFileToHtml(fileName,menuName,path){   //高清wordToSvgHtml  普通wordToHtml
-	         	 var fileType = fileName.substr(fileName.lastIndexOf(".")).replace(/<[^>]+>/g,'').toLowerCase();
-                 if(fileType.toLowerCase() != '.xls' && fileType.toLowerCase() != '.xlsx'
-					&& fileType.toLowerCase() != '.doc' && fileType.toLowerCase() != '.docx' 
-					&& fileType.toLowerCase() != '.ppt' && fileType.toLowerCase() != '.pptx' 
-					&& fileType.toLowerCase() != '.rtf' && fileType.toLowerCase() != '.eio'
-					&& fileType.toLowerCase() != '.txt' && fileType.toLowerCase() != '.jpg'
-					&& fileType.toLowerCase() != '.png' && fileType.toLowerCase() != '.gif'
-					&& fileType.toLowerCase() != '.jpeg' && fileType.toLowerCase() != '.bmp'){
-				    alert("该类型不支持预览，请于电脑端查看！");
-				    return;
-			     }
-            	 $http.progress('预览中，请稍后...').post(evoUrl+'/ezOffice/fileView/fileConvert.do',
-	              {path:path,convertType:'wordToSvgHtml','fileName':fileName},
-	              function(data) {
-		               if(data == '1'){
-		               		 var menuAction = '';
-		               		 var fileLength = fileName.length;
-		               		 if(fileType.toLowerCase() == '.jpg' || fileType.toLowerCase() == '.png' || fileType.toLowerCase() == '.gif' || 
-									fileType.toLowerCase() == '.jpeg' || fileType.toLowerCase() == '.bmp'){
-									 menuAction = evoUrl+'/ezOffice/upload/'+path+'/'+fileName;
-		               		 }else{
-		               		 	    menuAction = evoUrl+'/ezOffice/upload/'+path+'/'+fileName.substring(0,fileName.lastIndexOf('.'))+'svg.html';
-		               		 }
-		              		$page.open('../custmenu/cust_url.xml?menuAction='+encodeURIComponent(menuAction)+'&menuName='+encodeURIComponent(menuName), {animation:'down-to-up'});
-		               }else{
-		               		alert("预览失败，请重新预览！");
-		               }
-		            },function(error) {
-		            	if (error == 'timeout') {
-					        hint('连接服务器超时！');
-					    } else if (error == '404') {
-					        hint('页面不存在！');
-					    } else if (error == '500') {
-					        hint('内部服务器错误！');
-					    } else {
-					        hint('访问网络错误！错误代码:' + error);
-					    }
-					    $page.open('../index.xml',{animation:'down-to-up'});
-					});
-            }
-        	
+	        
         	//创建工作流程信息隐藏域
 			function createWorkInfoHiddenArea(workInfo){
 				// 发送表单提交数据
@@ -247,39 +202,37 @@
 		                    return;
 		               }
 						var attList = obj.attList;
-						if (!attList == '') { //不为空，数据进行迭代,并为附件赋值
-							for (var k = 0; k < attList.length; k++) {
-								 var files = "";
-			                     var fileType = attList[k].savename.substr(attList[k].savename.lastIndexOf(".")).replace(/<[^>]+>/g,'').toLowerCase();
-			                     if(fileType.toLowerCase() != '.xls' && fileType.toLowerCase() != '.xlsx'     //直接下载
-									&& fileType.toLowerCase() != '.doc' && fileType.toLowerCase() != '.docx' 
-									&& fileType.toLowerCase() != '.ppt' && fileType.toLowerCase() != '.pptx' 
-									&& fileType.toLowerCase() != '.rtf' && fileType.toLowerCase() != '.eio'
-									&& fileType.toLowerCase() != '.txt' && fileType.toLowerCase() != '.jpg'
-									&& fileType.toLowerCase() != '.png' && fileType.toLowerCase() != '.gif'
-									&& fileType.toLowerCase() != '.jpeg' && fileType.toLowerCase() != '.bmp'){
-			                      	 files = $C('<row style="margin-bottom:5"><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath='+path+'&amp;viewName='+attList[k].realname+'\')">'+attList[k].realname+'</label></row>');
-			                      }else{
-			                      	 // files = $C('<row style="margin-bottom:5"><label style="color:#38adff;align:left;font-size:16;margin-left:5;margin-right:5;" onclick="convertFileToHtml(\''+attList[k].savename+'\',\''+attList[k].realname+'\',\''+path+'\')">预览</label><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5;"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath='+path+'&amp;viewName='+attList[k].realname+'\')">'+attList[k].realname+'</label></row>');
-			                     	  files = $C('<row style="margin-bottom:5"><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5;"  onclick="convertFileToHtml(\''+attList[k].savename+'\',\''+attList[k].realname+'\',\''+path+'\')">'+attList[k].realname+'</label></row>');
-								  }
-								 $(appendId).add(files);
-							}
-						} else { //无附件，或者后台处理异常
-			
-						}
+						if(!attList==""){  //不为空，数据进行迭代,并为附件赋值
+			                  for(var k=0;k<attList.length;k++){
+			                      var files = "";
+			                      var fileDownLoadType = storage.getItem('fileDownLoadType');
+			                      var DOWNLOAD = storage.getItem('DOWNLOAD');
+			                      var FREEDOWNLOAD = storage.getItem('FREEDOWNLOAD');
+			                      var CHARGEDOWNLOAD = storage.getItem('CHARGEDOWNLOAD');
+			                      if(fileDownLoadType == DOWNLOAD){   //直接下载
+			                          files = $C('<row style="margin-bottom:5"><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath='+path+'&amp;viewName='+attList[k].realname+'\')">'+attList[k].realname+'</label></row>');
+			                      }else if(fileDownLoadType == FREEDOWNLOAD){   //免费版
+			                           var fileType = attList[k].savename.substr(attList[k].savename.lastIndexOf(".")).replace(/<[^>]+>/g,'').toLowerCase();
+				                       if(fileType.toLowerCase() != '.xls' && fileType.toLowerCase() != '.xlsx'     //直接下载
+										    && fileType.toLowerCase() != '.doc' && fileType.toLowerCase() != '.docx' 
+										    && fileType.toLowerCase() != '.ppt' && fileType.toLowerCase() != '.pptx' 
+										    && fileType.toLowerCase() != '.rtf' && fileType.toLowerCase() != '.eio'
+										    && fileType.toLowerCase() != '.txt' && fileType.toLowerCase() != '.jpg'
+										    && fileType.toLowerCase() != '.png' && fileType.toLowerCase() != '.gif'
+										    && fileType.toLowerCase() != '.jpeg' && fileType.toLowerCase() != '.bmp'){
+				                      	    files = $C('<row style="margin-bottom:5"><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath='+path+'&amp;viewName='+attList[k].realname+'\')">'+attList[k].realname+'</label></row>');
+				                       }else{
+				                     	    files = $C('<row style="margin-bottom:5"><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5;"  onclick="freeconvertFileToHtml(\''+attList[k].savename+'\',\''+attList[k].realname+'\',\''+path+'\')">'+attList[k].realname+'</label></row>');
+									   }
+			                      }else if(fileDownLoadType == CHARGEDOWNLOAD){  //收费版
+			                      	   files = $C('<row style="margin-bottom:5"><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5;"  onclick="chargeConvertFileToHtml(\''+attList[k].savename+'\',\''+attList[k].realname+'\',\''+path+'\')">'+attList[k].realname+'</label></row>');
+			                      }
+			                      $(appendId).add(files);
+			                  }
+			             }
 					}
 				},function(error) {
-				    if (error == 'timeout') {
-						hint('连接服务器超时！');
-				    } else if (error == '404') {
-						hint('链接超时重新登录！');
-				    } else if (error == '500') {
-						hint('内部服务器错误！');
-				    } else {
-						hint('访问网络错误！错误代码:' + error);
-				    }
-				    $page.open('../index.xml',{animation:'down-to-up'});
+				   toErro(error);
 				  });
 			}
         
@@ -313,39 +266,37 @@
 			                }
 			                var attachIdArr = attachmentInfo.split(';');  //解决异步提交时，会造成获取的attachIdArr不是请求的那个。后面的数组元素会覆盖前面的数组元素。
 							var attList = obj.attList;
-							if (!attList == '') { //不为空，遍历,并为附件赋值
-								for (var k = 0; k < attList.length; k++) {
-									 var files = "";
-			                      	 var fileType = attList[k].savename.substr(attList[k].savename.lastIndexOf(".")).replace(/<[^>]+>/g,'').toLowerCase();
-				                     if(fileType.toLowerCase() != '.xls' && fileType.toLowerCase() != '.xlsx'     //直接下载
-										&& fileType.toLowerCase() != '.doc' && fileType.toLowerCase() != '.docx' 
-										&& fileType.toLowerCase() != '.ppt' && fileType.toLowerCase() != '.pptx' 
-										&& fileType.toLowerCase() != '.rtf' && fileType.toLowerCase() != '.eio'
-										&& fileType.toLowerCase() != '.txt' && fileType.toLowerCase() != '.jpg'
-										&& fileType.toLowerCase() != '.png' && fileType.toLowerCase() != '.gif'
-										&& fileType.toLowerCase() != '.jpeg' && fileType.toLowerCase() != '.bmp'){
-				                      	 files = $C('<row style="margin-bottom:5"><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath='+path+'&amp;viewName='+attList[k].realname+'\')">'+attList[k].realname+'</label></row>');
-				                      }else{
-				                      	 // files = $C('<row style="margin-bottom:5"><label style="color:#38adff;align:left;font-size:16;margin-left:5;margin-right:5;" onclick="convertFileToHtml(\''+attList[k].savename+'\',\''+attList[k].realname+'\',\''+path+'\')">预览</label><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5;"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath='+path+'&amp;viewName='+attList[k].realname+'\')">'+attList[k].realname+'</label></row>');
-				                     	  files = $C('<row style="margin-bottom:5"><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5;"  onclick="convertFileToHtml(\''+attList[k].savename+'\',\''+attList[k].realname+'\',\''+path+'\')">'+attList[k].realname+'</label></row>');
-									  }
-									  $(attachIdArr[2]).add(files);
-								}
-							} else { //无附件，或者后台处理异常
-								alert('附件下载失败！');
-							}
+							if(!attList==""){  //不为空，数据进行迭代,并为附件赋值
+			                  for(var k=0;k<attList.length;k++){
+			                      var files = "";
+			                      var fileDownLoadType = storage.getItem('fileDownLoadType');
+			                      var DOWNLOAD = storage.getItem('DOWNLOAD');
+			                      var FREEDOWNLOAD = storage.getItem('FREEDOWNLOAD');
+			                      var CHARGEDOWNLOAD = storage.getItem('CHARGEDOWNLOAD');
+			                      if(fileDownLoadType == DOWNLOAD){   //直接下载
+			                          files = $C('<row style="margin-bottom:5"><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath='+path+'&amp;viewName='+attList[k].realname+'\')">'+attList[k].realname+'</label></row>');
+			                      }else if(fileDownLoadType == FREEDOWNLOAD){   //免费版
+			                           var fileType = attList[k].savename.substr(attList[k].savename.lastIndexOf(".")).replace(/<[^>]+>/g,'').toLowerCase();
+				                       if(fileType.toLowerCase() != '.xls' && fileType.toLowerCase() != '.xlsx'     //直接下载
+										    && fileType.toLowerCase() != '.doc' && fileType.toLowerCase() != '.docx' 
+										    && fileType.toLowerCase() != '.ppt' && fileType.toLowerCase() != '.pptx' 
+										    && fileType.toLowerCase() != '.rtf' && fileType.toLowerCase() != '.eio'
+										    && fileType.toLowerCase() != '.txt' && fileType.toLowerCase() != '.jpg'
+										    && fileType.toLowerCase() != '.png' && fileType.toLowerCase() != '.gif'
+										    && fileType.toLowerCase() != '.jpeg' && fileType.toLowerCase() != '.bmp'){
+				                      	    files = $C('<row style="margin-bottom:5"><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath='+path+'&amp;viewName='+attList[k].realname+'\')">'+attList[k].realname+'</label></row>');
+				                       }else{
+				                     	    files = $C('<row style="margin-bottom:5"><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5;"  onclick="freeconvertFileToHtml(\''+attList[k].savename+'\',\''+attList[k].realname+'\',\''+path+'\')">'+attList[k].realname+'</label></row>');
+									   }
+			                      }else if(fileDownLoadType == CHARGEDOWNLOAD){  //收费版
+			                      	   files = $C('<row style="margin-bottom:5"><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5;"  onclick="chargeConvertFileToHtml(\''+attList[k].savename+'\',\''+attList[k].realname+'\',\''+path+'\')">'+attList[k].realname+'</label></row>');
+			                      }
+			                      $(attachIdArr[2]).add(files);
+			                  }
+			               }
 						}
 					},function(error) {
-				    if (error == 'timeout') {
-						hint('连接服务器超时！');
-				    } else if (error == '404') {
-						hint('链接超时重新登录！');
-				    } else if (error == '500') {
-						hint('内部服务器错误！');
-				    } else {
-						hint('访问网络错误！错误代码:' + error);
-				    }
-				    $page.open('../index.xml',{animation:'down-to-up'});
+				        toErro(error);
 				  });
 	        	});
 	        }
@@ -572,16 +523,7 @@
 					   // alert(data);
 						$phone.playSound(evoUrl+'/ezOffice/upload/'+filename); 
 					},function(error) {
-				    if (error == 'timeout') {
-						hint('连接服务器超时！');
-				    } else if (error == '404') {
-						hint('链接超时重新登录！');
-				    } else if (error == '500') {
-						hint('内部服务器错误！');
-				    } else {
-						hint('访问网络错误！错误代码:' + error);
-				    }
-				    $page.open('../index.xml',{animation:'down-to-up'});
+				       toErro(error);
 				  }
 				);
 			}
@@ -973,16 +915,7 @@
         				}
         				$('content_flow_record_list').update(listJson);
         			},function(error) {
-				    if (error == 'timeout') {
-						hint('连接服务器超时！');
-				    } else if (error == '404') {
-						hint('链接超时重新登录！');
-				    } else if (error == '500') {
-						hint('内部服务器错误！');
-				    } else {
-						hint('访问网络错误！错误代码:' + error);
-				    }
-				    $page.open('../index.xml',{animation:'down-to-up'});
+				        toErro(error);
 				  }
         		);
 	        } 
@@ -1134,7 +1067,87 @@
 				$('main_popupmenu').close();
 				$page.open('../workflow/workflow_addSign.xml?workId='+workId+'&workcurstep='+encodeURIComponent($('workcurstep').value),
 				{animation:'down-to-up'});
-			}      
+			}   
+			
+			 function freeconvertFileToHtml(fileName,menuName,path){   //高清wordToSvgHtml  普通wordToHtml
+	         	 var fileType = fileName.substr(fileName.lastIndexOf(".")).replace(/<[^>]+>/g,'').toLowerCase();
+                 if(fileType.toLowerCase() != '.xls' && fileType.toLowerCase() != '.xlsx'
+					&& fileType.toLowerCase() != '.doc' && fileType.toLowerCase() != '.docx' 
+					&& fileType.toLowerCase() != '.ppt' && fileType.toLowerCase() != '.pptx' 
+					&& fileType.toLowerCase() != '.rtf' && fileType.toLowerCase() != '.eio'
+					&& fileType.toLowerCase() != '.txt' && fileType.toLowerCase() != '.jpg'
+					&& fileType.toLowerCase() != '.png' && fileType.toLowerCase() != '.gif'
+					&& fileType.toLowerCase() != '.jpeg' && fileType.toLowerCase() != '.bmp'){
+				    alert("该类型不支持预览，请于电脑端查看！");
+				    return;
+			     }
+            	 $http.progress('预览中，请稍后...').post(evoUrl+'/ezOffice/fileView/fileConvert.do',
+	             {path:path,convertType:'wordToSvgHtml','fileName':fileName},
+	             function(data) {
+		               if(data == '1'){
+		               		 var menuAction = '';
+		               		 var fileLength = fileName.length;
+		               		 if(fileType.toLowerCase() == '.jpg' || fileType.toLowerCase() == '.png' || fileType.toLowerCase() == '.gif' || 
+									fileType.toLowerCase() == '.jpeg' || fileType.toLowerCase() == '.bmp'){
+									 menuAction = evoUrl+'/ezOffice/upload/'+path+'/'+fileName;
+		               		 }else{
+		               		 	    menuAction = evoUrl+'/ezOffice/upload/'+path+'/'+fileName.substring(0,fileName.lastIndexOf('.'))+'svg.html';
+		               		 }
+		              		$page.open('../custmenu/cust_url.xml?menuAction='+encodeURIComponent(menuAction)+'&menuName='+encodeURIComponent(menuName), {animation:'down-to-up'});
+		               }else{
+		               		alert("预览失败，请重新预览！");
+		               }
+		            },function(error) {
+		            	toErro(error);
+					});
+            }
+            
+             var viewFileFlag = '0';
+	        function chargeConvertFileToHtml(fileName,menuName,path){  //转成html
+	             if(viewFileFlag=='1'){
+	             	return;
+	             }
+	             viewFileFlag = '1';
+            	 $http.progress('预览中，请稍后...').post(evoUrl+'/ezOffice/chargeFileView/fileConvert.do',
+	              {'path':path,'fileName':fileName},     //高清
+	              function(data) {
+	                   if(data){
+	                       var obj = JSON.parse(data);
+	                       var result = obj.result;
+			               if(obj.result == '0'){  //0表示成功
+			                     var data = obj.data;
+			               		 var menuAction = data[0];
+			               		 $page.open('../desktop/fileView_url.xml?menuAction='+encodeURIComponent(menuAction)+'&menuName='+encodeURIComponent(menuName), {animation:'right-to-left'});
+			               }else if(obj.result == 'picture'){
+			               		 var menuAction = evoUrl+'/ezOffice/upload/'+path+'/'+fileName;
+			               		 $page.open('../desktop/fileView_url.xml?menuAction='+encodeURIComponent(menuAction)+'&menuName='+encodeURIComponent(menuName), {animation:'right-to-left'});
+			               }else if(obj.result == 'unSupportFormat'){
+			               		 alert("目前不支持此格式！");
+			               }else{
+			               		 alert("预览失败，请重新预览！");
+			               } 
+	                   }else{
+	                   	   alert("预览失败，请重新预览！");
+	                   }
+		               
+		            },function(error) {
+		            	toErro(error);
+					});
+					viewFileFlag = '0';
+            }
+            
+             function toErro(error){
+				if (error == 'timeout') {
+					hint('连接服务器超时！');
+				} else if (error == '404') {
+					hint('链接超时重新登录！');
+				} else if (error == '500') {
+					hint('内部服务器错误！');
+				} else {
+					hint('访问网络错误！错误代码:' + error);
+				}
+				$page.open('../index.xml',{animation:'down-to-up'});
+			}   
         ]]>
     </script>
 	<page>

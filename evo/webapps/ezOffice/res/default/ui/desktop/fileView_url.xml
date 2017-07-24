@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imag>
+    <script>
+        <![CDATA[
+			var menuAction = decodeURIComponent($param['menuAction']);
+			var menuName = decodeURIComponent($param['menuName']);
+			$page.onload=function(){
+            	$('title').text=menuName;
+            	$('forum_web').src=menuAction;
+            }
+            
+            function refresh(){
+                $('forum_web').src='';
+                $('forum_web').src=menuAction;
+            }
+        ]]>
+    </script>
+    <page>
+        <title style="background:#38adff;tint-color:white">
+            <left>
+                <button role="back"></button>
+            </left>
+            <center>
+                <label id="title"></label>
+            </center>
+            
+        </title>
+		<content  draggable="true" ondragdown="refresh();">
+              <web src="" progress="true" id="forum_web" scalable="true">
+               </web>
+        </content>
+    </page>
+</imag>

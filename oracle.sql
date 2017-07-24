@@ -97,3 +97,13 @@ commit;
 
 insert into oa_patchinfo (patch_id,patch_editinfo,patch_name,patch_version,patch_time,PATCH_EVO) values(hibernate_sequence.nextval,'evo','evo4.1_SP_14_20170522','4.1.14',sysdate,1);
 commit;
+
+
+
+
+
+
+
+
+insert into oa_patchinfo (patch_id,patch_editinfo,patch_name,patch_version,patch_time,PATCH_EVO) values(hibernate_sequence.nextval,'evo','evo4.1_SP_15_20170703','4.1.15',sysdate,1);
+commit;
