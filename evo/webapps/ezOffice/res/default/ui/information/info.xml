@@ -292,7 +292,7 @@
         	}
            
        }
-       
+          //附件弹出框，与其他附件不一样
          function viewFiles(accessoryNameseries,accessorySaveNameseries,path){
 			     $('docFiles').clear();
                  var fileTitle = $C('<list-item><item><row><label style="align:center">附件列表</label></row></item></list-item>');
@@ -316,7 +316,7 @@
 			                      var FREEDOWNLOAD = storage.getItem('FREEDOWNLOAD');
 			                      var CHARGEDOWNLOAD = storage.getItem('CHARGEDOWNLOAD');
 			                      if(fileDownLoadType == DOWNLOAD){   //直接下载
-			                          files = $C('<row style="margin-bottom:5"><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath='+path+'&amp;viewName='+attList[k].realname+'\')">'+attList[k].realname+'</label></row>');
+			                          files = $C('<list-item><item icon="mail_fujian.png"><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath='+path+'&amp;viewName='+attList[k].realname+'\')">'+attList[k].realname+'</label></item></list-item>');
 			                      }else if(fileDownLoadType == FREEDOWNLOAD){   //免费版
 			                           var fileType = attList[k].savename.substr(attList[k].savename.lastIndexOf(".")).replace(/<[^>]+>/g,'').toLowerCase();
 				                       if(fileType.toLowerCase() != '.xls' && fileType.toLowerCase() != '.xlsx'     //直接下载
@@ -326,12 +326,12 @@
 										    && fileType.toLowerCase() != '.txt' && fileType.toLowerCase() != '.jpg'
 										    && fileType.toLowerCase() != '.png' && fileType.toLowerCase() != '.gif'
 										    && fileType.toLowerCase() != '.jpeg' && fileType.toLowerCase() != '.bmp'){
-				                      	    files = $C('<row style="margin-bottom:5"><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath='+path+'&amp;viewName='+attList[k].realname+'\')">'+attList[k].realname+'</label></row>');
+				                      	    files = $C('<list-item><item icon="mail_fujian.png"><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5"  onclick="$http.download(\''+evoUrl+'/ezOffice/download/file.do?url='+attList[k].attachurlser+'&amp;filename='+attList[k].savename+'&amp;uploadPath='+path+'&amp;viewName='+attList[k].realname+'\')">'+attList[k].realname+'</label></item></list-item>');
 				                       }else{
-				                     	    files = $C('<row style="margin-bottom:5"><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5;"  onclick="freeconvertFileToHtml(\''+attList[k].savename+'\',\''+attList[k].realname+'\',\''+path+'\')">'+attList[k].realname+'</label></row>');
+				                     	    files = $C('<list-item><item icon="mail_fujian.png"><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5;"  onclick="freeconvertFileToHtml(\''+attList[k].savename+'\',\''+attList[k].realname+'\',\''+path+'\')">'+attList[k].realname+'</label></item></list-item>');
 									   }
 			                      }else if(fileDownLoadType == CHARGEDOWNLOAD){  //收费版
-			                      	   files = $C('<row style="margin-bottom:5"><icon src="mail_fujian.png" style="align:left;width:16;height:16"></icon><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5;"  onclick="chargeConvertFileToHtml(\''+attList[k].savename+'\',\''+attList[k].realname+'\',\''+path+'\')">'+attList[k].realname+'</label></row>');
+			                      	   files = $C('<list-item><item icon="mail_fujian.png"><label style="color:#38adff;text-decoration:underline;align:left;font-size:16;margin-left:5;"  onclick="chargeConvertFileToHtml(\''+attList[k].savename+'\',\''+attList[k].realname+'\',\''+path+'\')">'+attList[k].realname+'</label></item></list-item>');
 			                      }
 			                      $('docFiles').add(files); 
 			                  }
