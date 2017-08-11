@@ -290,7 +290,7 @@
         	}else if(objArr_real!=null&&objArr_real!=null&&objArr_real!=undefined){   //返回一条数据
         	    viewFiles(objArr_real,objArr_save,path);
         	}
-           
+           filesFlag='0';
        }
           //附件弹出框，与其他附件不一样
          function viewFiles(accessoryNameseries,accessorySaveNameseries,path){
