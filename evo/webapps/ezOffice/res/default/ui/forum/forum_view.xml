@@ -174,7 +174,6 @@
 		               }
 		            },function(error) {
 					   toErro(error);
-				    }
 				  });
             }
             

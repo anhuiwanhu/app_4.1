@@ -1197,9 +1197,13 @@
  			 	   		}else{
 			           		$('register').style="margin-left:10;align:center;background:desk_percenter_bg_btn2.png,desk_percenter_bg_btn2_g.png";
 			            }
-			            var address = result.poiInfos[0].address;
-			           	currentAddress = address;
-                        sign(address);
+			            if(result!=null&&result.poiInfos&&result.poiInfos.length>0){
+			            	var address = result.poiInfos[0].address;
+			           		currentAddress = address;
+                       		sign(address);
+			            }else{
+			            	alert("定位失败，请重新定位！");
+			            }
                     }
                 });
                 

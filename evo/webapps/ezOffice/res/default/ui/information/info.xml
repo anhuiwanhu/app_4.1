@@ -75,7 +75,7 @@
 						           var picSaveName = picSaveNameList.picSaveName;
 						           if(picSaveName!=""&&picSaveName!=null){
 							           if(picSaveName instanceof Array){   //数组
-							           	   var  content_pic = $C('<web id="content_pic" include="forum.css" style="color:#555555;margin:10 10;"></web>');
+							           	   var  content_pic = $C('<web id="content_pic" include="forum.css" style="color:#555555;margin:10 10;" scalable="true"></web>');
 								           $('info_content').add(content_pic);
 								           var imgHtmlStr = '';
 								           for(var i=0;i<picSaveName.length;i++){
@@ -89,7 +89,7 @@
 							          }else{   //对象
 							               if(picSaveName.length>6){
 								                  var src = obj.serveUrl + picSaveName.substring(0,6)+"/"+picSaveName;
-								                  var  content_pic = $C('<web id="content_pic" include="forum.css" style="color:#555555;margin:10 10;"></web>');
+								                  var  content_pic = $C('<web id="content_pic" include="forum.css" style="color:#555555;margin:10 10;" scalable="true"></web>');
 					      						  $('info_content').add(content_pic);
 					      						  var img_label = '<img src="'+src+'" style="align:center;margin-bottom:20;" />'
 					       						  $('content_pic').html = '<article class="wh-article" ><div class="wh-article-fulltext" style="text-align:center;">' + img_label + '</div></article>';
